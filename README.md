@@ -2,7 +2,7 @@
 
 A local-first AI workspace for conversations, web research, document intelligence and permission-scoped local agents. Your infrastructure, your data, your models. No paid AI API is required or enabled.
 
-**Pre-release.** Phase 1 was accepted at `3452acd`; Phase 2 adds accounts/workspaces and advanced research; Phase 3 adds bounded agents and scheduling (see its acceptance record). v1.0 production readiness is not claimed. See [PROJECT_STATUS.md](PROJECT_STATUS.md), [Phase 2 acceptance](docs/PHASE2_CHECKLIST.md) and [ROADMAP.md](ROADMAP.md).
+**Pre-release.** Phase 1 was accepted at `3452acd`; Phase 2 adds accounts/workspaces and advanced research; Phase 3 adds bounded agents and scheduling (see its acceptance record). v1.0 production readiness is not claimed. See [PROJECT_STATUS.md](PROJECT_STATUS.md), [Phase 2 acceptance](docs/PHASE2_CHECKLIST.md), [Phase 3 acceptance](docs/PHASE3_CHECKLIST.md) and [ROADMAP.md](ROADMAP.md).
 
 ## Start locally
 

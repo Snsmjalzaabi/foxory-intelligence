@@ -1,5 +1,9 @@
 # Changelog
 
+## Phase 3 — unreleased
+
+Bounded stateful agents with schema-constrained local planning, explicit specialist delegation and result references, permission-scoped tools, approval-gated atomic internal writes, retained unverified memory, durable schedules and a connected AI Workforce interface. Small document formats now use a minimal sealed parser profile. Full verification and remaining limits are recorded in PROJECT_STATUS.md; v1.0 and production readiness remain unclaimed.
+
 ## Phase 2 — unreleased
 
 Workspace accounts and server-side permissions; evidence-based research with real page retrieval and checkpointed recovery; independent Model Council stages; restricted Linux parsing, local semantic indexing and multi-document citations; PDF/Word/spreadsheet exports and integrated account/research interfaces. See PROJECT_STATUS.md and docs/VERIFICATION.md for executed checks and limitations. Target v1.0 remains incomplete.

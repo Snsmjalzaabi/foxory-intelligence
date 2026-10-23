@@ -62,3 +62,9 @@ The full Phase 2 base image was built in the cloud with the canonical Dockerfile
 Phase 2 integration uses a disposable Compose project on port 8003 with its own PostgreSQL/uploads volumes and the existing private Ollama service. `scripts/phase2_smoke.py` is intentionally restricted to that local verification port. It creates only a disposable test administrator and refuses an existing configured installation without its private test-run credential file. Never use it against an owner's workspace. Test-run credentials/evidence live in private `/tmp` files, never Git.
 
 After administrator setup, native smoke helpers can log in using `FOXORY_SMOKE_USERNAME` and `FOXORY_SMOKE_PASSWORD` supplied privately in the shell environment; optional `FOXORY_SMOKE_WORKSPACE` selects an authorized test workspace. They never print credentials. Bootstrap-only smoke works only on an unconfigured installation. Do not put passwords in committed scripts or command-line arguments.
+
+## Phase 3 upgrade
+
+Back up PostgreSQL and uploaded originals before replacing the application. Phase 3 retains schema revision0003 and stores agent/schedule state in existing scoped records. The canonical Dockerfile remains the clean-install path; this cloud verification reused its Phase 2 dependency base with code overlays because of VFS space limits. Compose now enables an init process and accepts FOXORY_WORKER_CONCURRENCY (default1, maximum2); local model calls remain sequential. Use one API process/replica only. Existing standard zero-tool definitions load without deleting inert legacy fields; old draft task records remain archived and require a new explicitly scoped task.
+
+New installations create their administrator through the existing first-run UI; tests do not create an administrator in the owner's database. Restricted uploads require Linux/libseccomp. See docs/PHASE3_CHECKLIST.md and PROJECT_STATUS.md for exact executed scope and limitations.
