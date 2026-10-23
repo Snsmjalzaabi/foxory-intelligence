@@ -165,6 +165,7 @@ async def execute(id:str,workspace:str,body:Run):
                     path=output/name
                     if path.is_symlink() or not path.is_file():raise ValueError('Artifact type changed')
                     with path.open('rb') as stream:decoded=stream.read(20001)
+                    if not decoded:continue  # Unwritten output slots are not generated artifacts.
                     total+=len(decoded)
                     if total>20000:raise ValueError('Artifact byte budget')
                     decoded_text=decoded.decode('utf-8')

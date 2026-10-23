@@ -40,6 +40,7 @@ async def test_real_sandbox_auth_isolation_tests_and_artifacts(sandbox):
     assert result['status']=='completed',result
     assert 'OK' in result['stderr'] and 'FOXORY_ISOLATION_OK' in result['stdout']
     assert base64.b64decode(result['artifacts']['result.txt']['base64'])==b'42'
+    assert set(result['artifacts'])=={'result.txt'}
     assert (await client.get('/v1/jobs/'+job['id'],headers={'X-Foxory-Workspace':'tenant-b'})).status_code==404
     assert (await submit(client,code))['id']==job['id']
     changed=await client.post('/v1/jobs',json={'files':{'main.py':'print(99)'},'entrypoint':'main.py','idempotency_key':'sandbox-test-key'})

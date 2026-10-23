@@ -49,7 +49,12 @@ try:
         html=client.get('/').text;asset=re.search(r'src="(/assets/[^\"]+\.js)"',html).group(1)
         bundle=client.get(asset);bundle.raise_for_status();assert '/computer/tasks' in bundle.text
         assert hashlib.sha256(bundle.content).digest()==hashlib.sha256((ROOT/'frontend/dist'/asset.removeprefix('/')).read_bytes()).digest()
-        inspector=json.loads(docker('inspect',name,capture_output=True,text=True).stdout)[0]
+        for _ in range(50):
+            inspector=json.loads(docker('inspect',name,capture_output=True,text=True).stdout)[0]
+            if inspector['State'].get('Health',{}).get('Status')=='healthy':break
+            if inspector['State'].get('Health',{}).get('Status')=='unhealthy':raise RuntimeError('Docker healthcheck failed')
+            time.sleep(1)
+        else:raise RuntimeError('Docker healthcheck did not become healthy')
         assert inspector['Config']['User'].split(':')[0]=='10001' and inspector['HostConfig']['ReadonlyRootfs']
         assert docker('exec',name,'id','-u',capture_output=True,text=True).stdout.strip()=='10001'
         assert inspector['HostConfig']['Init'] and inspector['HostConfig']['CapDrop']==['ALL']

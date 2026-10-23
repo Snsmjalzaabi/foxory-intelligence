@@ -1,6 +1,7 @@
 """Test-only Ollama protocol fixture and real application server. Never used in production."""
 import json
 import secrets
+import signal
 import atexit
 import time
 import os
@@ -24,10 +25,16 @@ if os.getenv('FOXORY_E2E_SANDBOX')=='1':
         try:manager.wait(timeout=10)
         except subprocess.TimeoutExpired:manager.kill();manager.wait()
     atexit.register(stop_manager)
+    def terminate_fixture(signum,frame):
+        stop_manager()
+        raise SystemExit(0)
+    signal.signal(signal.SIGTERM,terminate_fixture)
     import httpx
     for attempt in range(150):
         try:
-            health=httpx.get('http://127.0.0.1:8104/v1/health',headers={'Authorization':'Bearer '+manager_key,'X-Foxory-Workspace':'local'},trust_env=False).json()
+            if manager.poll() is not None:raise RuntimeError('Disposable test manager exited during startup; check its port and preflight logs')
+            response=httpx.get('http://127.0.0.1:8104/v1/health',headers={'Authorization':'Bearer '+manager_key,'X-Foxory-Workspace':'local'},trust_env=False)
+            response.raise_for_status();health=response.json()
             if not health['enabled']:raise RuntimeError(str(health))
             break
         except httpx.HTTPError:time.sleep(.1)

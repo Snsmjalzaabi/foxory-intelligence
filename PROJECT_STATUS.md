@@ -1,6 +1,8 @@
 # FOXORY Phase 4 continuation — restricted Python execution, incomplete milestone
 
-Branch: development. Starting commit c039f974c357e2bd61e2fc298e696f9cdc26fba3.
+Branch: development. Starting commit c039f974c357e2bd61e2fc298e696f9cdc26fba3. Main implementation
+commit cc07602; the following verification commit records the final checks and
+artifact/test-fixture fixes. Use git log -1 for its exact hash.
 Accepted Phase 3: ca90bcae299031a8393ba338f24f625864d5068e; full evidence in
 docs/PHASE3_STATUS.md. First Phase 4 increment preserved in docs/PHASE4_INCREMENT1.md.
 Phase 5 has not started; v1.0 and production readiness are not claimed.
@@ -34,14 +36,14 @@ Phase 5 has not started; v1.0 and production readiness are not claimed.
 
 ## Executed verification
 
-- **106 backend tests passed in 60.84 seconds**, including the Phase 1–3 suite,
+- **106 backend tests passed in 36.89 seconds**, including the Phase 1–3 suite,
   18 advanced-file/data cases and 28 manager/Computer cases. Real Bubblewrap/
   seccomp tests exercised host-path/network/process/thread/UID/memory/file/output
   denial, invalid JSON/UTF-8/formula artifacts, auth/tenant boundaries, queue/history
   quotas, cancellation, timeout, failed preflight, restart interruption, scoped
   Computer approval, source ZIP integrity and protection against forged stdout
   artifact envelopes. Model prose alone is mocked in the backend agent test.
-- **10 Chromium browser journeys passed in 1.4 minutes**, including all nine prior
+- **10 Chromium browser journeys passed in 1.8 minutes**, including all nine prior
   regression journeys and Computer Mode against a separately running real HTTP
   manager and actual Python unittest execution. Ollama is a labeled deterministic
   protocol fixture in browser tests; this does not verify a product browser agent.
@@ -64,8 +66,8 @@ Phase 5 has not started; v1.0 and production readiness are not claimed.
   hash: 0d2d0e4dabaa644dbf1476e38443b18c49a31d2e9e359f17be975a9c263b6ecf.
   This is source-handler/report integration, not a new autonomous multi-agent
   research-quality benchmark or a browser demonstration.
-- Local overlay image **sha256:dc11666d7a4fef17c6ee4427d62f51ae02fca9cbbfc69cfde7f01916c2c9ec82**
-  passed health, default-disabled execution, authenticated memory persistence across
+- Local overlay image **sha256:09b8a43da99e13852b7d7432c82c7deaa8f01c055c97a67c7872264b0059d256**
+  passed API and Docker engine health, default-disabled execution, authenticated memory persistence across
   restart, frontend bundle and five runtime-source hashes, actual UID10001,
   read-only/init/cap-drop and no Docker-socket mount checks. The overlay reused
   the accepted Phase 3 dependency image; no clean canonical Dockerfile build or
@@ -77,13 +79,12 @@ Phase 5 has not started; v1.0 and production readiness are not claimed.
   tests and native completed-task/session restart passed. No new PostgreSQL dump/
   restore, manager process-crash escape audit or reference hardware test was run.
 
-After that successful browser/Docker run, final review fixed Computer idempotency:
-semantically identical resubmissions now preserve the exact running claim, and
-keys belonging to non-Computer jobs cannot convert those jobs. A new regression
-case passed in the 106-test rerun. The following browser rerun had nine passes and
-one expected HTTP429 under the unchanged 180/minute limiter; test traffic pacing
-is being verified. The earlier overlay image predates this last API fix and is
-being rebuilt/rechecked before final verification is recorded.
+Final review also fixed Computer idempotency: identical resubmissions preserve
+running claims byte-for-byte, and keys belonging to non-Computer jobs cannot
+convert those jobs. The regression case passed in the full 106-test rerun.
+Unwritten artifact slots are omitted rather than offered as empty JSON downloads.
+The paced browser suite completed all ten journeys; the real production limiter
+remains unchanged. Its disposable app and manager ports were confirmed closed.
 
 ## Failed attempts and corrections
 
@@ -98,6 +99,13 @@ Early real-model JSON code generation returned placeholders; another plain-code
 attempt returned fenced prose and omitted imports. Those failed runs were blocked
 from packaging, not counted successful. The final harness extracts actual code
 fences, uses reviewed deterministic tests and validates real failure/repair output.
+A later fast browser run passed nine journeys and received HTTP429 at the final
+approval because the shared test IP exceeded the real 180/minute limit. Test
+traffic is now paced at at most 150 requests/minute, preserving the production
+control. Environment restart orphaned a test manager and caused a port/auth
+startup failure; only those identified fixture processes were stopped. The test
+server now validates startup HTTP status and handles SIGTERM cleanup explicitly.
+The final browser run passed and left neither test port listening.
 No security limit was relaxed to pass tests. Earlier Phase 4 increment failures
 remain in docs/PHASE4_INCREMENT1.md. Test transports/mocks and real integrations are
 explicitly distinguished in docs/SANDBOX_MANAGER.md and the verification scripts.
@@ -123,3 +131,17 @@ See docs/SANDBOX_MANAGER.md and docs/PHASE4_CHECKLIST.md. Next task must preserv
 this code and continue Phase 4, starting with a dedicated multi-process sandbox
 host/runtime with verified aggregate resource and network enforcement. Do not
 run Chromium in the main application or weaken the Python seal as a shortcut.
+
+## Exact continuation point
+
+Continue from development HEAD, inspect this file and docs/PHASE4_CHECKLIST.md;
+preserve the accepted Phase 1–3 work and the verified restricted Python subsystem.
+Next provision a dedicated Linux sandbox host/runtime with delegated aggregate
+RSS/PID/disk/network enforcement. Implement isolated Playwright and JS/TS workers
+behind the authenticated manager, domain/method/session/download controls and
+immutable approval for consequential actions. Connect screenshots and browser
+steps to Computer Mode. Demonstrate controlled-site browser tasks and a tested
+web app, then combined research/data/coding/browser workflows with local models.
+Run full regression, final-image, migration and recovery checks and commit evidence.
+Do not weaken the single-process Python profile, expose an application Docker
+socket, publish/deploy externally, or advance to Phase 5 until Phase 4 is complete.

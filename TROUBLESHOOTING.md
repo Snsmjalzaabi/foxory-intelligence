@@ -16,3 +16,13 @@
 
 - In managed cloud containers with an HTTP proxy, Ollama's CLI may try to use its bind address `0.0.0.0` through the proxy. Use `docker compose exec -T -e OLLAMA_HOST=http://127.0.0.1:11434 ollama ollama list` (or `pull MODEL`) to address the local server explicitly. Keep the HTTPS proxy for registry traffic and trust the environment CA; do not disable TLS verification. This does not change the application endpoint, which uses the private service name.
 - Cloud Docker VFS storage can duplicate large image layers during builds/recreation. A 32 GB task filesystem exhausted space during this verification. Remove only task-owned unused build artifacts; never prune persistent data/model volumes as a troubleshooting shortcut.
+
+### Computer Mode reports disabled
+
+Check authenticated `/api/computer/capabilities` and the separate manager's logs.
+Both sides need deliberate opt-in and the same private key; the manager must pass
+its actual namespace/seccomp preflight under a non-root account. A failed probe
+keeps execution disabled. The application container's loopback is not host
+loopback. Use the [documented topology](docs/SANDBOX_MANAGER.md), not a Docker socket
+mount, root execution or an unsealed subprocess fallback. Browser/JS execution
+is currently unavailable and cannot be enabled by setting the Python flags.

@@ -68,3 +68,17 @@ After administrator setup, native smoke helpers can log in using `FOXORY_SMOKE_U
 Back up PostgreSQL and uploaded originals before replacing the application. Phase 3 retains schema revision0003 and stores agent/schedule state in existing scoped records. The canonical Dockerfile remains the clean-install path; this cloud verification reused its Phase 2 dependency base with code overlays because of VFS space limits. Compose now enables an init process and accepts FOXORY_WORKER_CONCURRENCY (default1, maximum2); local model calls remain sequential. Use one API process/replica only. Existing standard zero-tool definitions load without deleting inert legacy fields; old draft task records remain archived and require a new explicitly scoped task.
 
 New installations create their administrator through the existing first-run UI; tests do not create an administrator in the owner's database. Restricted uploads require Linux/libseccomp. See docs/PHASE3_CHECKLIST.md and PROJECT_STATUS.md for exact executed scope and limitations.
+
+### Optional Computer Mode
+
+The application does not provision a sandbox manager or expose a Docker socket.
+Restricted Python execution requires a separate, dedicated non-root Linux x86_64
+manager and explicit configuration/approval. Follow [the manager installation and
+security boundary](docs/SANDBOX_MANAGER.md). Native app-to-manager loopback is the
+verified topology. Container-to-host routing and Windows/macOS Linux VM setups
+require separate verification. Browser and JavaScript execution remain disabled.
+
+To uninstall the optional manager, stop/disable its service and preserve its
+private state alongside the application backup before removing configuration.
+Core container removal does not remove external manager state. Delete keys/state
+only as an explicit owner operation, never as an automatic application uninstall.
