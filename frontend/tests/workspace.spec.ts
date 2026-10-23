@@ -2,8 +2,10 @@ import {test,expect} from '@playwright/test';
 
 test.beforeEach(async({page})=>{
  await page.goto('/');
- await page.getByLabel('Workspace access token').fill('e2e-only-token-with-at-least-24-chars');
- await page.getByRole('button',{name:'Unlock workspace'}).click();
+ if(await page.getByLabel('Workspace bootstrap token').isVisible())await page.getByLabel('Workspace bootstrap token').fill('e2e-only-token-with-at-least-24-chars');
+ await page.getByLabel('Username',{exact:true}).fill('e2e-owner');
+ await page.getByLabel('Password',{exact:true}).fill('e2e-owner-password-123');
+ await page.getByRole('button',{name:/Sign in|Create administrator/}).click();
  await expect(page.getByRole('heading',{name:'What will you build today?'})).toBeVisible();
 });
 
@@ -69,4 +71,19 @@ test('mobile navigation and theme work',async({page})=>{
  await expect(page.getByRole('heading',{name:'Settings',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBeTruthy();
  await page.screenshot({path:'test-results/settings-mobile.png',fullPage:true});
+});
+
+
+test('account workspace switch isolates history and logout revokes access',async({page})=>{
+ await page.getByLabel('Message FOXORY').fill('Private original workspace message');
+ await page.getByRole('button',{name:'Send message'}).click();
+ await expect(page.locator('.message.assistant')).toContainText('Test fixture response');
+ await page.locator('nav').getByRole('button',{name:'Settings',exact:true}).click();
+ await page.getByLabel('New workspace name').fill('Browser isolated workspace');
+ await page.getByRole('button',{name:'Create workspace',exact:true}).click();
+ await expect(page.getByLabel('Current workspace')).toContainText('Browser isolated workspace');
+ await expect(page.locator('.history')).not.toContainText('Private original workspace message');
+ await page.getByLabel('Lock workspace').click();
+ await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible();
+ const denied=await page.request.get('/api/overview');expect(denied.status()).toBe(401);
 });

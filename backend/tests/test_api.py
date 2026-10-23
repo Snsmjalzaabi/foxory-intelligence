@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select
 from foxory.db import Session, Record, Message
-from foxory import jobs
+from foxory import jobs, intelligence
+import hashlib
 from foxory.main import app, active_chats
 from foxory.documents import extract
 from foxory.research import validate_citations
@@ -135,12 +136,14 @@ async def test_job_idempotency_and_transitions(client):
 async def test_research_checkpoints_and_cancellation(client,monkeypatch):
     async def search(q,limit=6):return [{'id':1,'title':'Fixture evidence','url':'https://example.test/a','snippet':'A fact','evidence_type':'search_snippet'}]
     async def complete(*a):return 'Evidence [1]. Unsupported [99]. https://fabricated.test'
-    monkeypatch.setattr(jobs,'search',search);monkeypatch.setattr(jobs,'complete',complete)
+    monkeypatch.setattr(intelligence,'search',search);monkeypatch.setattr(intelligence.inference,'complete',complete)
+    monkeypatch.setattr(intelligence,'retrieve_page',fixture_page)
     job=await create_job(client)
     assert await jobs.run_one()
     saved=(await client.get('/api/records/job')).json()[0]
     assert saved['data']['step']==1 and saved['data']['status']=='queued'
-    await jobs.run_one();await jobs.run_one()
+    for _ in range(12):
+        await jobs.run_one()
     done=(await client.get('/api/records/job')).json()[0]
     assert done['data']['status']=='completed'
     assert len(done['data']['sources'])==1
@@ -152,27 +155,29 @@ async def test_research_checkpoints_and_cancellation(client,monkeypatch):
         entered.set()
         try:await asyncio.Event().wait()
         finally:cancelled.set()
-    monkeypatch.setattr(jobs,'search',slow_search)
+    monkeypatch.setattr(intelligence,'search',slow_search)
     job=await create_job(client,key='another-key-123')
+    await jobs.run_one()  # checkpoint the model-generated plan first
     runner=asyncio.create_task(jobs.run_one());await asyncio.wait_for(entered.wait(),2)
     await client.post('/api/jobs/'+job['id']+'/cancel')
     await asyncio.wait_for(runner,2)
     assert cancelled.is_set()
     saved=[r for r in (await client.get('/api/records/job')).json() if r['id']==job['id']][0]
-    assert saved['data']['status']=='cancelled' and saved['data']['step']==0
+    assert saved['data']['status']=='cancelled' and saved['data']['step']==1
 
 async def test_council_sequential_and_failure_retry(client,monkeypatch):
     calls=[]
     async def complete(model,messages):calls.append(model);return 'Independent analysis' if len(calls)<3 else 'Consensus does not verify facts.'
-    monkeypatch.setattr(jobs,'complete',complete)
+    monkeypatch.setattr(intelligence.inference,'complete',complete)
     j=await create_job(client,'council',models=['small-a','small-b'])
-    for _ in range(3):await jobs.run_one()
-    assert calls==['small-a','small-b','small-a']
+    for _ in range(4):await jobs.run_one()
+    assert calls==['small-a','small-b','small-a','small-a']
     done=(await client.get('/api/records/job')).json()[0]
     assert done['data']['status']=='completed' and len(done['data']['analyses'])==2
     async def broken(*args):raise RuntimeError('provider disconnected')
-    monkeypatch.setattr(jobs,'search',broken)
+    monkeypatch.setattr(intelligence,'search',broken)
     j=await create_job(client,key='failure-key-123')
+    await jobs.run_one()  # planning precedes search dispatch
     for attempt in range(3):
         await jobs.run_one()
         state=[r for r in (await client.get('/api/records/job')).json() if r['id']==j['id']][0]
@@ -202,7 +207,8 @@ def test_citation_filter():
 async def test_restart_recovery_preserves_checkpoint(client,monkeypatch):
     async def search(*args):return [{'id':1,'url':'https://example.test/evidence','title':'Evidence','snippet':'fixture'}]
     async def complete(*args):return 'Final synthesis [1]'
-    monkeypatch.setattr(jobs,'search',search);monkeypatch.setattr(jobs,'complete',complete)
+    monkeypatch.setattr(intelligence,'search',search);monkeypatch.setattr(intelligence.inference,'complete',complete)
+    monkeypatch.setattr(intelligence,'retrieve_page',fixture_page)
     j=await create_job(client,key='restart-recovery-key')
     await jobs.run_one()
     with Session() as s:
@@ -216,7 +222,7 @@ async def test_restart_recovery_preserves_checkpoint(client,monkeypatch):
                 if data['status']=='completed':return data
                 await asyncio.sleep(.05)
         result=await asyncio.wait_for(finished(),3)
-        assert result['step']==3 and len(result['sources'])==1
+        assert result['step']>=6 and len(result['sources'])==1
     finally:
         worker.cancel()
         with __import__('contextlib').suppress(asyncio.CancelledError):await worker
@@ -228,3 +234,7 @@ async def test_concurrent_duplicate_submissions(client):
     assert all(r.status_code in {201,409} for r in responses)
     jobs_created=await asyncio.gather(*[create_job(client,key='concurrent-idempotency-key') for _ in range(6)])
     assert len({r['id'] for r in jobs_created})==1
+
+async def fixture_page(url,query):
+    text='Fixture evidence with a sufficiently long public source excerpt. '+('Reliable fixture material. '*8)
+    return {'url':url,'title':'Fixture evidence','text':text,'evidence_type':'retrieved_page','content_hash':hashlib.sha256(text.encode()).hexdigest(),'relevance':1,'credibility':{'score':.2,'reasons':['fixture']}}
