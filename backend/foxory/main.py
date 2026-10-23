@@ -53,6 +53,8 @@ app = FastAPI(title="FOXORY Intelligence", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
 from .agent_api import router as agent_router
 app.include_router(agent_router)
+from .computer_api import router as computer_router
+app.include_router(computer_router)
 
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=os.getenv("FOXORY_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],testserver").split(","))

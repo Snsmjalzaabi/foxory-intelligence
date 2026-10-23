@@ -64,3 +64,45 @@ def test_table_group_limit_and_booleans():
     with pytest.raises(ValueError):
         analyze_table({'rows':[{'v':1,'g':str(i)} for i in range(51)],'column':'v','group_by':'g'})
     with pytest.raises(ValueError):TableAnalysis(rows=[{'v':True}],column='v')
+
+async def test_uploaded_csv_analysis_scopes_and_exports(client):
+    from foxory.agent_tools import authorize
+    from foxory.agents import AgentConfig
+    response=await client.post('/api/documents',files={'file':('sales.csv',b'team,revenue\nA,10\nA,20\nB,5\n','text/csv')})
+    assert response.status_code==201,response.text
+    id=response.json()['id']
+    cfg=AgentConfig(tools=['data.csv_document'],permissions=['documents.read','calculate'],document_ids=[id]).model_dump()
+    result=await execute('data.csv_document',{'document_id':id,'column':'revenue','group_by':'team'},cfg,'a')
+    assert result['groups'][0]['sum']==30 and result['groups'][1]['sum']==5
+    assert '30' in result['csv'] and '<svg' in result['chart_svg'] and result['source_sha256']
+    with pytest.raises(PermissionError):authorize({**cfg,'document_ids':[]},'data.csv_document',{'document_id':id,'column':'revenue'})
+    with pytest.raises(PermissionError):authorize({**cfg,'permissions':['documents.read']},'data.csv_document',{'document_id':id,'column':'revenue'})
+
+async def test_csv_agent_workflow_report_and_chart_archive(client,monkeypatch):
+    import xml.etree.ElementTree as ET
+    from foxory.agents import AgentConfig
+    from foxory import inference
+    from test_agents import task,finish,prose
+    monkeypatch.setattr(inference,'complete',prose)
+    upload=await client.post('/api/documents',files={'file':('finance.csv',b'team,revenue\nA,10\nA,20\nB,5\n','text/csv')})
+    id=upload.json()['id']
+    cfg=AgentConfig(model='fixture',tools=['data.csv_document','document.generate','source.package'],permissions=['documents.read','documents.write','calculate'],document_ids=[id]).model_dump()
+    response=await client.post('/api/agents',json={'name':'CSV analyst','config':cfg});assert response.status_code==201,response.text
+    plan=[{'title':'Analyze authorized CSV','tool':'data.csv_document','args':{'document_id':id,'column':'revenue','group_by':'team'}},
+          {'title':'Save report','tool':'document.generate','args':{'title':'CSV report','content':{'$step':0,'path':['report']}},'depends_on':[0]},
+          {'title':'Package chart and calculations','tool':'source.package','args':{'title':'CSV charts','files':{'chart.svg':{'$step':0,'path':['chart_svg']},'results.csv':{'$step':0,'path':['csv']}}},'depends_on':[0]}]
+    job=await task(client,response.json(),plan,key='csv-report-workflow')
+    for _ in range(3):
+        result=await finish(job['id'])
+        if result['status']=='completed':break
+        assert result['status']=='awaiting_approval',result
+        assert (await client.post('/api/approvals/'+result['approval_id']+'/approve')).status_code==200
+    assert result['status']=='completed',result
+    report=await client.get('/api/artifacts/'+result['outputs'][1]['result']['record_id']+'/export?format=pdf')
+    from pypdf import PdfReader
+    assert '30' in ''.join(page.extract_text() for page in PdfReader(io.BytesIO(report.content)).pages)
+    archive=await client.get('/api/artifacts/'+result['outputs'][2]['result']['record_id']+'/export?format=zip')
+    with zipfile.ZipFile(io.BytesIO(archive.content)) as z:
+        assert z.testzip() is None
+        assert ET.fromstring(z.read('chart.svg')).tag.endswith('svg')
+        assert b'A,2,30.0' in z.read('results.csv')

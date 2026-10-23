@@ -12340,3 +12340,14 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+===== Optional host sandbox runtime dependencies (not vendored) =====
+Bubblewrap: https://github.com/containers/bubblewrap — LGPL-2.1-or-later.
+libseccomp: https://github.com/seccomp/libseccomp — LGPL-2.1.
+util-linux prlimit: https://github.com/util-linux/util-linux — GPL-2.0-or-later
+(check the chosen distribution's per-file license inventory).
+System CPython: https://www.python.org/ — PSF-2.0 and bundled component notices.
+The manager invokes distribution-provided programs and dynamically links the
+provided seccomp library. No binary is copied into this repository. Preserve
+upstream copyright notices and source/license obligations when distributing
+runtime images or binary bundles. This inventory is not full-image/legal clearance.

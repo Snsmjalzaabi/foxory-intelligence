@@ -46,3 +46,12 @@ The parent parser now multiplexes/bounds stdin/stdout/stderr while the child run
 `FOXORY_WORKER_CONCURRENCY` defaults to `1` and is clamped to `1–2`. It controls task workers, while local model inference remains sequential. Configure it deliberately on the supported single-process installation; multiple API replicas are unsupported. Agent-specific limits (steps, model calls, wall-clock/step timeouts, retries and retention) are configured in AI Workforce. Scheduled runs have a separate maximum-runs and retry limit; at most eight workspace jobs may be pending when schedules dispatch. Internal writes require a workspace administrator's expiring approval. No external-action tool can be enabled by changing agent settings.
 
 Scheduling uses IANA timezones and fixed elapsed-minute recurrence; DST-ambiguous naive times require an explicit offset via API. The UI can schedule an unambiguous time or UTC. See [extension and execution contracts](docs/AGENT_EXTENSIONS.md).
+
+### Optional Computer Mode
+
+`FOXORY_ENABLE_SANDBOX=0` by default. Deliberate opt-in additionally needs
+`FOXORY_SANDBOX_URL` and a random server-side `FOXORY_SANDBOX_KEY` shared only with
+the separate manager. The manager uses `FOXORY_SANDBOX_ENABLED=1` and a private
+`FOXORY_SANDBOX_DATA` directory. Native Linux is the verified topology. Compose
+passes settings but does not install a manager or make host loopback reachable
+from the application container. See [full setup](docs/SANDBOX_MANAGER.md).

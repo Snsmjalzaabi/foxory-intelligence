@@ -6,7 +6,7 @@ import math
 import operator
 from dataclasses import dataclass
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, RootModel, JsonValue
+from pydantic import BaseModel, ConfigDict, Field, RootModel, JsonValue, model_validator
 from sqlalchemy import select
 from .db import Session, Record, get_record
 from .advanced_files import SourceProject, TableAnalysis, analyze_table
@@ -22,6 +22,13 @@ class Page(Input):
     url:str=Field(min_length=8,max_length=2000)
 class Documents(Query):
     document_ids:list[str]=Field(default_factory=list,max_length=20)
+class CSVDocument(Input):
+    document_id:str=Field(min_length=1,max_length=36)
+    column:str=Field(min_length=1,max_length=100)
+    group_by:str|None=Field(default=None,max_length=100)
+    minimum:float|None=None
+    maximum:float|None=None
+
 class CitationInput(Input):
     job_id:str=Field(min_length=1,max_length=36)
 class Calculate(Input):
@@ -32,6 +39,13 @@ class DataInput(Input):
 class Generate(Input):
     title:str=Field(min_length=1,max_length=200)
     content:str=Field(min_length=1,max_length=20000)
+class SandboxPython(SourceProject):
+    entrypoint:str=Field(min_length=1,max_length=180)
+    @model_validator(mode='after')
+    def python_entry(self):
+        if self.entrypoint not in self.files or not self.entrypoint.endswith('.py'):raise ValueError('Entrypoint must be a supplied Python file')
+        return self
+
 class TaskInput(Generate):
     project_id:str=Field(min_length=1,max_length=36)
 class MemoryQuery(Query):
@@ -49,7 +63,9 @@ TOOLS={
  'research.references':Tool('Read saved research references; integrity is not factual verification.',CitationInput,'research.read'),
  'documents.retrieve':Tool('Retrieve excerpts from explicitly authorized workspace documents.',Documents,'documents.read'),
  'math.calculate':Tool('Evaluate bounded arithmetic only; no variables, calls or code.',Calculate,'calculate'),
+ 'data.csv_document':Tool('Analyze one explicitly authorized uploaded CSV with deterministic grouped statistics and an escaped chart. Also requires calculate permission.',CSVDocument,'documents.read'),
  'data.table':Tool('Filter, group and summarize supplied table rows; returns deterministic statistics and inert SVG chart.',TableAnalysis,'calculate'),
+ 'sandbox.python':Tool('Run supplied Python source in the separate opt-in, network-denied, single-process manager after explicit approval. No shell, browser, subprocesses or package installs.',SandboxPython,'sandbox.execute',True,30),
  'source.package':Tool('Save inert source files for ZIP download after approval. Does not run code or modify repositories.',SourceProject,'documents.write',True),
  'data.analyze':Tool('Compute finite-number summary statistics.',DataInput,'calculate'),
  'projects.list':Tool('Read workspace projects and tasks.',Input,'projects.read'),
@@ -83,6 +99,8 @@ def authorize(config:dict,name:str,args:dict):
     tool=TOOLS[name]
     if tool.scope not in config.get('permissions',[]):raise PermissionError('Missing tool permission scope')
     parsed=tool.schema.model_validate(args).model_dump()
+    if name=='data.csv_document':
+        if 'calculate' not in config.get('permissions',[]) or parsed['document_id'] not in config.get('document_ids',[]):raise PermissionError('CSV document or calculation scope exceeded')
     if name=='documents.retrieve':
         allowed=config.get('document_ids',[])
         requested=parsed['document_ids'] or allowed
@@ -93,6 +111,30 @@ def authorize(config:dict,name:str,args:dict):
 async def execute(name:str,args:dict,config:dict,agent_id:str):
     args=authorize(config,name,args)
     if TOOLS[name].approval:raise PermissionError('Writes must be committed through the approval transaction')
+    if name=='data.csv_document':
+        import csv,io
+        with Session() as session:
+            document=get_record(session,args['document_id'],'document')
+            if not document.title.lower().endswith('.csv'):raise ValueError('Uploaded CSV required')
+            text=json.loads(document.payload)['text']
+        if len(text)>20000:raise ValueError('CSV analysis text budget exceeded')
+        reader=csv.DictReader(io.StringIO(text))
+        fields=reader.fieldnames or []
+        if not fields or len(fields)>20 or len(set(fields))!=len(fields) or any(not f for f in fields):raise ValueError('CSV header budget/uniqueness exceeded')
+        rows=[]
+        for row in reader:
+            if len(rows)>=500 or None in row or any(v is None for v in row.values()):raise ValueError('CSV row budget or shape exceeded')
+            rows.append(row)
+        result=analyze_table({'rows':rows,**{k:v for k,v in args.items() if k!='document_id'}})
+        result['document_id']=args['document_id'];result['source_sha256']=hashlib.sha256(text.encode()).hexdigest()
+        result['report']='Grouped CSV statistics\n'+json.dumps({k:v for k,v in result.items() if k!='chart_svg'},indent=2)
+        output=io.StringIO(newline='');writer=csv.writer(output)
+        writer.writerow(['group','count','sum','mean','median','min','max','population_stddev'])
+        for group in result['groups']:
+            values=[group[k] for k in ['group','count','sum','mean','median','min','max','population_stddev']]
+            writer.writerow(["'"+v if isinstance(v,str) and v.startswith(('=','+','-','@','\t','\r')) else v for v in values])
+        result['csv']=output.getvalue()
+        return result
     if name=='data.table':return analyze_table(args)
     if name=='math.calculate':return {'value':arithmetic(args['expression'])}
     if name=='data.analyze':

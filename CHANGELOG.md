@@ -2,7 +2,7 @@
 
 ## Phase 4 — incomplete, unreleased
 
-Bounded table filtering/grouped statistics and inert SVG chart data; approval-gated source ZIP artifacts; CSV/JSON exports and connected Workforce download controls. Arbitrary-code execution, isolated browser and Computer Mode remain unavailable. See PROJECT_STATUS.md.
+Bounded table filtering/grouped statistics and inert SVG chart data; approval-gated source ZIP artifacts; CSV/JSON exports and connected Workforce download controls. Computer Mode now connects optional, explicitly approved single-process Python execution through a separate rootless Bubblewrap manager. Uploaded CSV statistics, report/chart workflows and scoped artifacts are supported. General browser and JavaScript execution remain unavailable. See PROJECT_STATUS.md.
 
 ## Phase 3 — unreleased
 

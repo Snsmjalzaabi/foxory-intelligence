@@ -33,3 +33,13 @@ Independent penetration/sandbox review; image/native dependency SBOM/license/dig
 `agents.py`, `agent_tools.py`, `agent_api.py`, `agent_memory.py` and `scheduler.py` extend the existing job/Record envelopes. No schema migration is required beyond revision0003; existing unique record IDs provide schedule/task/effect idempotency. The graph plans validated steps, executes each under its assigned agent’s snapshot and current grants, checks quality and consolidates actual outputs. User-reviewed plans use the same validator. Malformed model JSON is retried within configured limits; unavailable tools fail closed. Tool results are untrusted evidence, not commands.
 
 The API lifespan runs a scheduler coroutine and 1–2 configured task loops. Local inference remains serialized. Scheduler dispatch/history and local effects/checkpoints use atomic transactions; interrupted read-only model/tool calls may replay. One API process/replica remains required. Agent facts are user-approved but not independently verified; generated summaries are explicitly unverified and expire under retention settings. See docs/AGENT_EXTENSIONS.md for schemas, extension examples, scheduling semantics and boundaries.
+
+## Optional Phase 4 execution boundary
+
+`computer_api` and `sandbox_client` connect existing scoped jobs/approval state to
+a separately deployed native Linux manager. The app performs no local execution.
+`commit_agent` atomically consumes a sandbox approval into a durable dispatch grant;
+a later worker step uses the manager's idempotent protocol. The manager has its
+own private state/lock, startup isolation preflight and bounded single-process
+Python profile. Computer Mode observes the real state and artifacts. Browser and
+JavaScript remain disabled. See [manager design](docs/SANDBOX_MANAGER.md).

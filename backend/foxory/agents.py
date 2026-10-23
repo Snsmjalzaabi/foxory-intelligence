@@ -173,10 +173,25 @@ async def agent_step(data):
         if name:
             resolved=resolve_references(step.get('args',{}),data.get('outputs',[]),index,step['depends_on'])
             args=authorize(acting,name,resolved)
-            if TOOLS[name].approval:
-                data['_approval_effect']={'tool':name,'args':args,'agent_id':target,'index':index}
+            if data.get('computer_mode') and name=='source.package':
+                runs=[o['result'] for o in data.get('outputs',[]) if o.get('tool')=='sandbox.python']
+                source_hash=hashlib.sha256(json.dumps(args['files'],sort_keys=True).encode()).hexdigest()
+                if not runs or runs[-1].get('status')!='completed' or runs[-1].get('source_sha256')!=source_hash:
+                    raise PermissionError('Computer source packaging requires a successful run of the identical files')
+            effect={'tool':name,'args':args,'agent_id':target,'index':index}
+            grant=data.get('sandbox_authorizations',{}).get(str(index))
+            if name=='sandbox.python' and grant:
+                with Session() as session:
+                    approved=json.loads(get_record(session,grant['approval_id'],'approval').payload)
+                    if approved.get('status')!='consumed' or approved.get('context_hash')!=grant['context_hash'] or approved['context']['effect']!=effect:
+                        raise PermissionError('Invalid sandbox execution authorization')
+                from .sandbox_client import run_python
+                output=await run_python(args,'agent:'+grant['approval_id'])
+            elif TOOLS[name].approval:
+                data['_approval_effect']=effect
                 return data
-            output=await asyncio.wait_for(execute(name,args,acting,target),timeout=TOOLS[name].timeout)
+            else:
+                output=await asyncio.wait_for(execute(name,args,acting,target),timeout=TOOLS[name].timeout)
         else:
             from .agent_memory import search_memory
             context={'objective':data['prompt'],'step':step['instruction'],'previous_untrusted_results':data.get('outputs',[]),'untrusted_memory':search_memory(target,data['prompt'])}
@@ -225,6 +240,12 @@ def commit_agent(s,job_id,data):
             a=json.loads(approval.payload)
             if a.get('context_hash')!=digest or a.get('expires_at','')<now() or a['status']!='approved':raise PermissionError('Approval expired, rejected, consumed or stale')
             args=effect['args'];name=effect['tool']
+            if name=='sandbox.python':
+                data.setdefault('sandbox_authorizations',{})[str(effect['index'])]={'approval_id':id,'context_hash':digest}
+                a.update(status='consumed',consumed_at=now());approval.payload=json.dumps(a);approval.updated_at=now()
+                audit(s,'sandbox.authorize',job_id,approval_id=id)
+                data['status']='queued'
+                return
             if name=='task.create':get_record(s,args['project_id'],'project')
             record_id=fingerprint({'effect':job_id,'index':effect['index']})[:36]
             kind={'project.create':'project','task.create':'task','document.generate':'artifact','source.package':'artifact'}[name]

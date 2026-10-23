@@ -56,3 +56,15 @@ References are bounded JSON paths, not expressions or attribute access. A refere
 Small models may omit requested work despite emitting syntactically valid plans. Execution completion means the validated graph finished, not that the business objective or claims were independently verified. Inspect plan coverage and quality-review notes; choose a more capable local model or supply an explicit reviewed plan through the task API for complex objectives. Malformed/ungranted plans fail within configured budgets rather than pretending to execute.
 
 The coordinator model-call budget caps the entire task. Each specialist's own step/model-call/retry limits and timeouts are additional restrictions. Approval waits and pauses consume wall-clock budget. Long instructions/evidence may be truncated to the configured local context; inspect outputs rather than treating execution completion as objective verification. Scheduler ticks, authentication lookup and cancellation polling avoid blocking the API event loop on database I/O. Compose uses an init process to reap orphaned children and forward shutdown signals.
+
+## Restricted Python tool
+
+`sandbox.python` is the sole exception to local-only approval effects. Approval
+consumption commits a durable invocation grant, not code execution. A subsequent
+validated worker step contacts the separately authenticated manager with a stable
+workspace/task/approval idempotency key. No new shell, Docker socket, arbitrary
+URL or model-selected mount is introduced. All other consequential actions remain
+denied. Copying this pattern requires manager-level idempotency, cancellation,
+quotas, independent authorization and security tests; marking a tool approved does
+not make an arbitrary subprocess safe. `data.csv_document` requires both document
+scope and calculation permission. See docs/SANDBOX_MANAGER.md for exact limits.

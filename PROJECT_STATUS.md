@@ -1,85 +1,125 @@
-# FOXORY Phase 4 of 5 — first implementation increment, incomplete
+# FOXORY Phase 4 continuation — restricted Python execution, incomplete milestone
 
-Date: 2026-10-23. Branch: development. Accepted Phase 3 baseline:
-`ca90bcae299031a8393ba338f24f625864d5068e`. Its complete verification record is
-preserved in docs/PHASE3_STATUS.md. This increment does not complete Phase 4 or v1.0.
+Branch: development. Starting commit c039f974c357e2bd61e2fc298e696f9cdc26fba3.
+Accepted Phase 3: ca90bcae299031a8393ba338f24f625864d5068e; full evidence in
+docs/PHASE3_STATUS.md. First Phase 4 increment preserved in docs/PHASE4_INCREMENT1.md.
+Phase 5 has not started; v1.0 and production readiness are not claimed.
 
-## Implemented
+## Implemented in this continuation
 
-- Registered `data.table`: bounded supplied-row filtering, grouping, compensated
-  totals, mean/median/min/max/population standard deviation, invalid-row counts
-  and escaped self-contained SVG chart output. No generated code is executed.
-- Registered `source.package`: validated relative-path UTF-8 source maps, bounded
-  files/bytes and approval-gated, atomic, workspace-scoped artifact creation.
-  ZIP packaging never executes code or writes a repository. Generated projects
-  have not been tested merely because they can be downloaded.
-- Artifact JSON/CSV exports alongside existing Markdown/PDF/DOCX/XLSX; CSV formula
-  prefixes are escaped. Authenticated source ZIP download and real Workforce
-  download controls. Overview exposes availability, not private source bodies.
-- Existing server-side agent grants, configuration snapshots, immutable approvals,
-  audit/checkpoint transactions and tenant authorization remain in the dispatch
-  path. Data Analysis template includes the new deterministic tool.
-- No dependencies, database schema changes, network permissions, paid services,
-  Docker socket mounts or external deployment introduced.
+- Separate opt-in authenticated manager with rootless Bubblewrap namespaces,
+  seccomp, hard single-process Python limits, network denial, immutable sources,
+  fixed bounded output files, trusted-parent artifact collection/hash validation,
+  output capture, cancellation/cleanup, durable scoped JSON state and startup
+  recovery that never silently replays interrupted code.
+- Preflight tests the real namespace/seal before enabling the service. Non-root,
+  configured key, runtime dependencies and explicit opt-in are required. No host
+  Docker socket or application shell execution was added. One manager process per
+  private state directory, one active execution, bounded queue and history quotas.
+- `sandbox.python` requires explicit agent grant, sandbox.execute permission,
+  immutable administrator approval and a persisted one-invocation dispatch grant.
+  Manager idempotency survives backend retries/restarts and shared-key rotation.
+  Changed/rejected/stale contexts remain blocked by existing checks.
+- Computer Mode connects real agent configuration/task submission/model planning,
+  optional reviewed source, plans/timelines/live logs, approvals, pause/cancel,
+  diagnostics, reports, output downloads and source ZIP packaging. Computer ZIP
+  packaging requires the latest successful run of identical source plus its own
+  approval. A zero process exit does not prove the tests are adequate.
+- Authorized uploaded CSV analysis with deterministic grouping/statistics, CSV
+  output and escaped SVG chart. The document must be explicitly scoped and both
+  documents.read and calculate permissions are required. Approval-gated PDF report
+  and chart/results ZIP workflow tested with actual parsers and file writers.
+- Optional environment configuration, dedicated-user systemd example, service
+  boundary/limitations documentation and distribution-runtime license inventory.
 
-Files: backend/foxory/advanced_files.py, agent_tools.py, agents.py, agent_api.py;
-backend/tests/test_advanced_files.py; frontend/src/Workforce.tsx; status, checklist,
-roadmap/changelog and docs/ADVANCED_FILES.md.
+## Executed verification
 
-## Verification
+- **106 backend tests passed in 60.84 seconds**, including the Phase 1–3 suite,
+  18 advanced-file/data cases and 28 manager/Computer cases. Real Bubblewrap/
+  seccomp tests exercised host-path/network/process/thread/UID/memory/file/output
+  denial, invalid JSON/UTF-8/formula artifacts, auth/tenant boundaries, queue/history
+  quotas, cancellation, timeout, failed preflight, restart interruption, scoped
+  Computer approval, source ZIP integrity and protection against forged stdout
+  artifact envelopes. Model prose alone is mocked in the backend agent test.
+- **10 Chromium browser journeys passed in 1.4 minutes**, including all nine prior
+  regression journeys and Computer Mode against a separately running real HTTP
+  manager and actual Python unittest execution. Ollama is a labeled deterministic
+  protocol fixture in browser tests; this does not verify a product browser agent.
+- Strict TypeScript/Vite production build passed in **18.31 seconds**; main JS
+  295.86 kB. Compile checks, pip check, whitespace and CPU/GPU Compose syntax passed.
+  GPU syntax validation is not GPU execution. CI was updated, not remotely run.
+- Real **qwen2.5:0.5b CPU** generated Python source and repaired an intentionally
+  broken addition implementation using actual sandbox failure output. Reviewed
+  deterministic unittest/independent acceptance checks were used because the 0.5B
+  model did not reliably generate a complete test scaffold. Failed code exited1,
+  consumed only its execution approval and was blocked from packaging. Corrected
+  code exited0, passed tests, consumed execution plus packaging approvals, and
+  produced a byte-checked/CRC-valid source ZIP. Real model review/consolidation
+  completed; the authenticated session and completed task survived native app
+  restart. No frontier-model capability, fully autonomous test generation or GPU
+  performance is inferred. Disposable native app/manager/database were removed.
+- Actual public retrieval from https://docs.python.org/3/library/unittest.html
+  succeeded through the existing robots/SSRF/TLS controls. A one-page **2358-byte
+  PDF** was parsed and checked for its actual retrieved citation URL. Saved content
+  hash: 0d2d0e4dabaa644dbf1476e38443b18c49a31d2e9e359f17be975a9c263b6ecf.
+  This is source-handler/report integration, not a new autonomous multi-agent
+  research-quality benchmark or a browser demonstration.
+- Local overlay image **sha256:dc11666d7a4fef17c6ee4427d62f51ae02fca9cbbfc69cfde7f01916c2c9ec82**
+  passed health, default-disabled execution, authenticated memory persistence across
+  restart, frontend bundle and five runtime-source hashes, actual UID10001,
+  read-only/init/cap-drop and no Docker-socket mount checks. The overlay reused
+  the accepted Phase 3 dependency image; no clean canonical Dockerfile build or
+  container-to-native-manager topology is claimed. Disposable container/volume
+  were removed; the image remains available locally.
+- Owner Compose app/database remained healthy, Ollama running, application image
+  stayed phase3-final and PostgreSQL remained revision0003 with zero records/users.
+  No schema change was introduced. SQLite migration upgrade/downgrade/preservation
+  tests and native completed-task/session restart passed. No new PostgreSQL dump/
+  restore, manager process-crash escape audit or reference hardware test was run.
 
-- Final serialized backend run: **76 passed in 67.49 seconds**, including migration,
-  accounts/workspace isolation, Phase 1–3 regressions and 16 new cases for table
-  calculations/budgets/escaping, archive paths/integrity, permissions, approval,
-  tenant isolation and export API behavior.
-- First overlapping backend/build/browser run: **73 passed, one failed** because
-  the full-profile parser self-test printed successful denial checks but exceeded
-  its 25-second exit timeout. This failure is retained here. The serialized rerun
-  passed without changing parser code, security restrictions or time limits.
-- **9 Chromium browser journeys passed in 2.3 minutes** against the real backend
-  and explicitly labeled deterministic Ollama protocol fixture. Existing chat,
-  research, document, account, Council, Workforce and approval journeys passed.
-  No new isolated-product-browser or source-ZIP UI journey is claimed.
-- Strict TypeScript/Vite build passed (44.69 seconds; main JS 288.41 kB).
-- Python compile, pip dependency consistency, git whitespace checks and Docker
-  Compose configuration validation passed. No dependency installation was needed;
-  no newly introduced dependency licenses require review in this increment.
-- Existing Compose app and PostgreSQL reported healthy; Ollama was running.
-  No Phase 4 image build, Docker sandbox integration, fresh backup/restore or
-  real-model Phase 4 workflow was executed. Earlier Phase 3 results are preserved
-  in docs/PHASE3_STATUS.md. All approval/source tests used deterministic fixtures.
+After that successful browser/Docker run, final review fixed Computer idempotency:
+semantically identical resubmissions now preserve the exact running claim, and
+keys belonging to non-Computer jobs cannot convert those jobs. A new regression
+case passed in the 106-test rerun. The following browser rerun had nine passes and
+one expected HTTP429 under the unchanged 180/minute limiter; test traffic pacing
+is being verified. The earlier overlay image predates this last API fix and is
+being rebuilt/rechecked before final verification is recorded.
 
-## Security and limitations
+## Failed attempts and corrections
 
-The managed daemon reports seccomp/cgroup namespaces but no rootless security
-option. A rootless Bubblewrap 0.12.0 namespace probe succeeded (restricted mount
-tree, network connection returned unreachable). This offers a possible Linux
-implementation path, but is not an authenticated manager or a security test suite.
-It has not established the isolation required for untrusted code/browser
-execution. Disk inspection found 2.3 GB free; a browser runtime was not installed
-or provisioned for the product. Neither issue justifies weakening isolation.
-The application still has no host-shell or Docker-socket execution capability.
-Sandbox manager, isolated coding/test execution, isolated browser sessions,
-Computer Mode, presentation export and combined Phase 4 workflows remain absent.
-Uploaded table-to-analysis mapping and richer chart/report previews remain work.
-Charts are returned as escaped SVG tool data; existing task inspectors show their
-serialized output. No new real-model or GPU benchmark is claimed.
+Two migration tests initially failed when invoked from the repository root because
+Alembic inherited the wrong working directory (**101 passed, 2 failed**). Tests now
+set their backend cwd explicitly; the full final rerun passed without changing
+migration behavior. The first Docker smoke run stopped on a test literal expecting
+`10001` while the correctly non-root image declared `10001:10001`; the test now
+checks the UID component and actual running UID. The rerun passed.
 
-The running owner Compose stack was preserved on its accepted Phase 3 image;
-new source changes are not installed there. Existing app/database health and
-Compose syntax were inspected. Phase 4 image, restart and persistence tests have
-not run; earlier Phase 3 evidence remains historical, not Phase 4 verification.
-No production readiness, sandbox assurance, Windows/macOS testing or independent
-security audit is claimed. Phase 5 is not ready to begin.
+Early real-model JSON code generation returned placeholders; another plain-code
+attempt returned fenced prose and omitted imports. Those failed runs were blocked
+from packaging, not counted successful. The final harness extracts actual code
+fences, uses reviewed deterministic tests and validates real failure/repair output.
+No security limit was relaxed to pass tests. Earlier Phase 4 increment failures
+remain in docs/PHASE4_INCREMENT1.md. Test transports/mocks and real integrations are
+explicitly distinguished in docs/SANDBOX_MANAGER.md and the verification scripts.
 
-## Exact continuation
+## Remaining Phase 4 scope / blockers
 
-Continue on development at the latest commit, read this file and
-`docs/PHASE4_CHECKLIST.md`, preserve Phases 1–3 and this increment. First implement
-an opt-in separately authenticated sandbox manager with fixed execution profiles,
-rootless runtime verification, quotas, network-deny defaults, cancellation,
-artifact boundaries and malicious-code integration tests. Keep unsupported
-execution disabled. Then add isolated Playwright sessions and Python/JS/TS coding
-workspaces, connect authorized tools and Computer Mode, verify realistic combined
-workflows with local Ollama, perform final image/migration/recovery and regression
-tests, update acceptance evidence and commit. Do not begin Phase 5 or publish.
+The current managed account cannot write/delegate cgroups. A general multi-process
+Chromium/browser/JS runtime therefore does not have verified aggregate memory/PID/
+filesystem limits or constrained networking here. It remains disabled. The Python
+profile is deliberately single-process: it denies network, subprocesses, threads,
+package installation, temporary file creation and arbitrary output paths. It is
+not a replacement for the required browser/JS/TS sandbox.
+
+Outstanding: isolated Playwright navigation/click/type/screenshots/downloads/session
+and submission policies; JavaScript/TypeScript runner; static/networked web-app
+execution; full combined browser/research/coding workflows; final containerized
+manager topology/recovery verification; broader independent sandbox security review.
+No GPU, Windows/macOS or production readiness claims. The owner Docker stack and
+its volumes remain on the accepted Phase 3 image; disposable tests use separate
+native services and state. No public deployment, spending or communication.
+
+See docs/SANDBOX_MANAGER.md and docs/PHASE4_CHECKLIST.md. Next task must preserve
+this code and continue Phase 4, starting with a dedicated multi-process sandbox
+host/runtime with verified aggregate resource and network enforcement. Do not
+run Chromium in the main application or weaken the Python seal as a shortcut.

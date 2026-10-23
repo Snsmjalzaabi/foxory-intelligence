@@ -35,8 +35,13 @@ The app binds to `127.0.0.1`; PostgreSQL/Ollama have no published ports. Named v
 
 ## Limits
 
-This is not independently security-reviewed or approved for public hosting. Live email, browser/code execution, unapproved workspace writes, parallel GPU verification, OCR and spreadsheet formula execution remain unavailable. Scheduling is fixed-interval and single-process; agent planning/delegation is bounded and can fail visibly on small models. Parser isolation requires Linux/libseccomp and fails closed. Vectors are stored with document records and scanned locally; indexing is bounded to 200 chunks/document and is intended for modest workspaces, not a large-scale vector database.
+This is not independently security-reviewed or approved for public hosting. Live email, browser/JavaScript execution, unapproved workspace writes, parallel GPU verification, OCR and spreadsheet formula execution remain unavailable. Scheduling is fixed-interval and single-process; agent planning/delegation is bounded and can fail visibly on small models. Parser isolation requires Linux/libseccomp and fails closed. Vectors are stored with document records and scanned locally; indexing is bounded to 200 chunks/document and is intended for modest workspaces, not a large-scale vector database.
 
 Source credibility is a transparent metadata heuristic. Contradiction interpretation is model analysis; matching quotations only proves that the text was present in saved evidence. Reports can remain incomplete or incorrect. Restricted sources are declined; there is no CAPTCHA, authentication or paywall bypass. Deleting an original document does not purge previously saved research snapshots/audit records.
 
 See [INSTALLATION.md](INSTALLATION.md), [CONFIGURATION.md](CONFIGURATION.md), [SECURITY.md](SECURITY.md), [DEVELOPMENT.md](DEVELOPMENT.md) and [ARCHITECTURE.md](ARCHITECTURE.md). Apache-2.0 covers original source; dependency/image/model terms remain separate in [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md). Nothing has been published externally.
+
+Optional Phase 4 Computer Mode supports a separately deployed, approval-gated
+single-process Python sandbox and source ZIP downloads. It is disabled by default.
+Review [setup and security limits](docs/SANDBOX_MANAGER.md) before enabling it.
+Phase 4 remains incomplete; general browser and JS/TS execution are unavailable.

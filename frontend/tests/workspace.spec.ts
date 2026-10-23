@@ -1,6 +1,14 @@
 import {test,expect} from '@playwright/test';
 
+// Keep this shared-server suite below the real 180/minute per-IP API limit.
+let nextAPIRequest=0;
+let apiQueue:Promise<void>=Promise.resolve();
+
 test.beforeEach(async({page})=>{
+ await page.route('**/api/**',async route=>{
+  const queued=apiQueue.then(async()=>{const delay=Math.max(0,nextAPIRequest-Date.now());if(delay)await new Promise<void>(resolve=>setTimeout(resolve,delay));nextAPIRequest=Date.now()+400;});
+  apiQueue=queued.catch(()=>{});await queued;await route.continue();
+ });
  await page.goto('/');
  await expect(page.getByRole('button',{name:/Sign in|Create administrator/})).toBeVisible();
  if(await page.getByLabel('Workspace bootstrap token').isVisible())await page.getByLabel('Workspace bootstrap token').fill('e2e-only-token-with-at-least-24-chars');
@@ -183,4 +191,27 @@ test('AI Workforce blocks workspace writes until an immutable approval is consum
  await expect(page.getByRole('heading',{name:'Allow project.create · consumed'})).toBeVisible({timeout:60000});
  await page.getByRole('button',{name:'Projects',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Browser agent project'})).toBeVisible();
+});
+
+test('Computer Mode runs reviewed Python through actual isolated manager and approvals',async({page})=>{
+ test.skip(process.env.FOXORY_E2E_SANDBOX!=='1','Requires explicitly enabled real Linux manager test service');
+ test.setTimeout(120000);
+ await page.getByRole('button',{name:'Computer',exact:true}).click();
+ await expect(page.getByRole('status').first()).toContainText('Python single-process sandbox available');
+ await page.getByRole('button',{name:'Create restricted Python agent'}).click();
+ await page.getByLabel('Execution agent').selectOption({label:'Restricted Python developer'});
+ await page.getByLabel('Computer task objective').fill('Test and package a reviewed addition application');
+ await page.getByText('Optional reviewed Python source',{exact:true}).click();
+ await page.getByLabel('Source files JSON').fill(JSON.stringify({'app.py':'def add(a,b):return a+b\n','test_app.py':'import unittest\nfrom app import add\nclass AppTest(unittest.TestCase):\n def test_add(self):self.assertEqual(add(2,3),5)\nunittest.main()\n'}));
+ await page.getByRole('button',{name:'Plan task',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Approval required'})).toBeVisible();
+ await page.getByRole('button',{name:'approve computer action'}).click();
+ await expect(page.getByRole('heading',{name:'Step 1 · sandbox.python · completed'})).toBeVisible({timeout:45000});
+ await expect(page.getByText(/Exit code 0/)).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Approval required'})).toBeVisible();
+ await page.getByRole('button',{name:'approve computer action'}).click();
+ await expect(page.getByRole('button',{name:'Download project ZIP'})).toBeVisible({timeout:45000});
+ const [download]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:'Download project ZIP'}).click()]);
+ expect(download.suggestedFilename()).toBe('python-project.zip');
+ await expect(page.getByRole('status').last()).toContainText('completed');
 });

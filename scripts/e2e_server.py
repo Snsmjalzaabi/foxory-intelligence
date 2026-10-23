@@ -1,5 +1,8 @@
 """Test-only Ollama protocol fixture and real application server. Never used in production."""
 import json
+import secrets
+import atexit
+import time
 import os
 import subprocess
 import sys
@@ -11,6 +14,25 @@ from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 os.environ.update(FOXORY_TOKEN='e2e-only-token-with-at-least-24-chars',FOXORY_DATA_DIR=tempfile.mkdtemp(prefix='foxory-e2e-'),OLLAMA_URL='http://127.0.0.1:11435')
 os.environ.pop('DATABASE_URL',None)
+if os.getenv('FOXORY_E2E_SANDBOX')=='1':
+    manager_key=secrets.token_urlsafe(40)
+    os.environ.update(FOXORY_ENABLE_SANDBOX='1',FOXORY_SANDBOX_URL='http://127.0.0.1:8104',FOXORY_SANDBOX_KEY=manager_key)
+    manager_env={**os.environ,'FOXORY_SANDBOX_ENABLED':'1','FOXORY_SANDBOX_DATA':tempfile.mkdtemp(prefix='foxory-e2e-manager-')}
+    manager=subprocess.Popen([sys.executable,'-m','uvicorn','sandbox_manager.service:app','--host','127.0.0.1','--port','8104'],cwd=root,env=manager_env)
+    def stop_manager():
+        manager.terminate()
+        try:manager.wait(timeout=10)
+        except subprocess.TimeoutExpired:manager.kill();manager.wait()
+    atexit.register(stop_manager)
+    import httpx
+    for attempt in range(150):
+        try:
+            health=httpx.get('http://127.0.0.1:8104/v1/health',headers={'Authorization':'Bearer '+manager_key,'X-Foxory-Workspace':'local'},trust_env=False).json()
+            if not health['enabled']:raise RuntimeError(str(health))
+            break
+        except httpx.HTTPError:time.sleep(.1)
+    else:raise RuntimeError('Test manager failed to start')
+
 class OllamaFixture(BaseHTTPRequestHandler):
     def log_message(self,*args):pass
     def do_GET(self):

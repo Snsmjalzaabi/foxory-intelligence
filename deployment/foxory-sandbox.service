@@ -1,0 +1,29 @@
+# Example for a separately provisioned, dedicated non-root Linux account.
+# Adjust /opt/foxory and /opt/foxory/.venv to your installation. Not auto-installed.
+[Unit]
+Description=FOXORY restricted Python sandbox manager
+After=network.target
+[Service]
+Type=simple
+User=foxory-sandbox
+Group=foxory-sandbox
+WorkingDirectory=/opt/foxory
+EnvironmentFile=/etc/foxory/sandbox.env
+Environment=FOXORY_SANDBOX_DATA=/var/lib/foxory-sandbox
+ExecStart=/opt/foxory/.venv/bin/python -m uvicorn sandbox_manager.service:app --host 127.0.0.1 --port 8104 --workers 1
+StateDirectory=foxory-sandbox
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+MemoryMax=1G
+TasksMax=32
+CPUQuota=100%
+Restart=on-failure
+TimeoutStopSec=20
+[Install]
+WantedBy=multi-user.target
