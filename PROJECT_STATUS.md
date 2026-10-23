@@ -1,3 +1,59 @@
+# Phase 4 final continuation — OCI groundwork, milestone still incomplete
+
+Starting commit: `c537174d6d76af845af724f78ed8aea3eef6bd96`; branch `development`.
+This increment preserves the existing Python execution profile and application
+behavior. Phase 5 has not started. No production readiness is claimed.
+
+## New implementation
+
+- Read-only cgroup-v2/delegation and rootless-runtime diagnostics, available via
+  authenticated manager health and `scripts/verify_sandbox_host.py`. Static success
+  never enables execution or asserts verified isolation.
+- Typed, bounded browser-action and JS/TS source schemas; fixed rootless Podman
+  command policy requiring an immutable local image, non-root UID, read-only root,
+  isolated namespaces, no network/proxy inheritance, CPU/memory/PID limits and
+  manager-selected source/request mounts. No Docker socket or host shell added.
+- Staged OCI entrypoint for dependency-free JS, Node 22 TS type stripping and an
+  offline Playwright fixture site: navigation, inspection, typing, clicking,
+  screenshots and selected downloads. Chromium sandbox is mandatory; external
+  navigation and non-GET/HEAD requests are rejected. Runtime package installation
+  is unsupported. Optional image recipe requires a reviewed immutable base.
+- Ubuntu verification instructions in `docs/SANDBOX_HOST_VERIFICATION.md` and
+  explicit activation prerequisites in `sandbox_manager/runtime/README.md`.
+
+**The new workers are not connected to dispatch and are not verified functional
+product features.** Missing engineering, independently of this host: active OCI
+preflight, manager timeout/whole-container cancellation and restart cleanup,
+parent-side artifact validation, approval-bound dispatch, Computer Mode profile
+selection/screenshots and end-to-end workflows. Existing browser/JS capability
+flags remain false. Passing command/schema tests is not sandbox assurance.
+
+## Verification in this increment
+
+- Backend: **114 passed**, including eight new capability/policy tests. Existing
+  real Bubblewrap tests and migration/regression tests remain included.
+- Frontend production build: passed; Node worker syntax check: passed.
+- Docker Compose configuration validation: passed.
+- Host preflight: correctly exits **2**; cgroup delegation is read-only and
+  `podman`, `newuidmap`, `newgidmap` are missing. No host policy was altered.
+- Browser journeys, local-model rerun and Docker smoke: results recorded below
+  once completed. Earlier verification evidence remains archived below.
+- Actual isolated Playwright/JS/TS execution and new OCI image build: **not run**.
+  No GPU or Windows/macOS verification.
+
+## Exact next continuation
+
+Continue on development from this increment. Preserve Python behavior. Implement
+an OCI manager adapter using `sandbox_manager/oci.py`, with active effective-limit
+probes and fail-closed opt-in; whole-container cancellation/cleanup/recovery;
+independent bounded artifact validation; then integrate approval-bound profile
+execution and Computer UI controls. Run the controlled-site and JS/TS project
+workflows on an Ubuntu host that passes static and active isolation tests. Do not
+activate profiles merely because the static host script exits zero. Complete the
+unchecked Phase 4 acceptance criteria before Phase 5.
+
+---
+
 # FOXORY Phase 4 continuation — restricted Python execution, incomplete milestone
 
 Branch: development. Starting commit c039f974c357e2bd61e2fc298e696f9cdc26fba3. Main implementation

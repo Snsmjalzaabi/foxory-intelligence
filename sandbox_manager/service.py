@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from .capabilities import inspect_host
 
 log=logging.getLogger('foxory.sandbox')
 ROOT=Path(os.getenv('FOXORY_SANDBOX_DATA','./sandbox-data')).resolve()
@@ -69,7 +70,8 @@ def runtime_check(check_seal:bool=True)->dict:
     if not Path('/usr/lib/x86_64-linux-gnu/libseccomp.so.2').exists():blockers.append('Linux x86_64 libseccomp runtime required')
     return {'enabled':not blockers,'profile':'python-single-process-v1','blockers':blockers,
             'limits':{'wall_seconds':LIMIT_SECONDS,'cpu_seconds':8,'memory_bytes':512*1024*1024,'processes':1,'network':'none','artifact_bytes':20000,'source_bytes':20000},
-            'browser_enabled':False,'javascript_enabled':False}
+            'browser_enabled':False,'javascript_enabled':False,
+            'optional_oci_host':inspect_host()}
 
 def auth(request:Request)->str:
     header=request.headers.get('authorization','')

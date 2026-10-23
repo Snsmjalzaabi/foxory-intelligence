@@ -14,3 +14,17 @@
 - [x] Actual qwen2.5:0.5b CPU code generation/repair, real sandbox tests, matching ZIP and native app/session restart.
 
 Source ZIP creation does not imply execution or successful tests of generated code.
+
+## Final continuation: OCI groundwork (not acceptance completion)
+
+- [x] Non-mutating host capability script and authenticated health diagnostics.
+- [x] JS/TS/browser request schemas and immutable-image OCI command policy tests.
+- [x] Staged Node/TypeScript/offline-browser entrypoint and optional image recipe.
+- [ ] Active cgroup/runtime security preflight and isolated OCI execution verified.
+- [ ] Manager dispatch, whole-container cancellation and restart cleanup for OCI.
+- [ ] Parent validation of new binary artifacts and approval-bound profile tools.
+- [ ] Computer UI profiles/screenshots and combined workflows demonstrated.
+
+Staged worker code is not a working exposed capability. Browser and JavaScript
+flags remain disabled; static capability success cannot enable them. See
+[SANDBOX_HOST_VERIFICATION.md](SANDBOX_HOST_VERIFICATION.md).
