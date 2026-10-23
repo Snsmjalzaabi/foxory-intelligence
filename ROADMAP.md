@@ -2,6 +2,8 @@
 
 The owner’s current five-phase delivery plan supersedes the original seven-phase grouping below. Phase 1 was accepted at `3452acd`; Phase 2 acceptance is tracked in [docs/PHASE2_CHECKLIST.md](docs/PHASE2_CHECKLIST.md). The older grouping is retained for traceability; unchecked original items are not silently claimed complete. The verified Phase 3 agent milestone is tracked in [docs/PHASE3_CHECKLIST.md](docs/PHASE3_CHECKLIST.md); original seven-phase numbering below remains historical.
 
+Current Phase 4 acceptance is tracked in [docs/PHASE4_CHECKLIST.md](docs/PHASE4_CHECKLIST.md); only bounded data analysis and inert source/download exports have been added so far.
+
 Checked items identify implemented/tested slices, not completion of entire phases. PROJECT_STATUS.md contains exact evidence.
 
 ## Phase 1 — foundation (partial)

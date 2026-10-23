@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, RootModel, JsonValue
 from sqlalchemy import select
 from .db import Session, Record, get_record
+from .advanced_files import SourceProject, TableAnalysis, analyze_table
 
 class ToolOutput(RootModel[dict[str,JsonValue]]):
     """JSON-only output envelope; tool fields are documented in the catalogue."""
@@ -48,6 +49,8 @@ TOOLS={
  'research.references':Tool('Read saved research references; integrity is not factual verification.',CitationInput,'research.read'),
  'documents.retrieve':Tool('Retrieve excerpts from explicitly authorized workspace documents.',Documents,'documents.read'),
  'math.calculate':Tool('Evaluate bounded arithmetic only; no variables, calls or code.',Calculate,'calculate'),
+ 'data.table':Tool('Filter, group and summarize supplied table rows; returns deterministic statistics and inert SVG chart.',TableAnalysis,'calculate'),
+ 'source.package':Tool('Save inert source files for ZIP download after approval. Does not run code or modify repositories.',SourceProject,'documents.write',True),
  'data.analyze':Tool('Compute finite-number summary statistics.',DataInput,'calculate'),
  'projects.list':Tool('Read workspace projects and tasks.',Input,'projects.read'),
  'memory.search':Tool('Search this agent\'s history and user-approved shared facts.',MemoryQuery,'memory.read'),
@@ -90,6 +93,7 @@ def authorize(config:dict,name:str,args:dict):
 async def execute(name:str,args:dict,config:dict,agent_id:str):
     args=authorize(config,name,args)
     if TOOLS[name].approval:raise PermissionError('Writes must be committed through the approval transaction')
+    if name=='data.table':return analyze_table(args)
     if name=='math.calculate':return {'value':arithmetic(args['expression'])}
     if name=='data.analyze':
         values=args['values']

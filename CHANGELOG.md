@@ -1,5 +1,9 @@
 # Changelog
 
+## Phase 4 — incomplete, unreleased
+
+Bounded table filtering/grouped statistics and inert SVG chart data; approval-gated source ZIP artifacts; CSV/JSON exports and connected Workforce download controls. Arbitrary-code execution, isolated browser and Computer Mode remain unavailable. See PROJECT_STATUS.md.
+
 ## Phase 3 — unreleased
 
 Bounded stateful agents with schema-constrained local planning, explicit specialist delegation and result references, permission-scoped tools, approval-gated atomic internal writes, retained unverified memory, durable schedules and a connected AI Workforce interface. Small document formats now use a minimal sealed parser profile. Full verification and remaining limits are recorded in PROJECT_STATUS.md; v1.0 and production readiness remain unclaimed.

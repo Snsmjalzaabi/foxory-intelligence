@@ -35,6 +35,7 @@ def workforce_overview():
             if row.kind=='job' and d.get('type')!='agent':continue
             if row.kind=='approval' and d.get('action')!='agent_tool':continue
             if row.kind in {'document','artifact'}:value['data']={k:v for k,v in d.items() if k in {'size','characters','job_id'}}
+            if row.kind=='artifact':value['data']['source_archive_available']='source_project' in d
             key=names[row.kind]
             if len(groups[key])<200:groups[key].append(value)
     return groups
@@ -150,10 +151,17 @@ def schedule_control(id:str,action:Literal['pause','resume']):
         d['enabled']=action=='resume';d['paused']=action=='pause';row.payload=json.dumps(d);row.updated_at=now();audit(s,'schedule.'+action,id);s.commit();return row.public()
 
 @router.get('/artifacts/{id}/export')
-def artifact(id:str,format:Literal['md','pdf','docx','xlsx']='md'):
+def artifact(id:str,format:Literal['md','pdf','docx','xlsx','json','csv','zip']='md'):
     from .reports import report
     with Session() as s:
         row=get_record(s,id,'artifact');d=json.loads(row.payload)
-        if format=='md':content,mime=d['body'].encode(),'text/markdown'
+        if format=='zip':
+            from .advanced_files import source_zip
+            if 'source_project' not in d: raise HTTPException(422,'Artifact is not a source project')
+            content,mime=source_zip(d['source_project']),'application/zip'
+        elif format in ('json','csv'):
+            from .advanced_files import text_export
+            content,mime=text_export(row.title,d['body'],format)
+        elif format=='md':content,mime=d['body'].encode(),'text/markdown'
         else:content,mime=report(row.title,d['body'],[],format)
         return Response(content,media_type=mime,headers={'Content-Disposition':f'attachment; filename="artifact.{format}"'})
