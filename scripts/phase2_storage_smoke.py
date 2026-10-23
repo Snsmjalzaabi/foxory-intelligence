@@ -14,7 +14,14 @@ if __name__=='__main__':
     evidence=json.loads(Path('/tmp/foxory-phase2-acceptance-evidence.json').read_text())
     credentials=json.loads(Path('/tmp/foxory-phase2-disposable-credentials.json').read_text())
     c=httpx.Client(base_url='http://127.0.0.1:8003/api',trust_env=False,timeout=60)
+    for _ in range(60):
+        try:
+            if c.get('/health',timeout=3).status_code==200:break
+        except httpx.HTTPError:pass
+        time.sleep(1)
+    else:raise AssertionError('Verification API did not start')
     login=c.post('/auth/login',json=credentials);login.raise_for_status();c.headers['X-CSRF-Token']=login.json()['csrf'];c.headers['X-Workspace-ID']=evidence['workspace_id']
+    uploaded=c.post('/documents',files={'file':('parent-io-verification.txt',b'Bounded parent parser I/O validation after container replacement.')});uploaded.raise_for_status()
     docs=c.get('/records/document').json();assert docs
     original=c.get('/documents/'+docs[0]['id']+'/download').content
     job=c.post('/jobs',json={'type':'research','prompt':'Review the uploaded evidence','models':['qwen2.5:0.5b'],'document_only':True,'document_ids':[docs[0]['id']],'idempotency_key':uuid4().hex});job.raise_for_status();id=job.json()['id']

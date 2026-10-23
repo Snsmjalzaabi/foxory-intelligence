@@ -1,5 +1,9 @@
 # Changelog
 
+## Phase 2 — unreleased
+
+Workspace accounts and server-side permissions; evidence-based research with real page retrieval and checkpointed recovery; independent Model Council stages; restricted Linux parsing, local semantic indexing and multi-document citations; PDF/Word/spreadsheet exports and integrated account/research interfaces. See PROJECT_STATUS.md and docs/VERIFICATION.md for executed checks and limitations. Target v1.0 remains incomplete.
+
 ## 0.1.0 — unreleased
 
 Initial Community Edition foundation: private single-owner workspace, persistent Ollama chat, model management, document extraction and keyword Q&A, experimental search research, sequential council, bounded durable draft tasks, lead records, memory/projects, draft approval snapshots and audit dashboard. Docker/native installation and automated verification scaffolding. Target v1.0 remains incomplete; see PROJECT_STATUS.md.

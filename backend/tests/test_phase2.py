@@ -210,3 +210,22 @@ async def test_ipv6_translation_destinations_are_declined(monkeypatch):
         async def translated(*args,**kwargs):return [(10,1,6,'',(destination,80,0,0))]
         monkeypatch.setattr(loop,'getaddrinfo',translated)
         with pytest.raises(RetrievalError):await public_addresses('translated.example',80)
+
+async def test_parent_bounds_compromised_parser_output(monkeypatch,tmp_path):
+    from foxory import parsing
+    from fastapi import HTTPException
+    worker=tmp_path/'flood.py';worker.write_text('import sys\nwhile True: sys.stdout.buffer.write(b"x"*65536);sys.stdout.buffer.flush()\n')
+    monkeypatch.setattr(parsing,'WORKER',worker);monkeypatch.setattr(parsing,'MAX_STDOUT',128000)
+    with pytest.raises(HTTPException) as error:parsing.isolated_extract('test.txt',b'Input')
+    assert error.value.status_code==422
+    assert parsing.PARSER_SLOT.acquire(blocking=False)
+    parsing.PARSER_SLOT.release()
+
+async def test_parser_concurrency_fails_closed():
+    from foxory import parsing
+    from fastapi import HTTPException
+    parsing.PARSER_SLOT.acquire()
+    try:
+        with pytest.raises(HTTPException) as error:parsing.isolated_extract('test.txt',b'Input')
+        assert error.value.status_code==429
+    finally:parsing.PARSER_SLOT.release()

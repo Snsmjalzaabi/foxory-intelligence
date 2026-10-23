@@ -1,5 +1,7 @@
 # Roadmap to v1.0
 
+The owner’s current five-phase delivery plan supersedes the original seven-phase grouping below. Phase 1 was accepted at `3452acd`; Phase 2 acceptance is tracked in [docs/PHASE2_CHECKLIST.md](docs/PHASE2_CHECKLIST.md). The older grouping is retained for traceability; unchecked original items are not silently claimed complete. Phase 3 is not started.
+
 Checked items identify implemented/tested slices, not completion of entire phases. PROJECT_STATUS.md contains exact evidence.
 
 ## Phase 1 — foundation (partial)
@@ -9,7 +11,7 @@ Checked items identify implemented/tested slices, not completion of entire phase
 - [x] Alembic SQLite migration roundtrip
 - [x] Local-only Compose definition and persistent volumes
 - [x] Single-owner bearer authentication and host/origin/body/rate controls
-- [ ] Password/OIDC authentication, session lifecycle, RBAC and workspace authorization tests
+- [x] Password authentication, session lifecycle, RBAC and workspace authorization tests (OIDC remains optional/unimplemented)
 - [x] Linux cloud CPU Ollama/qwen2.5:0.5b streaming and persistence smoke recorded
 - [x] Local Compose startup and final-image restart/persistence smoke recorded
 - [ ] Fully automated pristine installation on a clean supported Linux host
@@ -19,18 +21,23 @@ Checked items identify implemented/tested slices, not completion of entire phase
 - [x] Configured SearXNG search with deduplicated source metadata
 - [x] Bounded durable two-search job, history, cancellation and report export
 - [x] Citation IDs filtered against retrieved references
-- [ ] SSRF-safe full-page retrieval, robots/terms handling and extraction
-- [ ] Adaptive subquestions, claim verification, conflict/freshness ranking and measured research budgets
-- [ ] Live search integration and citation correctness evaluation
+- [x] SSRF-restricted full-page retrieval, robots directives and extraction; operator remains responsible for applicable source terms
+- [x] Adaptive subquestions, source-date/relevance heuristics, quoted conflict evidence and enforced research budgets
+- [ ] Independent factual claim verification and measured answer-quality benchmark
+- [x] Live search/page integration and saved-reference integrity checks
+- [ ] Human evaluation of claim-to-citation correctness across a research benchmark
 
 ## Phase 3 — documents and memory (partial)
 - [x] Bounded parsers for seven formats, storage and originals download
 - [x] Keyword retrieval and evidence-context questions
 - [x] Editable memory records and workspace export
 - [x] Offline SQLite backup/restore utility with automated roundtrip test
-- [ ] Isolated parser processes, adversarial upload suite and malware scanning policy
-- [ ] Capability-aware embeddings, pgvector, workspace-isolated semantic search
-- [ ] Structured calculations, DOCX/XLSX/PDF creation and export
+- [x] Isolated Linux parser processes and adversarial upload/resource tests
+- [ ] Optional malware scanner integration
+- [x] Optional local embeddings and workspace-isolated semantic search
+- [ ] pgvector scaling adapter (current bounded vectors are JSON-backed)
+- [x] DOCX/XLSX/PDF research/document exports
+- [ ] Structured calculation execution engine
 
 ## Phase 4 — agents (draft-only slice)
 - [x] Persistent agent definitions with explicit zero tool permissions
