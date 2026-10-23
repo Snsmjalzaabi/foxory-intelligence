@@ -33,14 +33,27 @@ flags remain false. Passing command/schema tests is not sandbox assurance.
 
 ## Verification in this increment
 
-- Backend: **114 passed**, including eight new capability/policy tests. Existing
+- Backend final rerun: **115 passed (40.47 seconds)**, including nine new
+  capability/policy/blocked-probe tests. Existing
   real Bubblewrap tests and migration/regression tests remain included.
 - Frontend production build: passed; Node worker syntax check: passed.
 - Docker Compose configuration validation: passed.
 - Host preflight: correctly exits **2**; cgroup delegation is read-only and
   `podman`, `newuidmap`, `newgidmap` are missing. No host policy was altered.
-- Browser journeys, local-model rerun and Docker smoke: results recorded below
-  once completed. Earlier verification evidence remains archived below.
+- Chromium UI journeys: **10 passed (2.7 minutes)** against real HTTP backend
+  and real Python manager, with fixture models. These cover chat, documents,
+  research, council, authentication/workspace isolation, agents, immutable approvals
+  and Computer Mode Python execution; not the new OCI browser worker.
+- Actual local Ollama `qwen2.5:0.5b`: failing Python project exit 1 blocked
+  packaging; model-repaired project exit 0 completed after two approvals; ZIP
+  integrity and persisted account/session/task restart passed. Reviewed acceptance
+  tests were deterministic. This is a Python integration, not JS/browser evidence.
+- Docker smoke passed against the existing Phase 4 Python image
+  `sha256:09b8a43da99e13852b7d7432c82c7deaa8f01c055c97a67c7872264b0059d256`:
+  health, disabled defaults, restart/memory persistence, runtime source and UI
+  hashes, non-root/read-only/init/no-socket settings. No new OCI image or fresh
+  canonical application image was built. Disposable smoke resources were removed;
+  owner containers and persistent data were preserved.
 - Actual isolated Playwright/JS/TS execution and new OCI image build: **not run**.
   No GPU or Windows/macOS verification.
 

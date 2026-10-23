@@ -140,3 +140,12 @@ broker plus session/download/submission controls; the single-process profile can
 provide that boundary. Do not turn off Chrome sandboxing or run it in the main app
 as a workaround. Windows/macOS require a separately verified Linux manager host/VM;
 these configurations and NVIDIA performance are untested.
+
+## Optional browser and Node profiles — implementation groundwork only
+
+Authenticated health now includes `optional_oci_host` diagnostics. These do not
+change Python's existing runtime preflight or enable additional profiles. The
+staged rootless OCI policy/worker and Ubuntu fixed-fixture probe are documented
+in [SANDBOX_HOST_VERIFICATION.md](SANDBOX_HOST_VERIFICATION.md). Successful active
+host verification, authenticated approval-bound dispatch, artifact validation,
+whole-container recovery/cleanup and frontend integration remain prerequisites.
