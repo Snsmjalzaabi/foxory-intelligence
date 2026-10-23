@@ -13,6 +13,9 @@ async def execute_step(data):
     from .intelligence import research_step,council_step
     if data['type']=='research':return await research_step(data)
     if data['type']=='council':return await council_step(data)
+    if data['type']=='agent':
+        from .agents import agent_step
+        return await agent_step(data)
     data['result']=await complete(data['models'][0],[{'role':'system','content':data.get('instructions','Draft only. No tools or external actions are available.')},{'role':'user','content':data['prompt']}])
     data.update(status='completed',step=data.get('step',0)+1)
     return data
@@ -43,6 +46,15 @@ async def _run_one():
             if data['deadline_at']<now():
                 data.update(status='failed',error='Research wall-clock budget exhausted')
                 job.payload=json.dumps(data);s.commit();continue
+            if data['type']=='agent':
+                if 'agent_snapshot' not in data:
+                    data.update(status='failed',error='Legacy draft agent task: submit a new task with explicit agent grants');job.payload=json.dumps(data);s.commit();continue
+                cfg=data['agent_snapshot']
+                needs_model=stage in {'plan','review','consolidate'} or stage=='execute' and not data['plan'][data['cursor']].get('tool')
+                if needs_model:
+                    if data.get('agent_model_calls',0)>=cfg['max_model_calls']:
+                        data.update(status='failed',error='Agent model-call budget exhausted');job.payload=json.dumps(data);s.commit();continue
+                    data['agent_model_calls']=data.get('agent_model_calls',0)+1
             if operation:used[operation]=used.get(operation,0)+1
             data.update(status="running", started_at=now())
             claim = json.dumps(data)
@@ -55,6 +67,7 @@ async def _run_one():
         else: return False
     workspace_id.set(workspace)
     actor_id.set(data.get('creator_id','legacy'))
+    working=json.loads(json.dumps(data))
     try:
         from .db import Membership
         creator=data.get('creator_id')
@@ -62,7 +75,7 @@ async def _run_one():
             with Session() as s:
                 member=s.get(Membership,(workspace,creator))
                 if not member or member.role not in {'admin','editor'}:raise PermissionError('Job creator no longer has execution permission')
-        step_task = asyncio.create_task(asyncio.wait_for(execute_step(dict(data)), timeout=max(.1,min(240,(datetime.fromisoformat(data["deadline_at"])-datetime.now(timezone.utc)).total_seconds()))))
+        step_task = asyncio.create_task(asyncio.wait_for(execute_step(working), timeout=max(.1,min(data.get('agent_snapshot',{}).get('step_timeout',240),(datetime.fromisoformat(data["deadline_at"])-datetime.now(timezone.utc)).total_seconds()))))
         try:
             while not step_task.done():
                 await asyncio.wait({step_task}, timeout=0.2)
@@ -81,13 +94,35 @@ async def _run_one():
                 except asyncio.CancelledError: pass
         if result["status"] == "running": result["status"] = "queued"
         result["error"] = None
+        if data['type']=='agent':result['step_failures']=0
     except Exception as e:
         log.warning("Job step failed: %s", type(e).__name__)
-        result = dict(data, status="failed", error=f"{type(e).__name__}: inference or search failed; check service configuration", attempts=data.get("attempts",0)+1)
+        result = dict(working, status="failed", error=f"{type(e).__name__}: inference, tool or permission validation failed; inspect configuration and task limits", attempts=data.get("attempts",0)+1)
+        result.pop('_approval_effect',None)
+        if data['type']=='agent':
+            if isinstance(e,(PermissionError,ValueError)):result['error_detail']=str(e)[:500]
+            result['step_failures']=data.get('step_failures',0)+1
+            if not isinstance(e,PermissionError) and result['step_failures']<=data['agent_snapshot']['max_retries']:
+                result['status']='queued'
+            result.setdefault('timeline',[]).append({'event':'step_error','stage':data.get('stage'),'error_type':type(e).__name__,'at':now()})
     with Session() as s:
         # Cancellation/pause takes precedence over a late inference result.
+        if data['type']=='agent':
+            current=s.get(Record,id)
+            if not current or current.payload!=claim:return True
+            try:
+                from .agents import commit_agent
+                commit_agent(s,id,result)
+                s.flush()
+            except Exception as e:
+                s.rollback()
+                result=dict(data,status='failed',error=f'{type(e).__name__}: approval or tool commit rejected')
         changed = s.execute(update(Record).where(Record.id==id, Record.payload==claim).values(payload=json.dumps(result), updated_at=now())).rowcount
-        if changed: audit(s, "job."+result["status"], id, step=result.get("step",0))
+        if not changed:
+            s.rollback();return True
+        if changed:
+            audit(s, "job."+result["status"], id, step=result.get("step",0))
+            if data['type']=='agent':audit(s,'agent.checkpoint',id,stage=result.get('stage'),cursor=result.get('cursor'),status=result['status'])
         s.commit()
     return True
 
@@ -100,10 +135,24 @@ async def worker():
                 data["status"] = "queued"
                 job.payload = json.dumps(data)
         s.commit()
+    import os
+    concurrency=max(1,min(2,int(os.getenv('FOXORY_WORKER_CONCURRENCY','1'))))
+    async with asyncio.TaskGroup() as group:
+        group.create_task(schedule_loop())
+        for _ in range(concurrency):group.create_task(worker_loop())
+
+async def schedule_loop():
+    from .scheduler import tick
+    while True:
+        try:tick()
+        except Exception:log.exception('Scheduler tick failed')
+        await asyncio.sleep(1)
+
+async def worker_loop():
     while True:
         try:
             if not await run_one(): await asyncio.sleep(1)
         except asyncio.CancelledError: raise
         except Exception:
-            log.exception("Worker failure")
+            log.exception('Worker failure')
             await asyncio.sleep(3)

@@ -22,6 +22,16 @@ class OllamaFixture(BaseHTTPRequestHandler):
         if self.path=='/api/embed':
             self.wfile.write(json.dumps({'embeddings':[[1.0,0.0] for _ in request['input']]}).encode());return
         if self.path=='/api/show':self.wfile.write(json.dumps({'capabilities':['completion'],'details':{'fixture':True}}).encode());return
+        if request.get('format'):
+            data=json.loads(request['messages'][-1]['content'])
+            delegates=data.get('delegates',{})
+            if 'approval' in data['objective'].lower():
+                steps=[{'title':'Create approved project','tool':'project.create','args':{'title':'Browser agent project','content':'Fixture-labeled approved local project'}}]
+            else:
+                target=next(iter(delegates),None)
+                steps=[{'title':'Calculate actual arithmetic','agent_id':target,'tool':'math.calculate','args':{'expression':'6*7'}}]
+            text=json.dumps({'steps':steps})
+            self.wfile.write((json.dumps({'message':{'content':text},'done':True})+'\n').encode());return
         content='Test fixture response: '+request.get('messages',[{}])[-1].get('content','')[:100]
         for text in [content[:20],content[20:]]:
             self.wfile.write((json.dumps({'message':{'content':text}})+'\n').encode());self.wfile.flush()

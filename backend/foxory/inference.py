@@ -25,9 +25,9 @@ async def stream(model, messages, temperature=0.7, context=4096, max_output=2048
         async for item in _stream(model, messages, temperature, context, max_output):
             yield item
 
-async def _stream(model, messages, temperature=0.7, context=4096, max_output=2048):
+async def _stream(model, messages, temperature=0.7, context=4096, max_output=2048, output_format=None):
     async with httpx.AsyncClient(timeout=httpx.Timeout(180, connect=5), trust_env=False) as c:
-        async with c.stream("POST", f"{OLLAMA_URL}/api/chat", json={"model":model,"messages":messages,"stream":True,"keep_alive":"2m","options":{"temperature":temperature,"num_ctx":context,"num_predict":max_output,"num_thread":thread_budget()}}) as r:
+        async with c.stream("POST", f"{OLLAMA_URL}/api/chat", json={**({'format':output_format} if output_format is not None else {}),"model":model,"messages":messages,"stream":True,"keep_alive":"2m","options":{"temperature":temperature,"num_ctx":context,"num_predict":max_output,"num_thread":thread_budget()}}) as r:
             r.raise_for_status()
             async for line in r.aiter_lines():
                 if line:
@@ -44,4 +44,13 @@ async def complete(model, messages):
     result = ""
     context,output=background_limits()
     async for event in stream(model, messages, context=context,max_output=output): result += event.get("message", {}).get("content", "")
+    return result
+
+async def structured(model, messages, schema):
+    """Ollama structured-output protocol; server still validates every plan."""
+    result=''
+    context,output=background_limits()
+    async with inference_lock:
+        async for event in _stream(model,messages,temperature=0,context=context,max_output=output,output_format=schema):
+            result+=event.get('message',{}).get('content','')
     return result

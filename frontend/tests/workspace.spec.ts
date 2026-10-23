@@ -117,3 +117,68 @@ test('document semantic controls and deep research sources/history/exports are c
  await page.locator('.job-item').filter({hasText:'What was revenue in June?'}).first().click();
  await expect(page.locator('.job-detail')).toContainText('Extractive evidence report');
 });
+
+
+test('AI Workforce creates agents, delegates real tools, schedules work and manages memory',async({page})=>{
+ test.setTimeout(120000);
+ await page.getByRole('button',{name:'AI Workforce',exact:false}).first().click();
+ await page.getByRole('button',{name:'Templates',exact:true}).click();
+ await page.getByRole('button',{name:'Use Data Analysis Agent',exact:true}).click();
+ await page.getByLabel('Agent name',{exact:true}).fill('Browser specialist');
+ await page.getByRole('button',{name:'Next: permissions',exact:true}).click();
+ await page.getByRole('button',{name:'Save agent',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Close editor'})).toHaveCount(0);
+ await page.getByRole('button',{name:'Agents',exact:true}).click();
+ await page.getByRole('button',{name:'Create agent',exact:true}).click();
+ await page.getByLabel('Agent name',{exact:true}).fill('Browser coordinator');
+ await page.getByRole('button',{name:'Next: permissions',exact:true}).click();
+ await page.getByLabel('Browser specialist',{exact:true}).check();
+ await page.getByRole('button',{name:'Save agent',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Configure Browser coordinator'})).toBeVisible();
+ await page.getByRole('button',{name:'Tasks',exact:true}).click();
+ await page.getByLabel('Task agent',{exact:true}).selectOption({label:'Browser coordinator'});
+ await page.getByLabel('Task objective',{exact:true}).fill('Delegate calculation to the specialist');
+ await page.getByRole('button',{name:'Run agent task',exact:true}).click();
+ await expect(page.getByRole('status')).toContainText('completed',{timeout:30000});
+ await expect(page.getByText('Calculate actual arithmetic → Browser specialist',{exact:false})).toBeVisible();
+ await page.getByRole('button',{name:'Memory',exact:true}).last().click();
+ await page.getByLabel('Memory agent',{exact:true}).selectOption({label:'Browser coordinator'});
+ await page.getByLabel('Fact title').fill('Preferred review');
+ await page.getByLabel('User-approved fact').fill('Always inspect original evidence.');
+ await page.getByRole('button',{name:'Approve and save fact'}).click();
+ await expect(page.getByRole('heading',{name:'Preferred review'})).toBeVisible();
+ await page.getByRole('button',{name:'Edit fact'}).click();
+ await page.getByLabel('User-approved fact').fill('Inspect original evidence and dates.');
+ await page.getByRole('button',{name:'Update approved fact'}).click();
+ await expect(page.getByText('Inspect original evidence and dates.',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Schedules',exact:true}).click();
+ await page.getByLabel('Scheduled agent').selectOption({label:'Browser coordinator'});
+ await page.getByLabel('Scheduled objective').fill('Tomorrow summary');
+ await page.getByLabel('Start time').fill('2030-01-01T10:00');
+ await page.getByRole('button',{name:'Save schedule'}).click();
+ await expect(page.getByRole('heading',{name:'Tomorrow summary'})).toBeVisible();
+ await page.getByRole('button',{name:'Pause schedule'}).click();
+ await expect(page.getByRole('button',{name:'Resume schedule'})).toBeVisible();
+ await page.getByRole('button',{name:'Resume schedule'}).click();
+ await expect(page.getByRole('button',{name:'Pause schedule'})).toBeVisible();
+});
+
+test('AI Workforce blocks workspace writes until an immutable approval is consumed',async({page})=>{
+ test.setTimeout(90000);
+ await page.getByRole('button',{name:'AI Workforce',exact:false}).first().click();
+ await page.getByRole('button',{name:'Templates',exact:true}).click();
+ await page.getByRole('button',{name:'Use Workflow Agent',exact:true}).click();
+ await page.getByRole('button',{name:'Next: permissions',exact:true}).click();
+ await page.getByRole('button',{name:'Save agent',exact:true}).click();
+ await page.getByRole('button',{name:'Tasks',exact:true}).click();
+ await page.getByLabel('Task agent',{exact:true}).selectOption({label:'Workflow Agent'});
+ await page.getByLabel('Task objective',{exact:true}).fill('Request approval to create an internal project');
+ await page.getByRole('button',{name:'Run agent task',exact:true}).click();
+ await expect(page.getByRole('status')).toContainText('awaiting_approval',{timeout:30000});
+ await page.getByRole('button',{name:'Approvals',exact:true}).click();
+ await expect(page.getByText('Immutable approval context',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'approve action',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Allow project.create · consumed'})).toBeVisible({timeout:30000});
+ await page.getByRole('button',{name:'Projects',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Browser agent project'})).toBeVisible();
+});

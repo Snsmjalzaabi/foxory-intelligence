@@ -40,3 +40,9 @@ Background research/council completions are capped at 512 generated tokens per c
 The optional CPU-light profile uses `FOXORY_BACKGROUND_CONTEXT=2048` and `FOXORY_BACKGROUND_OUTPUT=256`; native library defaults remain 4096/512; Compose now defaults to the tested CPU-light profile. Both are bounded, operator-configured settings and do not alter chat limits. Background input packing uses a conservative character estimate against the chosen context/output profile and discloses truncation. Small models can produce an explicitly extractive evidence fallback; passing reference-integrity checks is not proof of factual quality.
 
 The parent parser now multiplexes/bounds stdin/stdout/stderr while the child runs, kills the process group on overflow/deadline, and permits only one active parser. Concurrent parse attempts return 429 rather than multiplying child memory use. This bounds output-flood risk even if the parser itself is compromised.
+
+### Agent execution
+
+`FOXORY_WORKER_CONCURRENCY` defaults to `1` and is clamped to `1–2`. It controls task workers, while local model inference remains sequential. Configure it deliberately on the supported single-process installation; multiple API replicas are unsupported. Agent-specific limits (steps, model calls, wall-clock/step timeouts, retries and retention) are configured in AI Workforce. Scheduled runs have a separate maximum-runs and retry limit; at most eight workspace jobs may be pending when schedules dispatch. Internal writes require a workspace administrator's expiring approval. No external-action tool can be enabled by changing agent settings.
+
+Scheduling uses IANA timezones and fixed elapsed-minute recurrence; DST-ambiguous naive times require an explicit offset via API. The UI can schedule an unambiguous time or UTC. See [extension and execution contracts](docs/AGENT_EXTENSIONS.md).

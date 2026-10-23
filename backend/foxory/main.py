@@ -51,6 +51,8 @@ requests_by_client: dict[str, deque] = defaultdict(deque)
 app = FastAPI(title="FOXORY Intelligence", version="0.1.0", lifespan=lifespan)
 
 app.include_router(auth_router)
+from .agent_api import router as agent_router
+app.include_router(agent_router)
 
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=os.getenv("FOXORY_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],testserver").split(","))
@@ -122,8 +124,12 @@ def validate_record(kind, body):
         if email and (not isinstance(email,str) or len(email)>254 or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+",email)): raise HTTPException(422,"Invalid email")
         if body.data.get("status", "new") not in {"new","qualified","contacted","won","lost"}: raise HTTPException(422,"Invalid lead status")
     if kind == "agent":
-        if body.data.get("tools"): raise HTTPException(422, "This release supports draft-only agents without tools")
-        body.data["tools"] = []
+        from .agents import AgentConfig
+        from .agent_api import validate_resources
+        try:config=AgentConfig.model_validate(body.data)
+        except ValueError as e:raise HTTPException(422,str(e))
+        with Session() as s:validate_resources(s,config)
+        body.data=config.model_dump()
     return body
 
 @app.get("/api/health")
@@ -141,7 +147,7 @@ def overview():
 
 @app.get("/api/records/{kind}")
 def records(kind: str, q: str = ""):
-    if kind not in KINDS | {"document", "job", "approval"}: raise HTTPException(404)
+    if kind not in KINDS | {"document", "job", "approval", "schedule", "agent_memory", "task", "artifact"}: raise HTTPException(404)
     with Session() as s:
         rows = s.scalars(select(Record).where(Record.kind==kind).order_by(Record.updated_at.desc())).all()
         return [r.public() for r in rows if q.lower() in (r.title+" "+r.payload).lower()]
@@ -188,7 +194,7 @@ def edit(id: str, body: Create):
 def remove(id: str):
     with Session() as s:
         r = get_record(s,id)
-        if r.kind in {"approval", "job"}: raise HTTPException(403,"Execution records retained for audit")
+        if r.kind in {"approval", "job", "task", "artifact"}: raise HTTPException(403,"Execution records retained for audit")
         if r.kind=="document": (DATA / "uploads" / id).unlink(missing_ok=True)
         s.delete(r); audit(s,r.kind+".delete",id); s.commit()
 
@@ -390,10 +396,8 @@ async def create_job(body: JobCreate,request:Request):
         for document_id in body.document_ids:get_record(s,document_id,'document')
         data = body.model_dump(); data.update(status="queued",step=0,attempts=0,creator_id=request.state.identity["id"])
         if body.type=="agent":
-            agent=get_record(s,body.agent_id,"agent"); agent_data=json.loads(agent.payload)
-            if not agent_data.get("enabled",True): raise HTTPException(409,"Agent paused")
-            data["instructions"] = str(agent_data.get("instructions",""))+"\nYou are a draft-only assistant. No tools or external actions are available. Never claim to have executed them."
-            if agent_data.get("model"): data["models"]=[agent_data["model"]]
+            from .agent_api import task_data
+            data=task_data(s,body.agent_id,body.prompt,request.state.identity['id'])
         r=Record(id=id,kind="job",title=body.prompt[:120],payload=json.dumps(data))
         s.add(r);audit(s,"job.create",id)
         try: s.commit()
@@ -405,7 +409,7 @@ async def create_job(body: JobCreate,request:Request):
 def control_job(id: str,action: Literal["cancel","pause","resume","retry"]):
     with Session() as s:
         r=get_record(s,id,"job");original=r.payload;d=json.loads(original);status=d["status"]
-        allowed={"cancel":{"queued","running","paused","failed"},"pause":{"queued","running"},"resume":{"paused"},"retry":{"failed"}}
+        allowed={"cancel":{"queued","running","paused","failed","awaiting_approval"},"pause":{"queued","running"},"resume":{"paused"},"retry":{"failed"}}
         if status not in allowed[action]: raise HTTPException(409,"Invalid state transition")
         if action=="retry" and d.get("deadline_at",now())<now():raise HTTPException(409,"Wall-clock budget expired; create a new bounded job")
         if action=="retry" and d.get("attempts",0)>=3: raise HTTPException(409,"Retry budget exhausted")
@@ -432,7 +436,7 @@ def request_approval(id: str):
         for r in existing:
             d=json.loads(r.payload)
             if d.get("draft_id")==id and d.get("status")=="pending": return r.public()
-        r=Record(kind="approval",dedupe_key=id,title=draft.title,payload=json.dumps({"draft_id":id,"snapshot":draft.public(),"status":"pending","action":"review_draft","external_execution":False}))
+        r=Record(kind="approval",dedupe_key=id,title=draft.title,payload=json.dumps({"draft_id":id,"snapshot":draft.public(),"status":"pending","action":"review_draft","external_execution":False,"expires_at":(__import__('datetime').datetime.now(__import__('datetime').timezone.utc)+__import__('datetime').timedelta(minutes=15)).isoformat()}))
         s.add(r)
         try: s.flush();audit(s,"approval.request",r.id);s.commit()
         except IntegrityError:
@@ -445,6 +449,17 @@ def decide(id: str,decision: Literal["approve","reject"]):
     with Session() as s:
         r=get_record(s,id,"approval");original=r.payload;d=json.loads(original)
         if d["status"]!="pending": raise HTTPException(409,"Already decided")
+        if d.get('expires_at','9999')<now():raise HTTPException(409,'Approval expired')
+        if d.get('action')=='agent_tool':
+            from .agents import fingerprint,config_for
+            context=d['context'];job=get_record(s,context['job_id'],'job');j=json.loads(job.payload)
+            if j.get('status')!='awaiting_approval' or j.get('approval_id')!=id:raise HTTPException(409,'Task no longer awaits this approval')
+            try:cfg=config_for(j,context['effect']['agent_id'])
+            except PermissionError:raise HTTPException(409,'Agent configuration changed')
+            if fingerprint(context)!=d['context_hash'] or fingerprint(cfg)!=context['agent_config_hash'] or fingerprint(j['plan'])!=context['plan_hash']:raise HTTPException(409,'Stale approval context')
+            j.update(status='queued' if decision=='approve' else 'failed',error=None if decision=='approve' else 'User rejected tool action')
+            claimed=s.execute(update(Record).where(Record.id==job.id,Record.payload==job.payload).values(payload=json.dumps(j),updated_at=now())).rowcount
+            if not claimed:raise HTTPException(409,'Task state changed')
         d.update(status="approved" if decision=="approve" else "rejected",decided_at=now())
         changed=s.execute(update(Record).where(Record.id==id,Record.payload==original).values(payload=json.dumps(d),dedupe_key=None,updated_at=now())).rowcount
         if not changed: raise HTTPException(409,"Approval already changed")
