@@ -9,12 +9,15 @@ import re
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-
 from foxory.sandbox_protocol import OCIProject, BrowserAction
 
 
-def command(*, image: str, task_id: str, source: Path, request: Path, owner: str = "") -> list[str]:
+def command(*, image: str, task_id: str, source: Path, request: Path,
+            profile: Literal['javascript', 'typescript', 'browser'], owner: str = "") -> list[str]:
+    # Explicit validated dispatch profile, never a flag/image supplied by a user
+    # or inferred by reading the mutable request file during command construction.
+    if profile not in {'javascript', 'typescript', 'browser'}:
+        raise ValueError('Unsupported OCI profile')
     if not re.fullmatch(r'sha256:[a-f0-9]{64}', image):
         raise ValueError('An immutable local image ID is required')
     if not re.fullmatch(r'[a-f0-9]{64}', task_id):
@@ -31,7 +34,12 @@ def command(*, image: str, task_id: str, source: Path, request: Path, owner: str
         '--name=foxory-task-' + task_id, '--network=none', '--read-only',
         '--ipc=private', '--pid=private', '--uts=private', '--cgroupns=private',
         '--userns=keep-id:uid=1000,gid=1000', '--user=1000:1000',
-        '--cap-drop=ALL', '--security-opt=no-new-privileges',
+        '--cap-drop=ALL',
+        # Chromium chroots inside its user-namespace sandbox. The containers/common
+        # default seccomp policy gates chroot on this capability even for nested
+        # user namespaces. Keep default seccomp/AppArmor and every other cap dropped.
+        *(['--cap-add=SYS_CHROOT'] if profile == 'browser' else []),
+        '--security-opt=no-new-privileges',
         '--memory=1073741824', '--memory-swap=1073741824', '--cpus=1',
         '--pids-limit=128', '--timeout=45', '--ulimit=nofile=256:256', '--ulimit=core=0:0',
         '--http-proxy=false', '--env=HOME=/tmp', '--env=LANG=C.UTF-8',

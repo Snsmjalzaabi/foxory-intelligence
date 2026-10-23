@@ -24,6 +24,14 @@ PROBE = '''import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import os from 'node:os';
 assert.equal(process.getuid(),1000);
+const status=fs.readFileSync('/proc/self/status','utf8');
+for(const field of ['CapInh','CapPrm','CapEff','CapBnd','CapAmb']) {
+  const value=status.match(new RegExp('^'+field+':\\\\s+([0-9a-f]+)$','m'));
+  assert.ok(value,'Missing '+field);
+  assert.equal(BigInt('0x'+value[1]),0n,field+' must be empty for JS/TS');
+}
+assert.match(status,/^NoNewPrivs:\\s+1$/m);
+assert.match(status,/^Seccomp:\\s+2$/m);
 assert.equal(fs.readFileSync('/sys/fs/cgroup/memory.max','utf8').trim(),'1073741824');
 assert.equal(fs.readFileSync('/sys/fs/cgroup/pids.max','utf8').trim(),'128');
 const [quota,period]=fs.readFileSync('/sys/fs/cgroup/cpu.max','utf8').trim().split(/\\s+/).map(Number);
@@ -63,7 +71,8 @@ def run_probe(image: str, project: OCIProject, owner: str = "") -> dict:
             # Container tmpfs/cgroup limits bound producer memory; parent also
             # caps file reads and rejects oversized envelope output.
             with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
-                process = subprocess.Popen(command(image=image, task_id=task_id, source=source, request=request, owner=owner),
+                process = subprocess.Popen(command(image=image, task_id=task_id, source=source, request=request,
+                                                   profile=project.profile, owner=owner),
                                            stdin=subprocess.DEVNULL, stdout=out, stderr=err)
                 try:
                     process.wait(timeout=45)
@@ -116,11 +125,12 @@ def main() -> int:
         raise RuntimeError('Rootless Podman is required')
     evidence = []
     for profile, filename, code in [('javascript','probe.js',PROBE),
-                                    ('typescript','probe.ts','const value: number = 42;\nif(value!==42)throw Error("TS");')]:
+                                    ('typescript','probe.ts',PROBE+'\nconst value: number = 42;\nif(value!==42)throw Error("TS");')]:
         result = run_probe(args.image, OCIProject(profile=profile, files={filename:code}, entrypoint=filename), args.owner)
-        if profile == 'javascript' and 'FOXORY_OCI_CONTROLS_OK' not in result['stdout']:
+        if 'FOXORY_OCI_CONTROLS_OK' not in result['stdout']:
             raise RuntimeError('Missing controls attestation from fixed fixture')
         evidence.append({'profile':profile,'fixture_passed':True})
+        print('FOXORY_PROBE_PASSED '+profile, file=sys.stderr, flush=True)
     browser = OCIProject(profile='browser', files={'index.html':SITE,'report.txt':'Controlled fixture download'}, actions=[
         {'action':'navigate','target':'/'}, {'action':'type','target':'#name','text':'FOXORY_BROWSER_OK'},
         {'action':'click','target':'#show'}, {'action':'inspect'}, {'action':'screenshot'},
@@ -136,9 +146,10 @@ def main() -> int:
     if base64.b64decode(artifacts['result.txt']['base64']) != b'Controlled fixture download':
         raise RuntimeError('Download mismatch')
     evidence.append({'profile':'browser','fixture_passed':True})
+    print('FOXORY_PROBE_PASSED browser', file=sys.stderr, flush=True)
     print(json.dumps({'status':'fixed_probes_passed','evidence':evidence,
                       'application_execution_enabled':False,
-                      'warning':'Not comprehensive sandbox security assurance; dispatch integration remains pending.'},indent=2))
+                      'warning':'Not comprehensive sandbox security assurance; complete the Ubuntu host acceptance checklist.'},indent=2))
     return 0
 
 

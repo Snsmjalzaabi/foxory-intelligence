@@ -142,7 +142,8 @@ class Runtime:
             try:
                 # Finish container creation before observing cancellation, so cleanup
                 # cannot race an engine that has not registered the name yet.
-                args=oci.command(image=self.image,task_id=task_id,source=source,request=request,owner=self.owner)
+                args=oci.command(image=self.image,task_id=task_id,source=source,request=request,
+                                 profile=project.profile,owner=self.owner)
                 args=args[2:];args[0]='create'
                 creating=asyncio.create_task(self.cli(*args,timeout=15))
                 try:created=await asyncio.shield(creating)

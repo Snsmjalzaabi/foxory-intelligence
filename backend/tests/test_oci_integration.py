@@ -50,6 +50,13 @@ async def test_authenticated_profile_dispatch_and_artifacts(oci,profile):
     result=await complete(client,created['id'])
     assert result['status']=='completed',result
     assert 'Mock worker' in ''.join(result['events'])
+    created_args = [args for args in engine.calls if args[0] == 'create']
+    assert len(created_args) == 1
+    assert [arg for arg in created_args[0] if arg.startswith('--cap-add=')] == (
+        ['--cap-add=SYS_CHROOT'] if profile == 'browser' else [])
+    assert '--cap-drop=ALL' in created_args[0]
+    assert '--security-opt=no-new-privileges' in created_args[0]
+    assert '--network=none' in created_args[0]
     assert not engine.containers
     if profile=='browser':
         assert 'FOXORY' in result['stdout']

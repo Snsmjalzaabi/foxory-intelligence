@@ -155,6 +155,12 @@ external submissions or public browsing, and Chromium sandbox enabled. Runtime
 package installation, arbitrary mounts/flags and privileged execution are blocked.
 The main application never runs generated code or mounts a runtime socket.
 
+JS/TS OCI containers drop all capabilities. Only browser containers add
+`SYS_CHROOT` after dropping all capabilities, for Chromium's chroot-based
+filesystem sandbox and capability-conditioned runtime seccomp policy. All other
+restrictions remain unchanged. The correction is awaiting actual Ubuntu runtime
+verification; see [the investigation and rebuild commands](CHROMIUM_SANDBOX_UBUNTU.md).
+
 New OCI lifecycle/workflow tests use an explicitly mocked engine. Real isolated
 OCI/browser execution remains pending the [Ubuntu checklist](SANDBOX_HOST_VERIFICATION.md).
 The manager/worker/image code is connected; mocks are not isolation certification.

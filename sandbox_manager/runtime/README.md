@@ -31,6 +31,13 @@ and blocks external requests, non-GET/HEAD methods, service workers, frames and
 form submissions. Chromium's sandbox is required; no unsafe fallback is present.
 Each run has a fresh browser session and a disposable container.
 
+The manager drops all capabilities for JS/TS. Browser alone adds `SYS_CHROOT`
+after dropping all capabilities, to permit Chromium's filesystem sandbox under
+capability-conditioned runtime seccomp. Rootless/non-root execution,
+no-new-privileges, default seccomp/AppArmor and all quotas remain required.
+This correction still needs actual Ubuntu runtime verification; see
+[the investigation and rebuild procedure](../../docs/CHROMIUM_SANDBOX_UBUNTU.md).
+
 Worker stdout/NDJSON and downloaded files remain untrusted. The manager validates
 bounded envelopes, text/JSON/CSV content, PNG structure/CRC/decompression, names,
 size and hashes. Application downloads revalidate bytes and require the owning

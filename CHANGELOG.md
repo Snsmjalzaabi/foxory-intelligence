@@ -2,6 +2,12 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Restricted the Chromium chroot policy correction to browser containers using only
+`SYS_CHROOT`; JS/TS still drop all capabilities. Strengthened both code-profile
+controls probes and added separate fixture pass markers, policy/dispatch tests
+and Ubuntu rebuild/denial-diagnosis instructions. Actual Ubuntu browser startup
+with this correction remains unverified; OCI defaults remain disabled.
+
 Connected offline Playwright/Node/TypeScript profiles to authenticated manager dispatch, immutable approvals and Computer Mode. Added ownership-scoped lifecycle/cancellation/recovery, strict artifact/download validation, screenshot previews, deterministic OCI-boundary tests and pinned worker-image inputs. Profiles remain disabled by default; actual Ubuntu isolation/image verification is pending. See docs/SANDBOX_HOST_VERIFICATION.md.
 
 Bounded table filtering/grouped statistics and inert SVG chart data; approval-gated source ZIP artifacts; CSV/JSON exports and connected Workforce download controls. Computer Mode now connects optional, explicitly approved single-process Python execution through a separate rootless Bubblewrap manager. Uploaded CSV statistics, report/chart workflows and scoped artifacts are supported. General browser and JavaScript execution remain unavailable. See PROJECT_STATUS.md.

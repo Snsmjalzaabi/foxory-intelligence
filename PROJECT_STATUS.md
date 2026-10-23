@@ -1,4 +1,59 @@
-# FOXORY Intelligence — Phase 4 connected OCI profiles, host acceptance pending
+# FOXORY Intelligence — Phase 4 Chromium policy correction, Ubuntu acceptance pending
+
+## Current increment: browser-only chroot capability
+
+Branch: `development`. Baseline: `d5503e8f785571a146444666b873f13789c60517`.
+Phase 4 remains **incomplete**; Phase 5 has not started. The operator reports
+rootless Podman/delegation/static checks and an immutable image build on Ubuntu
+26.04, with JS/TS apparently passing before Chromium fails at
+`sys_chroot("/proc/self/fdinfo/") == 0`. This is supplied host evidence, not a
+successful rerun of the correction.
+
+Upstream Chromium uses that chroot to remove filesystem access. Upstream
+containers/common seccomp conditions chroot allow/deny on `CAP_SYS_CHROOT`;
+dropping every capability can therefore deny the syscall even inside Chromium's
+nested user namespace. AppArmor or a different installed seccomp policy may
+still deny it. The assertion alone does not establish the actual errno/cause.
+
+Implemented a required validated profile in the shared OCI command builder:
+only browser adds `--cap-add=SYS_CHROOT` after `--cap-drop=ALL`. Authenticated
+manager dispatch and fixed probes both pass that profile. JS/TS command policies
+remain identical to each other and retain every previous restriction. No
+privileged mode, SYS_ADMIN, no-sandbox, unconfined policy or resource relaxation.
+The Python profile, image inputs, dependencies, approvals and data are unchanged.
+
+Both code-profile fixtures now check all five capability masks are zero,
+NoNewPrivs=1 and Seccomp=2, plus existing effective quota/filesystem/network
+checks. The verifier emits separate stderr pass markers without corrupting its
+machine-readable stdout; browser failure cannot report overall success or enable
+execution. No automatic activation was introduced.
+
+Verification executed for this increment in Codex Cloud:
+
+- `.venv/bin/pytest -q backend/tests`: **148 passed in 57.86 seconds**, including
+  policy equality/negative cases, authenticated dispatch, probe command building,
+  partial failure reporting and existing migration/security/recovery regressions.
+  OCI execution is explicitly mocked in these tests; it is not isolation proof.
+- `npm --prefix frontend run build`: passed strict TypeScript and Vite build
+  (14.50 seconds). No frontend source changed. The previous 12 UI journeys below
+  are historical evidence, not rerun results for this increment.
+- Offline worker supply-chain verification: passed, pinned inputs unchanged.
+  Node worker and fixed JS probe syntax, Python compilation, documentation bash
+  syntax and `git diff --check`: passed. Bash procedures were parsed, not run.
+- Actual rootless Chromium/JS/TS, image rebuild, Docker integration and local-model
+  workflows were **not rerun** for this correction. Known Codex host limitations
+  were not re-probed. No Ubuntu runtime success or production readiness is claimed.
+
+Security implications, exact changed-file manifest, source references, update
+transfer and dedicated-account Ubuntu rebuild/reverification commands are in
+[CHROMIUM_SANDBOX_UBUNTU.md](docs/CHROMIUM_SANDBOX_UBUNTU.md). Keep OCI disabled
+until fixed probes and the full remaining host acceptance checks pass. If the
+browser still fails, retain logs and inspect installed seccomp/AppArmor denials;
+do not weaken isolation. Next action: transfer this commit to the Ubuntu owner's
+checkout, refresh the dedicated account's tracked source without replacing its
+virtualenv/state, rebuild and run the fixed verifier in the delegated scope.
+
+## Preserved evidence from the prior connected-OCI increment
 
 Branch: `development`. Starting commit:
 `09b707da144b72e481117ce7b0dd19cfef96bb73`.

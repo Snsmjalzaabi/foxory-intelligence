@@ -17,7 +17,9 @@ profiles disabled until this checklist passes. Phase 4 is not complete.
   `deployment/foxory-sandbox-oci.service` is an unverified installation example.
   Do not reuse the Python-only system unit's TasksMax=32/ProtectHome settings for
   OCI blindly. Rootless mapping helpers may require setuid on the manager host;
-  inside each worker capabilities and privilege escalation remain denied.
+  JS/TS workers drop every capability; the browser alone retains SYS_CHROOT for
+  Chromium's filesystem sandbox. Privilege escalation remains denied. See the
+  [Chromium chroot investigation and exact rebuild commands](CHROMIUM_SANDBOX_UBUNTU.md).
 - [ ] Confirm Ubuntu AppArmor/user-namespace policy and the runtime's seccomp
   policy support Chromium's sandbox. If denied, stop and review the policy; do
   not use privileged containers, `--no-sandbox` or seccomp-unconfined.
@@ -69,6 +71,9 @@ Replace the image argument with the actual reviewed local `sha256:` ID:
 - [ ] TypeScript stripping runs; document unsupported TS syntax/type-checking.
 - [ ] Chromium sandbox enabled: navigate local site, type, click, inspect,
   screenshot and download exact controlled fixture bytes. No unsafe fallback.
+- [ ] JS and TS attest empty capability masks, no-new-privileges and seccomp;
+  browser uses only the reviewed SYS_CHROOT exception. Retain separate
+  `FOXORY_PROBE_PASSED` markers and investigate any AppArmor/seccomp denial.
 - [ ] Confirm all probe containers are absent afterward. Treat any cleanup error
   as a blocker. Probe cleanup uses only manager-created names; startup probes
   label their containers for later manager orphan detection.

@@ -18,6 +18,9 @@
 - [x] Current-source application image health/persistence and separate PostgreSQL 17
   migrations, tenant/duplicate guards, restart and dump/restore smoke tests.
 - [x] Actual local qwen2.5:0.5b Python repair/test/package/restart regression.
+- [x] Browser-only SYS_CHROOT command policy; JS/TS retain zero capabilities.
+  Authenticated dispatch/probe-builder regression tests use mocked OCI execution;
+  the actual Chromium startup correction remains pending Ubuntu verification.
 
 ## Required real-host evidence — do not infer from mocks
 
