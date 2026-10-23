@@ -19,7 +19,8 @@ if os.getenv('FOXORY_E2E_SANDBOX')=='1':
     manager_key=secrets.token_urlsafe(40)
     os.environ.update(FOXORY_ENABLE_SANDBOX='1',FOXORY_SANDBOX_URL='http://127.0.0.1:8104',FOXORY_SANDBOX_KEY=manager_key)
     manager_env={**os.environ,'FOXORY_SANDBOX_ENABLED':'1','FOXORY_SANDBOX_DATA':tempfile.mkdtemp(prefix='foxory-e2e-manager-')}
-    manager=subprocess.Popen([sys.executable,'-m','uvicorn','sandbox_manager.service:app','--host','127.0.0.1','--port','8104'],cwd=root,env=manager_env)
+    manager_command=[sys.executable,'-m','scripts.e2e_oci_manager'] if os.getenv('FOXORY_E2E_OCI')=='1' else [sys.executable,'-m','uvicorn','sandbox_manager.service:app','--host','127.0.0.1','--port','8104']
+    manager=subprocess.Popen(manager_command,cwd=root,env=manager_env)
     def stop_manager():
         manager.terminate()
         try:manager.wait(timeout=10)

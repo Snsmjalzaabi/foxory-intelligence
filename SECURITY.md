@@ -24,3 +24,10 @@ Use encrypted disks, protect volumes/.env/exports/backups, review dependency/mod
 Agent tool grants are enforced on the server, including delegated agents’ independent permissions and explicit document IDs. Configuration snapshots invalidate queued tasks after edits. Approval context binds exact arguments, plan/config hashes, objective and job; expiration/rejection/stale reuse fails closed. Only the same transaction may consume an approval and create its internal artifact/project/task. External communications, purchases, publication and privileged execution have no tool implementation. Prompt-injection policy text is defense in depth; fixed dispatch, schema checks and server grants provide the enforcement. This does not guarantee the factual quality of model output.
 
 Restricted Python dispatch consumes an approval into a durable one-invocation grant before contacting the authenticated manager. Manager idempotency prevents duplicate invocation across retries. The manager is disabled until its runtime isolation preflight passes. It denies networking and child processes, restricts mounts/output files and applies hard resource limits. This profile has no independent escape/security audit and cannot support a multi-process browser. The main app never executes generated code.
+
+
+Phase 4 now connects optional JavaScript/TypeScript and offline Playwright profiles
+through the authenticated manager, approval gates and Computer Mode. They remain
+disabled by default and require actual Ubuntu isolation verification; Codex tests
+use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
+for pinned image builds, lifecycle/ownership controls and remaining limitations.

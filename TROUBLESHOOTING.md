@@ -26,3 +26,10 @@ keeps execution disabled. The application container's loopback is not host
 loopback. Use the [documented topology](docs/SANDBOX_MANAGER.md), not a Docker socket
 mount, root execution or an unsealed subprocess fallback. Browser/JS execution
 is currently unavailable and cannot be enabled by setting the Python flags.
+
+
+Phase 4 now connects optional JavaScript/TypeScript and offline Playwright profiles
+through the authenticated manager, approval gates and Computer Mode. They remain
+disabled by default and require actual Ubuntu isolation verification; Codex tests
+use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
+for pinned image builds, lifecycle/ownership controls and remaining limitations.

@@ -1,7 +1,6 @@
 /** Fixed OCI entrypoint. Never execute this with untrusted inputs on the host. */
 import fs from 'node:fs';
 import http from 'node:http';
-import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn} from 'node:child_process';
 
@@ -18,7 +17,7 @@ for (const [name, text] of Object.entries(request.files ?? {})) {
 }
 if (bytes > MAX || Object.keys(request.files ?? {}).length > 50) throw Error('Source budget');
 let logs = '', exitCode = 0;
-const append = value => { if (Buffer.byteLength(logs) + Buffer.byteLength(value) > 32000) throw Error('Log budget'); logs += value; };
+const append = value => { if (Buffer.byteLength(logs) + Buffer.byteLength(value) > 32000) throw Error('Log budget'); logs += value; process.stdout.write(JSON.stringify({event:'progress',message:value})+'\n'); };
 if (request.profile !== 'browser') {
   const suffix = request.profile === 'javascript' ? '.js' : '.ts';
   if (!safePath(request.entrypoint) || !request.entrypoint.endsWith(suffix)
@@ -79,9 +78,7 @@ if (request.profile !== 'browser') {
           if (++shots > 2) throw Error('Screenshot budget');
           await page.screenshot({path:'/out/screenshot-' + shots + '.png'}); break;
         case 'download': {
-          const pending = page.waitForEvent('download');
-          await page.locator(target).click();
-          const download = await pending;
+          const [download] = await Promise.all([page.waitForEvent('download'),page.locator(target).click()]);
           // Fixed output name; never trust a suggested filename or content type.
           await download.saveAs('/out/result.txt'); break;
         }
@@ -106,5 +103,5 @@ for (const name of ['result.txt','result.json','result.csv','result.md','screens
   if ((total += data.length) > MAX) throw Error('Artifact budget');
   artifacts[name] = {base64:data.toString('base64'), size:data.length, sha256:crypto.createHash('sha256').update(data).digest('hex')};
 }
-console.log(JSON.stringify({exit_code:exitCode, stdout:logs, artifacts}));
+console.log(JSON.stringify({event:'result',exit_code:exitCode, stdout:logs, artifacts}));
 process.exitCode = exitCode;

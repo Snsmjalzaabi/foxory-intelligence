@@ -132,20 +132,32 @@ real manager HTTP service; Ollama remains a labeled fixture in browser tests.
 `scripts/phase4_integration.py` uses an actual local Ollama model and disposable
 native services/database; results must be recorded only after successful execution.
 
-Chromium/Playwright, JavaScript/TypeScript execution, package installation, networked
-Python applications and general subprocess-based development remain disabled.
-The current cloud account has no writable delegated cgroup subtree. A multi-process
-browser needs aggregate memory/process/filesystem limits and a constrained network
-broker plus session/download/submission controls; the single-process profile cannot
-provide that boundary. Do not turn off Chrome sandboxing or run it in the main app
-as a workaround. Windows/macOS require a separately verified Linux manager host/VM;
-these configurations and NVIDIA performance are untested.
+## Connected optional OCI profiles
 
-## Optional browser and Node profiles — implementation groundwork only
+The separate manager dispatches `javascript`, `typescript` and `browser` requests
+through fixed rootless Podman commands. `FOXORY_SANDBOX_OCI_ENABLED=0` is the
+default. Activation requires explicit opt-in, an immutable local image ID and
+passing active startup probes for that image. No repeated host diagnostics are
+performed on ordinary health requests. The `profiles` health map reports each
+profile's availability, blockers and limits; legacy `enabled` denotes Python.
 
-Authenticated health now includes `optional_oci_host` diagnostics. These do not
-change Python's existing runtime preflight or enable additional profiles. The
-staged rootless OCI policy/worker and Ubuntu fixed-fixture probe are documented
-in [SANDBOX_HOST_VERIFICATION.md](SANDBOX_HOST_VERIFICATION.md). Successful active
-host verification, authenticated approval-bound dispatch, artifact validation,
-whole-container recovery/cleanup and frontend integration remain prerequisites.
+The manager creates the container before attaching, shares one execution slot
+with Python, and labels it with manager/task ownership. Streamed untrusted logs
+are bounded. Both engine and manager deadlines apply. Cancellation waits for
+whole-container cleanup; startup/periodic orphan reconciliation only removes
+owned containers. Failed cleanup quarantines OCI. Interrupted records are retained
+without automatic replay. Parent artifact validation and application download
+revalidation enforce fixed names, bytes, hashes and job/workspace ownership.
+
+JS/TS are dependency-free and network-denied; TS uses type stripping only. Browser
+sessions serve supplied offline website files with only GET/HEAD requests, no
+external submissions or public browsing, and Chromium sandbox enabled. Runtime
+package installation, arbitrary mounts/flags and privileged execution are blocked.
+The main application never runs generated code or mounts a runtime socket.
+
+New OCI lifecycle/workflow tests use an explicitly mocked engine. Real isolated
+OCI/browser execution remains pending the [Ubuntu checklist](SANDBOX_HOST_VERIFICATION.md).
+The manager/worker/image code is connected; mocks are not isolation certification.
+Windows/macOS, NVIDIA performance, live networking and independent escape/security
+review remain unverified. The existing Python-only system unit is unchanged; the
+new optional rootless user-unit example requires host-specific review.

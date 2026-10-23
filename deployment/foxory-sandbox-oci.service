@@ -1,0 +1,21 @@
+# OPTIONAL systemd USER unit for a dedicated rootless sandbox account on Ubuntu.
+# Host installation/security verification is pending; do not replace the Python
+# system unit blindly. See docs/SANDBOX_HOST_VERIFICATION.md.
+[Unit]
+Description=FOXORY rootless sandbox manager
+After=default.target
+[Service]
+Type=simple
+WorkingDirectory=%h/foxory-intelligence
+EnvironmentFile=%h/.config/foxory/sandbox.env
+ExecStart=%h/foxory-intelligence/.venv/bin/python -m uvicorn sandbox_manager.service:app --host 127.0.0.1 --port 8104 --workers 1
+UMask=0077
+Delegate=cpu memory pids
+KillMode=control-group
+MemoryMax=2G
+TasksMax=256
+CPUQuota=100%
+Restart=on-failure
+TimeoutStopSec=60
+[Install]
+WantedBy=default.target

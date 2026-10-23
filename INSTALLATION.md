@@ -82,3 +82,10 @@ To uninstall the optional manager, stop/disable its service and preserve its
 private state alongside the application backup before removing configuration.
 Core container removal does not remove external manager state. Delete keys/state
 only as an explicit owner operation, never as an automatic application uninstall.
+
+
+Phase 4 now connects optional JavaScript/TypeScript and offline Playwright profiles
+through the authenticated manager, approval gates and Computer Mode. They remain
+disabled by default and require actual Ubuntu isolation verification; Codex tests
+use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
+for pinned image builds, lifecycle/ownership controls and remaining limitations.

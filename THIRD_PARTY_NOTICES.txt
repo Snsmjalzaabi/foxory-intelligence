@@ -12351,3 +12351,14 @@ The manager invokes distribution-provided programs and dynamically links the
 provided seccomp library. No binary is copied into this repository. Preserve
 upstream copyright notices and source/license obligations when distributing
 runtime images or binary bundles. This inventory is not full-image/legal clearance.
+
+Optional Phase 4 OCI worker (not distributed as a prebuilt binary image):
+- Playwright and playwright-core 1.64.1: Apache-2.0. Exact npm archive integrity
+  values are retained in sandbox_manager/runtime/package-lock.json.
+- Pinned Microsoft Playwright Ubuntu runtime base includes Node.js (MIT),
+  Chromium (BSD-style and bundled third-party licenses) and Ubuntu packages
+  under their respective licenses. Preserve upstream license files/notices;
+  inspect the image SBOM and package licenses before redistributing images.
+- Rootless Podman (Apache-2.0) is an optional host prerequisite; it is not
+  installed in or exposed through the main application image.
+Registry hash verification is not a full transitive license/vulnerability audit.

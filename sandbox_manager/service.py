@@ -22,10 +22,12 @@ import shutil
 import signal
 import tempfile
 from datetime import datetime, timezone
+from typing import Literal
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from .capabilities import inspect_host
+from .oci_runtime import Runtime
+from foxory.sandbox_protocol import BrowserAction, OCIProject, valid_path
 
 log=logging.getLogger('foxory.sandbox')
 ROOT=Path(os.getenv('FOXORY_SANDBOX_DATA','./sandbox-data')).resolve()
@@ -39,23 +41,25 @@ processes:dict[str,asyncio.subprocess.Process]={}
 tasks:dict[str,asyncio.Task]={}
 slots=asyncio.Semaphore(1)
 SEAL_VERIFIED=False
+oci_runtime=Runtime(ROOT)
 
 def stamp():return datetime.now(timezone.utc).isoformat()
 def audit(event:str,job:str,workspace:str,**extra):
     log.info(json.dumps({'event':event,'job_id':job,'workspace':workspace,'at':stamp(),**extra}))
-def valid_path(name:str):
-    return (0<len(name)<=180 and re.fullmatch(r'[A-Za-z0-9_./-]+',name) is not None
-            and not name.startswith('/') and all(p not in ('','.','..','.git','.env') for p in name.split('/')))
 class Run(BaseModel):
     model_config=ConfigDict(extra='forbid')
     files:dict[str,str]=Field(min_length=1,max_length=50)
-    entrypoint:str=Field(min_length=1,max_length=180)
+    profile:Literal['python','javascript','typescript','browser']='python'
+    entrypoint:str=Field(default='',max_length=180)
+    actions:list[BrowserAction]=Field(default_factory=list,max_length=12)
     idempotency_key:str=Field(min_length=8,max_length=120)
     @model_validator(mode='after')
     def validate_project(self):
         if any(not valid_path(k) or '\x00' in v for k,v in self.files.items()):raise ValueError('Invalid source path/content')
         if sum(len(v.encode()) for v in self.files.values())>20000:raise ValueError('Source byte budget')
-        if self.entrypoint not in self.files or not self.entrypoint.endswith('.py'):raise ValueError('Entrypoint must be a supplied Python file')
+        if self.profile=='python':
+            if self.entrypoint not in self.files or not self.entrypoint.endswith('.py') or self.actions:raise ValueError('Entrypoint must be a supplied Python file without browser actions')
+        else:OCIProject.model_validate(self.model_dump(exclude={'idempotency_key'}))
         return self
 
 def runtime_check(check_seal:bool=True)->dict:
@@ -70,8 +74,10 @@ def runtime_check(check_seal:bool=True)->dict:
     if not Path('/usr/lib/x86_64-linux-gnu/libseccomp.so.2').exists():blockers.append('Linux x86_64 libseccomp runtime required')
     return {'enabled':not blockers,'profile':'python-single-process-v1','blockers':blockers,
             'limits':{'wall_seconds':LIMIT_SECONDS,'cpu_seconds':8,'memory_bytes':512*1024*1024,'processes':1,'network':'none','artifact_bytes':20000,'source_bytes':20000},
-            'browser_enabled':False,'javascript_enabled':False,
-            'optional_oci_host':inspect_host()}
+            'browser_enabled':oci_runtime.capabilities()['browser']['enabled'],
+            'javascript_enabled':oci_runtime.capabilities()['javascript']['enabled'],
+            'typescript_enabled':oci_runtime.capabilities()['typescript']['enabled'],
+            'profiles':{'python':{'enabled':not blockers,'blockers':blockers},**oci_runtime.capabilities()}}
 
 def auth(request:Request)->str:
     header=request.headers.get('authorization','')
@@ -189,10 +195,38 @@ async def execute(id:str,workspace:str,body:Run):
     except Exception as error:
         data=load(id,workspace);data.update(status='failed',error=type(error).__name__+': '+str(error)[:500],finished_at=stamp());save(data);audit('failed',id,workspace,error_type=type(error).__name__)
     finally:
-        if process:
-            kill(process)
-            with contextlib.suppress(Exception):await asyncio.wait_for(process.wait(),3)
-        processes.pop(id,None);tasks.pop(id,None)
+        async def cleanup_python():
+            try:
+                if process:
+                    kill(process)
+                    with contextlib.suppress(Exception):await asyncio.wait_for(process.wait(),3)
+            finally:processes.pop(id,None);tasks.pop(id,None)
+        cleanup=asyncio.create_task(cleanup_python())
+        try:await asyncio.shield(cleanup)
+        except asyncio.CancelledError:await cleanup;raise
+
+
+async def execute_oci(id:str,workspace:str,body:Run):
+    try:
+        async with slots:
+            data=load(id,workspace)
+            if data['status'] not in {'queued','running'}:return
+            data.update(status='running',started_at=stamp());save(data);audit('oci.started',id,workspace,profile=body.profile)
+            async def progress(message):
+                current=load(id,workspace)
+                if current['status']=='cancelling':raise asyncio.CancelledError()
+                text=current.get('stdout','')+message
+                if len(text)>32000:raise ValueError('Persisted execution log budget')
+                current['stdout']=text;save(current)
+            result=await oci_runtime.run(id,OCIProject.model_validate(body.model_dump(exclude={'idempotency_key'})),progress)
+            data=load(id,workspace);data.update(result,finished_at=stamp());save(data)
+            audit('oci.'+data['status'],id,workspace,exit_code=data.get('exit_code'))
+    except asyncio.CancelledError:
+        data=load(id,workspace);data.update(status='cancelled',finished_at=stamp());save(data);audit('oci.cancelled',id,workspace)
+    except Exception as error:
+        data=load(id,workspace);data.update(status='failed',error=type(error).__name__+': '+str(error)[:500],finished_at=stamp());save(data)
+        audit('oci.failed',id,workspace,error_type=type(error).__name__)
+    finally:tasks.pop(id,None)
 
 
 PREFLIGHT = """import os, socket, resource
@@ -211,21 +245,23 @@ print('FOXORY_ISOLATION_OK')
 
 @contextlib.asynccontextmanager
 async def lifespan(app):
-    global SEAL_VERIFIED
+    global SEAL_VERIFIED,oci_runtime
     if not log.handlers:
         handler=logging.StreamHandler();handler.setFormatter(logging.Formatter('%(message)s'));log.addHandler(handler)
     log.setLevel(logging.INFO);log.propagate=False
     SEAL_VERIFIED=False
+    oci_runtime=Runtime(ROOT)
     ROOT.mkdir(parents=True,exist_ok=True,mode=0o700)
-    if ROOT.stat().st_mode & 0o077:raise RuntimeError('Manager data directory must be private (0700)')
+    if ROOT.stat().st_mode & 0o077 or ROOT.stat().st_uid!=os.getuid():raise RuntimeError('Manager data directory must be private (0700)')
     lock=(ROOT/'.lock').open('a')
     try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     except BlockingIOError:
         lock.close();raise RuntimeError('Only one manager process may use this data directory')
+    await oci_runtime.startup(authorized=ENABLED and len(KEY)>=32 and os.getuid()!=0)
     # A restart never replays code silently. Explicit fresh request is required.
     for path in ROOT.glob('*.json'):
         data=json.loads(path.read_text())
-        if data['status'] in {'queued','running'}:
+        if data['status'] in {'queued','running','cancelling'}:
             data.update(status='interrupted',error='Manager restarted; submit a new reviewed run',finished_at=stamp());save(data);audit('recovered.interruption',data['id'],data['workspace'])
     if runtime_check(check_seal=False)['enabled']:
         probe=Run(files={'probe.py':PREFLIGHT},entrypoint='probe.py',idempotency_key='internal-preflight')
@@ -236,14 +272,29 @@ async def lifespan(app):
         SEAL_VERIFIED=result['status']=='completed' and 'FOXORY_ISOLATION_OK' in result['stdout']
         job_path(probe_id).unlink()
         if not SEAL_VERIFIED:audit('preflight.failed',probe_id,'internal',execution_enabled=False)
+    async def reconcile_orphans():
+        while True:
+            await asyncio.sleep(3)
+            try:
+                for orphan in await oci_runtime.recover(frozenset(tasks)):
+                    audit('oci.orphan.recovered',orphan,'internal')
+            except Exception:
+                oci_runtime.disable('OCI orphan reconciliation failed; execution quarantined')
+                audit('oci.orphan.failed','none','internal')
+                return
+    reconciler=asyncio.create_task(reconcile_orphans()) if shutil.which('podman') else None
     try:yield
     finally:
+        if reconciler:
+            reconciler.cancel()
+            await asyncio.gather(reconciler,return_exceptions=True)
         SEAL_VERIFIED=False
         pending=list(tasks.values())
-        for task in pending:task.cancel()
+        for task in pending:
+            if not task.cancelling():task.cancel()
         await asyncio.gather(*pending,return_exceptions=True)
         lock.close()
-app=FastAPI(title='FOXORY isolated Python manager',lifespan=lifespan)
+app=FastAPI(title='FOXORY authenticated sandbox manager',lifespan=lifespan)
 @app.middleware('http')
 async def body_limit(request:Request,call_next):
     if request.method=='POST':
@@ -259,8 +310,11 @@ async def body_limit(request:Request,call_next):
 def health(workspace:str=Depends(auth)):return runtime_check()
 @app.post('/v1/jobs',status_code=201)
 async def create(body:Run,workspace:str=Depends(auth)):
-    if not runtime_check()['enabled']:raise HTTPException(503,runtime_check())
-    digest=hashlib.sha256(json.dumps(body.model_dump(),sort_keys=True).encode()).hexdigest()
+    caps=runtime_check()
+    if not caps['profiles'][body.profile]['enabled']:raise HTTPException(503,caps['profiles'][body.profile])
+    # Preserve legacy Python idempotency digests across the protocol extension.
+    request=body.model_dump(exclude={'profile','actions'}) if body.profile=='python' else body.model_dump()
+    digest=hashlib.sha256(json.dumps(request,sort_keys=True).encode()).hexdigest()
     id=hashlib.sha256((workspace+':'+body.idempotency_key).encode()).hexdigest()
     if job_path(id).exists():
         data=load(id,workspace)
@@ -269,16 +323,20 @@ async def create(body:Run,workspace:str=Depends(auth)):
     if len(tasks)>=8:raise HTTPException(429,'Manager queue limit')
     if sum(json.loads(job_path(task_id).read_text())['workspace']==workspace for task_id in tasks)>=4:raise HTTPException(429,'Workspace queue limit')
     if len(list(ROOT.glob('*.json')))>=500:raise HTTPException(507,'Manager history quota reached; administrator retention cleanup required')
-    data={'id':id,'workspace':workspace,'request_hash':digest,'status':'queued','created_at':stamp(),'profile':'python-single-process-v1','stdout':'','stderr':'','artifacts':{}}
-    save(data);audit('submitted',id,workspace);tasks[id]=asyncio.create_task(execute(id,workspace,body));return data
+    data={'id':id,'workspace':workspace,'request_hash':digest,'status':'queued','created_at':stamp(),'profile':'python-single-process-v1' if body.profile=='python' else body.profile,'stdout':'','stderr':'','artifacts':{}}
+    save(data);audit('submitted',id,workspace);tasks[id]=asyncio.create_task(execute(id,workspace,body) if body.profile=='python' else execute_oci(id,workspace,body))
+    tasks[id].add_done_callback(lambda _:tasks.pop(id,None))
+    return data
 @app.get('/v1/jobs/{id}')
 def inspect(id:str,workspace:str=Depends(auth)):return load(id,workspace)
 @app.post('/v1/jobs/{id}/cancel')
 async def cancel(id:str,workspace:str=Depends(auth)):
     data=load(id,workspace)
-    if data['status'] in {'queued','running'}:
-        data.update(status='cancelled',finished_at=stamp());save(data)
-        if id in tasks:tasks[id].cancel()
+    if data['status'] in {'queued','running','cancelling'}:
+        data.update(status='cancelling' if data.get('profile')!='python-single-process-v1' else 'cancelled',finished_at=stamp());save(data)
+        if id in tasks:
+            if not data.get('started_at'):data.update(status='cancelled');save(data)
+            if not tasks[id].cancelling():tasks[id].cancel()
         if id in processes:kill(processes[id])
         audit('cancel.request',id,workspace)
     return data

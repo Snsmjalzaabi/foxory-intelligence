@@ -43,3 +43,10 @@ a later worker step uses the manager's idempotent protocol. The manager has its
 own private state/lock, startup isolation preflight and bounded single-process
 Python profile. Computer Mode observes the real state and artifacts. Browser and
 JavaScript remain disabled. See [manager design](docs/SANDBOX_MANAGER.md).
+
+
+Phase 4 now connects optional JavaScript/TypeScript and offline Playwright profiles
+through the authenticated manager, approval gates and Computer Mode. They remain
+disabled by default and require actual Ubuntu isolation verification; Codex tests
+use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
+for pinned image builds, lifecycle/ownership controls and remaining limitations.

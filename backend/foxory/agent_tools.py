@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, RootModel, JsonValue, model_validator
 from sqlalchemy import select
 from .db import Session, Record, get_record
+from .sandbox_protocol import OCIProject, BrowserAction
 from .advanced_files import SourceProject, TableAnalysis, analyze_table
 
 class ToolOutput(RootModel[dict[str,JsonValue]]):
@@ -46,6 +47,21 @@ class SandboxPython(SourceProject):
         if self.entrypoint not in self.files or not self.entrypoint.endswith('.py'):raise ValueError('Entrypoint must be a supplied Python file')
         return self
 
+class SandboxJavaScript(SourceProject):
+    entrypoint:str=Field(min_length=1,max_length=180)
+    @model_validator(mode='after')
+    def entry(self):
+        OCIProject(profile='javascript',files=self.files,entrypoint=self.entrypoint);return self
+class SandboxTypeScript(SandboxJavaScript):
+    @model_validator(mode='after')
+    def entry(self):
+        OCIProject(profile='typescript',files=self.files,entrypoint=self.entrypoint);return self
+class SandboxBrowser(SourceProject):
+    actions:list[BrowserAction]=Field(min_length=1,max_length=12)
+    @model_validator(mode='after')
+    def fixture(self):
+        OCIProject(profile='browser',files=self.files,actions=self.actions);return self
+
 class TaskInput(Generate):
     project_id:str=Field(min_length=1,max_length=36)
 class MemoryQuery(Query):
@@ -66,6 +82,9 @@ TOOLS={
  'data.csv_document':Tool('Analyze one explicitly authorized uploaded CSV with deterministic grouped statistics and an escaped chart. Also requires calculate permission.',CSVDocument,'documents.read'),
  'data.table':Tool('Filter, group and summarize supplied table rows; returns deterministic statistics and inert SVG chart.',TableAnalysis,'calculate'),
  'sandbox.python':Tool('Run supplied Python source in the separate opt-in, network-denied, single-process manager after explicit approval. No shell, browser, subprocesses or package installs.',SandboxPython,'sandbox.execute',True,30),
+ 'sandbox.javascript':Tool('Run dependency-free JavaScript in a separately verified rootless OCI worker after approval. No network or runtime package installation.',SandboxJavaScript,'sandbox.execute',True,90),
+ 'sandbox.typescript':Tool('Run Node type-stripped TypeScript in the verified offline OCI worker after approval; no semantic type checking.',SandboxTypeScript,'sandbox.execute',True,90),
+ 'sandbox.browser':Tool('Navigate, inspect, click, type, screenshot and download from supplied offline fixture files only. No external browsing or form submissions. Requires approval.',SandboxBrowser,'sandbox.browser',True,90),
  'source.package':Tool('Save inert source files for ZIP download after approval. Does not run code or modify repositories.',SourceProject,'documents.write',True),
  'data.analyze':Tool('Compute finite-number summary statistics.',DataInput,'calculate'),
  'projects.list':Tool('Read workspace projects and tasks.',Input,'projects.read'),

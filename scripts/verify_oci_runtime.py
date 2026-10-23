@@ -43,7 +43,7 @@ onclick="document.querySelector('#result').textContent=document.querySelector('#
 <p id="result"></p><a download="report.txt" href="/report.txt">Download</a></body></html>'''
 
 
-def run_probe(image: str, project: OCIProject) -> dict:
+def run_probe(image: str, project: OCIProject, owner: str = "") -> dict:
     task_id = secrets.token_hex(32)
     with tempfile.TemporaryDirectory(prefix='foxory-oci-probe-') as temporary:
         root = Path(temporary)
@@ -63,7 +63,7 @@ def run_probe(image: str, project: OCIProject) -> dict:
             # Container tmpfs/cgroup limits bound producer memory; parent also
             # caps file reads and rejects oversized envelope output.
             with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
-                process = subprocess.Popen(command(image=image, task_id=task_id, source=source, request=request),
+                process = subprocess.Popen(command(image=image, task_id=task_id, source=source, request=request, owner=owner),
                                            stdin=subprocess.DEVNULL, stdout=out, stderr=err)
                 try:
                     process.wait(timeout=45)
@@ -75,7 +75,10 @@ def run_probe(image: str, project: OCIProject) -> dict:
                     raise RuntimeError('OCI probe output budget exceeded')
                 if process.returncode:
                     raise RuntimeError('OCI probe failed: ' + stderr.decode('utf8', 'replace')[-8000:])
-            result = json.loads(stdout)
+            frames=[json.loads(line) for line in stdout.splitlines() if line.strip()]
+            results=[frame for frame in frames if frame.get('event')=='result']
+            if len(results)!=1:raise RuntimeError('Expected one terminal worker frame')
+            result=results[0]
             if result.get('exit_code') != 0:
                 raise RuntimeError('Worker reported failed fixture')
             total = 0
@@ -102,6 +105,7 @@ def run_probe(image: str, project: OCIProject) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--image', required=True, help='Reviewed local sha256 image ID')
+    parser.add_argument('--owner', default='', help=argparse.SUPPRESS)
     args = parser.parse_args()
     host = inspect_host()
     if not host['static_requirements_met']:
@@ -113,7 +117,7 @@ def main() -> int:
     evidence = []
     for profile, filename, code in [('javascript','probe.js',PROBE),
                                     ('typescript','probe.ts','const value: number = 42;\nif(value!==42)throw Error("TS");')]:
-        result = run_probe(args.image, OCIProject(profile=profile, files={filename:code}, entrypoint=filename))
+        result = run_probe(args.image, OCIProject(profile=profile, files={filename:code}, entrypoint=filename), args.owner)
         if profile == 'javascript' and 'FOXORY_OCI_CONTROLS_OK' not in result['stdout']:
             raise RuntimeError('Missing controls attestation from fixed fixture')
         evidence.append({'profile':profile,'fixture_passed':True})
@@ -122,7 +126,7 @@ def main() -> int:
         {'action':'click','target':'#show'}, {'action':'inspect'}, {'action':'screenshot'},
         {'action':'download','target':'a'},
     ])
-    result = run_probe(args.image, browser)
+    result = run_probe(args.image, browser, args.owner)
     if 'FOXORY_BROWSER_OK' not in result['stdout']:
         raise RuntimeError('Browser interaction did not produce expected page content')
     artifacts = result['artifacts']

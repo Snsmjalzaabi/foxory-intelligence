@@ -29,3 +29,8 @@ export async function pullModel(model:string,onProgress:(line:string)=>void){
  const r=await fetch('/api/models/pull',{method:'POST',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({model,confirmation:model})});if(!r.ok)throw new Error(await r.text());
  const reader=r.body!.getReader(),decoder=new TextDecoder();let buffer='';while(true){const {done,value}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});let i;while((i=buffer.indexOf('\n'))>=0){const line=JSON.parse(buffer.slice(0,i));buffer=buffer.slice(i+1);if(line.error)throw new Error(line.error);onProgress(line.status+(line.total?` · ${Math.round((line.completed||0)/line.total*100)}%`:''));}}
 }
+export async function artifactBlob(path:string):Promise<Blob>{
+ const response=await fetch('/api'+path,{headers:authHeaders()});
+ if(!response.ok)throw new Error('Artifact preview authorization or validation failed');
+ return response.blob();
+}

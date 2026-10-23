@@ -45,3 +45,10 @@ Optional Phase 4 Computer Mode supports a separately deployed, approval-gated
 single-process Python sandbox and source ZIP downloads. It is disabled by default.
 Review [setup and security limits](docs/SANDBOX_MANAGER.md) before enabling it.
 Phase 4 remains incomplete; general browser and JS/TS execution are unavailable.
+
+
+Phase 4 now connects optional JavaScript/TypeScript and offline Playwright profiles
+through the authenticated manager, approval gates and Computer Mode. They remain
+disabled by default and require actual Ubuntu isolation verification; Codex tests
+use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
+for pinned image builds, lifecycle/ownership controls and remaining limitations.

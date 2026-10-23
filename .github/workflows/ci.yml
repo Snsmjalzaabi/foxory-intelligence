@@ -20,9 +20,10 @@ jobs:
       - run: .venv/bin/pip install -r backend/requirements.lock && .venv/bin/pip install --no-deps -e backend && .venv/bin/pip install 'pytest>=8,<10' 'pytest-asyncio>=0.24,<2'
       - run: ../.venv/bin/pytest -q
         working-directory: backend
+      - run: .venv/bin/python scripts/verify_worker_supply_chain.py && node --check sandbox_manager/runtime/worker.mjs
       - run: npm ci && npm run build
         working-directory: frontend
-      - run: npx playwright install --with-deps chromium && FOXORY_E2E_SANDBOX=1 npm run test:e2e
+      - run: npx playwright install --with-deps chromium && FOXORY_E2E_SANDBOX=1 FOXORY_E2E_OCI=1 npm run test:e2e
         working-directory: frontend
       - run: python scripts/setup.py && docker compose config --quiet && docker compose -f compose.yaml -f compose.gpu.yaml config --quiet
       - run: docker build -t foxory-ci .

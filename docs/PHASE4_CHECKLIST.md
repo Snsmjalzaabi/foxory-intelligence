@@ -1,30 +1,32 @@
-# Phase 4 acceptance — incomplete
+# Phase 4 acceptance — host-dependent criteria pending
 
-- [x] Restricted single-process Python execution implemented and tested within documented limits; broader multi-process execution remains unavailable.
-- [ ] Actual isolated Playwright browsing, sessions, permitted interactions and recovery.
-- [x] Python coding workflow tests a small application in isolation and packages matching source (reviewed deterministic tests; not JS/web-app verification).
-- [x] Approval-gated inert source ZIP packaging; existing PDF/Word/Excel exports plus CSV/JSON.
-- [x] Bounded deterministic table filtering, grouped statistics and escaped SVG chart output.
-- [ ] Combined research/browser/coding/file-generation workflow demonstrated.
-- [x] Computer Mode Python plans, logs, approvals, cancellation, diagnostics and downloads; browser screenshots unavailable.
-- [x] New tools use existing server-side permissions and immutable approval transaction.
-- [x] Python manager authentication, quotas, isolation and representative malicious-code integration tests; not independent escape assurance.
-- [ ] Full Phase 1–3 regression verification on final Phase 4 runtime image.
-- [ ] Critical tests for complete Phase 4 pass.
-- [x] Actual qwen2.5:0.5b CPU code generation/repair, real sandbox tests, matching ZIP and native app/session restart.
+## Implemented and verified in Codex Cloud
 
-Source ZIP creation does not imply execution or successful tests of generated code.
+- [x] Preserve Phases 1–3 and restricted Python execution.
+- [x] Authenticated JS/TS/offline-browser manager dispatch with disabled defaults.
+- [x] Explicit agent tools, scopes, immutable approvals and duplicate prevention.
+- [x] OCI lifecycle: bounded create/attach, wall deadlines, cancellation, cleanup,
+  ownership labels, quarantine and startup/periodic orphan recovery (mocked OCI).
+- [x] Artifact integrity/content validation and scoped authorized downloads.
+- [x] Computer Mode profiles, states, logs, approvals, retry, screenshots/downloads
+  through actual HTTP UI/backend and an explicitly mocked OCI boundary.
+- [x] Multi-agent research/data/coding/browser/report/source workflow with fixtures;
+  actual deterministic calculations, PDF parsing and source ZIP validation.
+- [x] Worker base digest, locked dependencies, input hashes and registry-byte checks.
+- [x] Ubuntu installation, image build and security/recovery validation checklist.
+- [x] Backend, frontend, browser, migration/security and Compose regressions.
 
-## Final continuation: OCI groundwork (not acceptance completion)
+## Required real-host evidence — do not infer from mocks
 
-- [x] Non-mutating host capability script and authenticated health diagnostics.
-- [x] JS/TS/browser request schemas and immutable-image OCI command policy tests.
-- [x] Staged Node/TypeScript/offline-browser entrypoint and optional image recipe.
-- [ ] Active cgroup/runtime security preflight and isolated OCI execution verified.
-- [ ] Manager dispatch, whole-container cancellation and restart cleanup for OCI.
-- [ ] Parent validation of new binary artifacts and approval-bound profile tools.
-- [ ] Computer UI profiles/screenshots and combined workflows demonstrated.
+- [ ] Build and review the pinned image, SBOM, vulnerability/license findings.
+- [ ] Actual rootless Node/TypeScript execution with effective CPU/memory/PID quotas.
+- [ ] Actual sandboxed Chromium navigation, interaction, screenshot and download.
+- [ ] Real hostile filesystem/network/resource tests and Chromium sandbox checks.
+- [ ] Actual whole-container cancellation, crash/orphan recovery and restart cleanup.
+- [ ] Final application/manager topology and persistence/backup restore checks.
+- [ ] Combined local-model workflows produce real browser/code/report artifacts.
+- [ ] Final real-host critical tests pass before Phase 4 acceptance or Phase 5.
 
-Staged worker code is not a working exposed capability. Browser and JavaScript
-flags remain disabled; static capability success cannot enable them. See
-[SANDBOX_HOST_VERIFICATION.md](SANDBOX_HOST_VERIFICATION.md).
+Existing Python and real local-model verification is retained in PROJECT_STATUS.md
+and docs/PHASE4_OCI_GROUNDWORK.md. Source ZIPs/zero exits do not establish test
+adequacy. No privileged fallback, public deployment or GPU verification is claimed.
