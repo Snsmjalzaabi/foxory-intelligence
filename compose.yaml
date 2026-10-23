@@ -1,0 +1,57 @@
+name: foxory-intelligence
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:${FOXORY_PORT:-8000}:8000"
+    environment:
+      FOXORY_TOKEN: ${FOXORY_TOKEN:?Run python scripts/setup.py first}
+      DATABASE_URL: postgresql+psycopg://foxory:${POSTGRES_PASSWORD:?Run setup first}@db:5432/foxory
+      OLLAMA_URL: http://ollama:11434
+      SEARXNG_URL: ${SEARXNG_URL:-}
+    volumes:
+      - app_data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 2g
+    restart: unless-stopped
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: foxory
+      POSTGRES_USER: foxory
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run setup first}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U foxory -d foxory"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    restart: unless-stopped
+  ollama:
+    image: ollama/ollama:0.13.5
+    environment:
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_QUEUE: "8"
+    volumes:
+      - ollama_data:/root/.ollama
+    security_opt: [no-new-privileges:true]
+    mem_limit: 16g
+    restart: unless-stopped
+volumes:
+  app_data:
+  postgres_data:
+  ollama_data:

@@ -1,0 +1,32 @@
+name: Verify
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: python -m venv .venv
+      - run: .venv/bin/pip install -r backend/requirements.lock && .venv/bin/pip install --no-deps -e backend && .venv/bin/pip install 'pytest>=8,<10' 'pytest-asyncio>=0.24,<2'
+      - run: ../.venv/bin/pytest -q
+        working-directory: backend
+      - run: npm ci && npm run build
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium && npm run test:e2e
+        working-directory: frontend
+      - run: python scripts/setup.py && docker compose config --quiet && docker compose -f compose.yaml -f compose.gpu.yaml config --quiet
+      - run: docker build -t foxory-ci .
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-results
+          path: frontend/test-results/
