@@ -25,6 +25,10 @@ jobs:
         working-directory: frontend
       - run: python scripts/setup.py && docker compose config --quiet && docker compose -f compose.yaml -f compose.gpu.yaml config --quiet
       - run: docker build -t foxory-ci .
+      - run: docker run -d --name foxory-smoke -p 127.0.0.1:8000:8000 -e FOXORY_TOKEN=ci-only-token-with-at-least-24-chars --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges -v foxory-ci-data:/data foxory-ci
+      - run: FOXORY_TOKEN=ci-only-token-with-at-least-24-chars python scripts/smoke.py
+      - run: docker logs foxory-smoke && docker rm -f foxory-smoke
+        if: always()
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

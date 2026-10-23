@@ -4,7 +4,7 @@
 
 Install Docker Engine + Compose v2 from your OS/vendor documentation. Run `python scripts/setup.py`, then `docker compose up -d --build`. Check `docker compose ps` and `docker compose logs app`. Open <http://localhost:8000>; the token is stored in `.env`. No model is downloaded automatically. Download one explicitly in Settings. Review its upstream model license first.
 
-CPU inference works without a GPU configuration. A small quantized 1–3B model is a reasonable initial candidate on limited hardware. A quantized 7–8B model may fit an RTX 3060 12 GB at a modest context length, but no measurement on the reference i5-14400F/30 GB/RTX 3060 machine has been performed. Do not keep multiple large models resident. The default stack limits Ollama to one loaded model. Model download sizes and runtime RAM/VRAM are different quantities.
+CPU inference works without a GPU configuration. A real cloud CPU smoke passed with `qwen2.5:0.5b` (context 2048, nonempty streamed response, 3 reported output tokens). This tiny model is a connectivity baseline, not evidence of business-task quality. A small quantized 1–3B model is a reasonable next candidate on limited hardware, subject to license and quality review. A quantized 7–8B model may fit an RTX 3060 12 GB at a modest context length, but no measurement on the reference i5-14400F/30 GB/RTX 3060 machine has been performed. Do not keep multiple large models resident. The default stack limits Ollama to one loaded model. Model download sizes and runtime RAM/VRAM are different quantities.
 
 Optional NVIDIA configuration requires a compatible driver and NVIDIA Container Toolkit:
 
@@ -26,7 +26,7 @@ npm run build
 cd ../backend
 # Set FOXORY_TOKEN to a fresh random secret in your shell, not source code.
 alembic upgrade head
-uvicorn foxory.main:app --host 127.0.0.1 --port 8000 --workers 1
+uvicorn foxory.main:app --host 127.0.0.1 --port 8000 --workers 1 --no-access-log
 ```
 
 Install/start Ollama separately. UI development can use `npm run dev` (Vite proxies `/api` to port 8000). Development uses SQLite unless DATABASE_URL is set. Keep one API worker and one replica. Do not expose either dev server externally.

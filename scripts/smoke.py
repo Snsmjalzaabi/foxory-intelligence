@@ -17,8 +17,10 @@ def request(path,method='GET',data=None,authorized=True):
     headers={'Content-Type':'application/json'}
     if authorized:headers['Authorization']='Bearer '+token
     req=urllib.request.Request(base+'/api'+path,data=json.dumps(data).encode() if data is not None else None,headers=headers,method=method)
-    with urllib.request.urlopen(req,timeout=240) as r:
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(req,timeout=240) as r:
         body=r.read().decode()
+        if not body: return None
         return json.loads(body) if r.headers.get_content_type()=='application/json' else body
 
 if __name__=='__main__':

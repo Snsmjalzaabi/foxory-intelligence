@@ -27,7 +27,8 @@ from .documents import extract, retrieve
 from .jobs import worker
 from .research import search, evidence_prompt, validate_citations
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
+from .logging_config import configure_logging
+configure_logging()
 
 @asynccontextmanager
 async def lifespan(app):
@@ -68,7 +69,7 @@ async def security(request: Request, call_next):
 
     if path.startswith("/api/") and path != "/api/health":
         auth = request.headers.get("authorization", "")
-        if not TOKEN or not secrets.compare_digest(auth, "Bearer "+TOKEN):
+        if not TOKEN or not secrets.compare_digest(auth.encode("utf-8"), ("Bearer "+TOKEN).encode("utf-8")):
             return Response('Unauthorized', 401)
         # No cross-origin state-changing requests; no cookies or ambient credentials.
         origin = request.headers.get("origin")

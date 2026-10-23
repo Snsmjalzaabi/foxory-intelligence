@@ -1,6 +1,6 @@
 """Atomic duplicate prevention for leads and pending draft reviews."""
-import json
 import hashlib
+import json
 from alembic import op
 import sqlalchemy as sa
 revision='0002'
@@ -9,10 +9,11 @@ branch_labels=None
 depends_on=None
 
 def upgrade():
-    op.add_column('records',sa.Column('dedupe_key',sa.String(300),nullable=True))
     connection=op.get_bind()
     rows=connection.execute(sa.text("SELECT id, workspace, kind, title, payload FROM records WHERE kind IN ('lead','approval')")).mappings().all()
     seen=set()
+    prepared=[]
+    # Preflight before DDL: SQLite cannot roll back every schema operation.
     for r in rows:
         data=json.loads(r['payload'])
         key=str(data.get('email') or r['title']).strip().casefold() if r['kind']=='lead' else data.get('draft_id') if data.get('status')=='pending' else None
@@ -20,7 +21,10 @@ def upgrade():
         unique=(r['workspace'],r['kind'],key)
         if unique in seen:raise ValueError('Existing duplicate records must be resolved before migration 0002; no data removed')
         seen.add(unique)
-        connection.execute(sa.text('UPDATE records SET dedupe_key=:key WHERE id=:id'),{'key':hashlib.sha256(key.encode()).hexdigest() if r['kind']=='lead' else key,'id':r['id']})
+        prepared.append({'key':hashlib.sha256(key.encode()).hexdigest() if r['kind']=='lead' else key,'id':r['id']})
+    op.add_column('records',sa.Column('dedupe_key',sa.String(300),nullable=True))
+    for values in prepared:
+        connection.execute(sa.text('UPDATE records SET dedupe_key=:key WHERE id=:id'),values)
     op.create_index('uq_record_dedupe','records',['workspace','kind','dedupe_key'],unique=True)
 
 def downgrade():

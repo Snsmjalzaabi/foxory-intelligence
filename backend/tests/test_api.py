@@ -20,6 +20,7 @@ async def record(c,kind,title='Example',data=None):
 async def test_auth_origin_and_host(client):
     assert (await client.get('/api/health',headers={'Authorization':''})).status_code==200
     assert (await client.get('/api/overview',headers={'Authorization':''})).status_code==401
+    assert (await client.get('/api/overview',headers=[(b'authorization',b'Bearer \xff')])).status_code==401
     assert (await client.post('/api/records/memory',json={'title':'a'},headers={'Origin':'https://evil.example'})).status_code==403
     assert (await client.get('/api/overview',headers={'Host':'evil.example'})).status_code==400
     r=await client.get('/api/overview')

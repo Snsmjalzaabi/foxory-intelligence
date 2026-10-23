@@ -10,9 +10,10 @@ Checked items identify implemented/tested slices, not completion of entire phase
 - [x] Local-only Compose definition and persistent volumes
 - [x] Single-owner bearer authentication and host/origin/body/rate controls
 - [ ] Password/OIDC authentication, session lifecycle, RBAC and workspace authorization tests
-- [ ] Live local-model smoke recorded on a supported configuration
-- [ ] Full Compose fresh installation and restart smoke recorded
-- [ ] PostgreSQL migration and backup/restore verification
+- [x] Linux cloud CPU Ollama/qwen2.5:0.5b streaming and persistence smoke recorded
+- [x] Local Compose startup and final-image restart/persistence smoke recorded
+- [ ] Fully automated pristine installation on a clean supported Linux host
+- [x] PostgreSQL revision 0002 and logical dump/restore verification (uploads separately tested with SQLite)
 
 ## Phase 2 — research (experimental slice)
 - [x] Configured SearXNG search with deduplicated source metadata

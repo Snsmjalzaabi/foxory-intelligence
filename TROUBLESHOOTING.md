@@ -13,3 +13,6 @@
 - Migration failure: preserve volumes, inspect logs, restore a verified backup rather than deleting data. Do not run several migrating app instances.
 - Docker cloud TLS error: pass the environment CA as a build secret as documented. Never disable certificate verification.
 - Draft approval did not send: expected; there is no external executor in this release.
+
+- In managed cloud containers with an HTTP proxy, Ollama's CLI may try to use its bind address `0.0.0.0` through the proxy. Use `docker compose exec -T -e OLLAMA_HOST=http://127.0.0.1:11434 ollama ollama list` (or `pull MODEL`) to address the local server explicitly. Keep the HTTPS proxy for registry traffic and trust the environment CA; do not disable TLS verification. This does not change the application endpoint, which uses the private service name.
+- Cloud Docker VFS storage can duplicate large image layers during builds/recreation. A 32 GB task filesystem exhausted space during this verification. Remove only task-owned unused build artifacts; never prune persistent data/model volumes as a troubleshooting shortcut.
