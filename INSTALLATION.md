@@ -52,3 +52,13 @@ Native SQLite installations can use `python scripts/backup.py backup SOURCE_DIR 
 ## Uninstall
 
 `docker compose down` removes containers and the project network while retaining application, PostgreSQL and model volumes. To remove all data deliberately, back it up first and run `docker compose down --volumes`. Delete `.env` and the repository only when no longer needed. No host-level service or recurring system task is installed.
+
+## Phase 2 upgrade and verification
+
+Back up PostgreSQL, uploads and `.env` first. Rebuild the canonical image and start one app process. Migration 0003 adds users/workspaces/membership/sessions and assigns historical audit records to Local; existing records/documents remain in Local. On first browser login, use the bootstrap token to create the administrator. Do not keep using the token as permanent API authentication after setup. Accounts in a restored database retain password hashes; old sessions may be present until expiry/revocation. Protect database backups accordingly.
+
+The full Phase 2 base image was built in the cloud with the canonical Dockerfile and libseccomp2. The 32 GB cloud VFS filesystem required cache cleanup; final code-only fixes were verified using `Dockerfile.verify` on that locally built dependency base. This is a development verification overlay, not the installation Dockerfile. Normal installations and CI must build `Dockerfile` from source. No system Docker storage driver, privileged container or host socket access was introduced into the application.
+
+Phase 2 integration uses a disposable Compose project on port 8003 with its own PostgreSQL/uploads volumes and the existing private Ollama service. `scripts/phase2_smoke.py` is intentionally restricted to that local verification port. It creates only a disposable test administrator and refuses an existing configured installation without its private test-run credential file. Never use it against an owner's workspace. Test-run credentials/evidence live in private `/tmp` files, never Git.
+
+After administrator setup, native smoke helpers can log in using `FOXORY_SMOKE_USERNAME` and `FOXORY_SMOKE_PASSWORD` supplied privately in the shell environment; optional `FOXORY_SMOKE_WORKSPACE` selects an authorized test workspace. They never print credentials. Bootstrap-only smoke works only on an unconfigured installation. Do not put passwords in committed scripts or command-line arguments.

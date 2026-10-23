@@ -16,7 +16,7 @@ def extract(name: str, raw: bytes):
                 infos = z.infolist()
                 if len(infos) > 2000 or sum(x.file_size for x in infos) > 50_000_000:
                     raise ValueError("Archive expansion limit exceeded")
-                if any("vbaProject" in x.filename for x in infos): raise ValueError("Macros are not accepted")
+                if any("vbaproject" in x.filename.casefold() for x in infos): raise ValueError("Macros are not accepted")
         if ext == ".pdf":
             from pypdf import PdfReader
             reader = PdfReader(io.BytesIO(raw))

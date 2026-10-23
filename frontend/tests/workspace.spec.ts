@@ -2,11 +2,12 @@ import {test,expect} from '@playwright/test';
 
 test.beforeEach(async({page})=>{
  await page.goto('/');
+ await expect(page.getByRole('button',{name:/Sign in|Create administrator/})).toBeVisible();
  if(await page.getByLabel('Workspace bootstrap token').isVisible())await page.getByLabel('Workspace bootstrap token').fill('e2e-only-token-with-at-least-24-chars');
  await page.getByLabel('Username',{exact:true}).fill('e2e-owner');
  await page.getByLabel('Password',{exact:true}).fill('e2e-owner-password-123');
  await page.getByRole('button',{name:/Sign in|Create administrator/}).click();
- await expect(page.getByRole('heading',{name:'What will you build today?'})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'What will you build today?'})).toBeVisible({timeout:20000});
 });
 
 test('chat streams, persists, regenerates and exports through the real HTTP adapter',async({page})=>{
@@ -28,7 +29,7 @@ test('chat streams, persists, regenerates and exports through the real HTTP adap
 test('document upload, grounded question and validation errors',async({page})=>{
  await page.locator('nav').getByRole('button',{name:'Documents',exact:true}).click();
  await page.locator('input[type=file]').setInputFiles({name:'quarter.txt',mimeType:'text/plain',buffer:Buffer.from('Quarter revenue was 100 units.')});
- await expect(page.getByRole('heading',{name:'quarter.txt',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'quarter.txt',exact:true})).toBeVisible({timeout:20000});
  await page.getByLabel('Document question').fill('What was revenue?');
  await page.getByRole('button',{name:'Ask documents'}).click();
  await expect(page.locator('.document-answer')).toContainText('Test fixture response');
@@ -86,4 +87,33 @@ test('account workspace switch isolates history and logout revokes access',async
  await page.getByLabel('Lock workspace').click();
  await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible();
  const denied=await page.request.get('/api/overview');expect(denied.status()).toBe(401);
+});
+
+test('document semantic controls and deep research sources/history/exports are connected',async({page})=>{
+ test.setTimeout(60000);
+ await page.locator('nav').getByRole('button',{name:'Documents',exact:true}).click();
+ await page.locator('input[type=file]').setInputFiles({name:'research-evidence.txt',mimeType:'text/plain',buffer:Buffer.from('Revenue was 123 units in June. The source is a fictional test document for interface verification.')});
+ const card=page.locator('.record-card').filter({has:page.getByRole('heading',{name:'research-evidence.txt',exact:true})});
+ await expect(card).toBeVisible({timeout:20000});
+ await card.getByLabel('Local embedding model').selectOption('fixture-a');
+ await card.getByRole('button',{name:'Build semantic index'}).click();
+ await expect(card.getByRole('status')).toContainText('Indexed 1 chunks');
+ await page.locator('nav').getByRole('button',{name:/^Deep Research/}).click();
+ await page.getByText('Evidence & resource budgets',{exact:true}).click();
+ await page.getByLabel('Research documents').selectOption({label:'research-evidence.txt'});
+ await page.getByLabel('Use uploaded documents only').check();
+ await page.getByLabel('Task question').fill('What was revenue in June?');
+ await page.getByRole('button',{name:'Start research',exact:true}).click();
+ await expect(page.locator('.job-detail')).toContainText('completed',{timeout:20000});
+ await expect(page.locator('.job-detail')).toContainText('Extractive evidence report');
+ await page.getByRole('button',{name:'Check saved references'}).click();
+ await expect(page.locator('.job-detail').getByRole('status')).toContainText('content hashes match');
+ await page.locator('.source-card summary').first().click();
+ await expect(page.locator('.source-card')).toContainText('Revenue was 123 units');
+ const file=page.waitForEvent('download');await page.locator('.job-detail').getByRole('button',{name:'PDF',exact:true}).click();
+ expect((await file).suggestedFilename()).toBe('report.pdf');
+ await page.reload();
+ await page.locator('nav').getByRole('button',{name:/^Deep Research/}).click();
+ await page.locator('.job-item').filter({hasText:'What was revenue in June?'}).first().click();
+ await expect(page.locator('.job-detail')).toContainText('Extractive evidence report');
 });

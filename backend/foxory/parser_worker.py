@@ -13,7 +13,9 @@ import resource
 from pypdf import PdfReader
 from docx import Document
 from openpyxl import load_workbook
-import encodings.cp437, encodings.utf_16_le, encodings.utf_16_be
+import encodings.cp437, encodings.utf_16_le, encodings.utf_16_be, encodings.utf_8_sig
+for encoding in ("utf-8", "utf-8-sig", "utf-16", "utf-16-le", "utf-16-be", "cp437"):
+    codecs.lookup(encoding)
 from foxory.documents import extract
 
 def seal():

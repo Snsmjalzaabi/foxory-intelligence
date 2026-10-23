@@ -1,41 +1,40 @@
 # FOXORY Intelligence · Community Edition
 
-A local-first AI workspace for conversations, document questions, research and draft-only business assistants. Your infrastructure, your data, your models. No paid AI API is required or enabled.
+A local-first AI workspace for conversations, web research, document intelligence and draft-only business assistants. Your infrastructure, your data, your models. No paid AI API is required or enabled.
 
-**Pre-release v0.1.0. Target v1.0 is not complete. Single owner only; do not expose publicly or use for shared organization access.** See [PROJECT_STATUS.md](PROJECT_STATUS.md) for executed checks and [ROADMAP.md](ROADMAP.md) for release gates.
+**Pre-release.** Phase 1 was accepted at `3452acd`; Phase 2 adds accounts/workspaces and advanced research. v1.0 production readiness is not claimed. See [PROJECT_STATUS.md](PROJECT_STATUS.md), [Phase 2 acceptance](docs/PHASE2_CHECKLIST.md) and [ROADMAP.md](ROADMAP.md).
 
 ## Start locally
 
-Requires Docker Engine and Compose v2, Python 3.11+ for setup, available disk space, and internet access to download dependencies and model weights.
+Requires Docker Engine + Compose v2 and Python 3.11+ for local secret generation.
 
 ```sh
 python scripts/setup.py
 docker compose up -d --build
 ```
 
-Open <http://localhost:8000>. Enter `FOXORY_TOKEN` from your private `.env` file. Go to Settings, test Ollama connectivity, and explicitly download a model after reviewing its license. Model weights are not included. CPU is the default. See [INSTALLATION.md](INSTALLATION.md) for NVIDIA, native development, backups, and uninstall.
+Open <http://localhost:8000>. On first run, enter `FOXORY_TOKEN` from your private `.env` and create an administrator username/password. Existing Phase 1 data stays in the Local workspace. **The bootstrap token stops granting API access once an account exists.** Subsequent login uses a revocable, HttpOnly session. Do not publish `.env`.
 
-The setup step generates unique credentials; startup intentionally refuses missing secrets. The application port binds only to `127.0.0.1`; database and Ollama have no published ports. Persistent named volumes survive `docker compose down`.
+In Settings, explicitly download a completion model (for example a small Qwen model) after reviewing its license. Select an installed model for Chat. Download an embedding-capable model separately if semantic indexing is wanted. No model weights are bundled or downloaded automatically. Model families/variants have different terms and capabilities.
 
-## Included
+The app binds to `127.0.0.1`; PostgreSQL/Ollama have no published ports. Named volumes survive `docker compose down`. Run **one API process/replica**. Linux containers are required for restricted parsing; native Windows/macOS parsing fails closed. Docker Desktop compatibility/GPU performance remain unverified.
 
-- Ollama chat streaming, stop, regenerate, history, rename, delete, search and Markdown export.
-- Safe Markdown rendering, code highlighting, themes and responsive navigation.
-- Model inventory, metadata/capabilities, explicit download and confirmed removal.
-- Upload/extract PDF, DOCX, XLSX, CSV, TXT, Markdown and JSON; bounded keyword retrieval and document Q&A.
-- Experimental search-snippet research with retrieved reference lists and resumable bounded jobs.
-- Sequential Model Council with independent analyses and synthesis. Consensus is not verification.
-- Nine reusable draft-only agent templates, persistent job checkpoints, cancellation, pause/resume and bounded manual retries.
-- Editable memories and projects, basic lead CRM with duplicate detection and CSV export.
-- Business drafts, immutable review snapshots, explicit approval/rejection and audit trail. Approval does **not** send or execute anything.
-- Command Center using actual backend data; workspace JSON export.
+## Working capabilities
 
-## Explicit limitations
+- Streaming local Ollama chat, stop/regenerate, searchable persistent history and Markdown export.
+- Account login/logout, 12-hour server sessions, Argon2id password hashes, CSRF protection, workspaces, memberships and admin/editor/viewer access. The initial administrator controls installation-wide model mutation; workspace administration does not grant that permission.
+- Real search through configured SearXNG, or the free documented Wikipedia MediaWiki API by default. Wikipedia discovery has encyclopedia-only breadth; use SearXNG for wider web discovery. There is no silent fallback if configured SearXNG fails.
+- Real public HTML/text retrieval: public-address DNS pinning, verified TLS through configured proxies, validated redirects, robots/indexing directives, pacing, limits, source snapshots/hashes, relevance ranking and date metadata.
+- Durable Deep Research: model planning, subquestions, multiple queries, per-operation checkpoints, follow-up searches, comparison, exact-quotation conflict evidence and report synthesis. Pause/resume/cancel, retries and explicit network/time/input budgets.
+- Traceable Model Council: independent local-model analyses, disagreement/evidence comparison and synthesis. Sequential default; parallel analysis needs operator opt-in and measured conservative memory headroom.
+- Restricted PDF/DOCX/XLSX/CSV/TXT/Markdown/JSON parsing. Workspace document retrieval, optional local Ollama embeddings/cosine search, multi-document research and grounded source references.
+- Saved-reference checks and Markdown/PDF/Word/XLSX reports. Citation integrity checks validate IDs and saved hashes, **not claim truth**. When model synthesis lacks valid references, the report is explicitly labeled extractive source evidence rather than unsupported prose.
+- Existing draft-only agent templates, projects/memory, basic CRM, approval snapshots, audit history and dashboard remain available. Approval cannot send, publish, pay or execute.
 
-Research requires your own SearXNG instance with JSON output enabled; it currently reads search snippets, not full pages. Citation identifiers are checked against retrieved results; this does not verify claims, quotations, dates, or source reliability. There is no semantic/vector retrieval, OCR, spreadsheet formula calculation, scheduler, tool execution, browser control, Git workflow, live email integration, organizational RBAC or multi-workspace support. The owner token grants access to the entire one-owner workspace. Computer and outbound communication are unavailable.
+## Limits
 
-## Development
+This is not independently security-reviewed or approved for public hosting. No scheduler, live email, browser/code execution, autonomous mutation tools, parallel GPU verification, OCR or spreadsheet formula execution is enabled. Parser isolation requires Linux/libseccomp and fails closed. Vectors are stored with document records and scanned locally; indexing is bounded to 200 chunks/document and is intended for modest workspaces, not a large-scale vector database.
 
-See [DEVELOPMENT.md](DEVELOPMENT.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), and [CONFIGURATION.md](CONFIGURATION.md). No repository URL is claimed; nothing has been published.
+Source credibility is a transparent metadata heuristic. Contradiction interpretation is model analysis; matching quotations only proves that the text was present in saved evidence. Reports can remain incomplete or incorrect. Restricted sources are declined; there is no CAPTCHA, authentication or paywall bypass. Deleting an original document does not purge previously saved research snapshots/audit records.
 
-Source is licensed under Apache-2.0. Dependency and model terms remain separate; see [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md). No third-party artwork is bundled.
+See [INSTALLATION.md](INSTALLATION.md), [CONFIGURATION.md](CONFIGURATION.md), [SECURITY.md](SECURITY.md), [DEVELOPMENT.md](DEVELOPMENT.md) and [ARCHITECTURE.md](ARCHITECTURE.md). Apache-2.0 covers original source; dependency/image/model terms remain separate in [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md). Nothing has been published externally.

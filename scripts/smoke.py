@@ -3,6 +3,7 @@ import json
 import os
 import urllib.request
 import urllib.error
+import http.cookiejar
 import time
 from pathlib import Path
 from uuid import uuid4
@@ -13,11 +14,22 @@ if (root/'.env').exists():
     config=dict(line.split('=',1) for line in (root/'.env').read_text().splitlines() if line and not line.startswith('#') and '=' in line)
 token=os.getenv('FOXORY_TOKEN',config.get('FOXORY_TOKEN',''))
 base=os.getenv('FOXORY_SMOKE_URL','http://127.0.0.1:'+config.get('FOXORY_PORT','8000'))
+cookie_opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+csrf=''
 def request(path,method='GET',data=None,authorized=True):
+    global csrf
+    username=os.getenv('FOXORY_SMOKE_USERNAME')
+    password=os.getenv('FOXORY_SMOKE_PASSWORD')
+    if authorized and username and password and not csrf:
+        login=urllib.request.Request(base+'/api/auth/login',data=json.dumps({'username':username,'password':password}).encode(),headers={'Content-Type':'application/json'},method='POST')
+        with cookie_opener.open(login,timeout=30) as result:csrf=json.loads(result.read())['csrf']
     headers={'Content-Type':'application/json'}
-    if authorized:headers['Authorization']='Bearer '+token
+    if authorized:
+        if csrf:headers['X-CSRF-Token']=csrf
+        else:headers['Authorization']='Bearer '+token
+        if os.getenv('FOXORY_SMOKE_WORKSPACE'):headers['X-Workspace-ID']=os.environ['FOXORY_SMOKE_WORKSPACE']
     req=urllib.request.Request(base+'/api'+path,data=json.dumps(data).encode() if data is not None else None,headers=headers,method=method)
-    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    opener=cookie_opener if authorized and csrf else urllib.request.build_opener(urllib.request.ProxyHandler({}))
     with opener.open(req,timeout=240) as r:
         body=r.read().decode()
         if not body: return None

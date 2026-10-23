@@ -1,6 +1,12 @@
 {
   "python_runtime": [
     {
+      "name": "soupsieve",
+      "version": "3.0.4",
+      "license": "MIT",
+      "homepage": "Homepage, https://github.com/facelessuser/soupsieve"
+    },
+    {
       "name": "psycopg",
       "version": "3.3.6",
       "license": "LGPL-3.0-only",
@@ -25,10 +31,22 @@
       "homepage": "Homepage, https://github.com/python-websockets/websockets"
     },
     {
+      "name": "pillow",
+      "version": "13.0.0",
+      "license": "MIT-CMU",
+      "homepage": "Release notes, https://pillow.readthedocs.io/en/stable/releasenotes/index.html"
+    },
+    {
       "name": "typing_extensions",
       "version": "4.16.0",
       "license": "PSF-2.0",
       "homepage": "Bug Tracker, https://github.com/python/typing_extensions/issues"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "license": "MIT",
+      "homepage": "Changelog, https://github.com/jawah/charset_normalizer/blob/master/CHANGELOG.md"
     },
     {
       "name": "pypdf",
@@ -109,6 +127,12 @@
       "homepage": "Homepage, https://psycopg.org/"
     },
     {
+      "name": "argon2-cffi-bindings",
+      "version": "26.1.0",
+      "license": "MIT",
+      "homepage": "Tidelift, https://tidelift.com/?utm_source=lifter&utm_medium=referral&utm_campaign=hynek"
+    },
+    {
       "name": "httpcore",
       "version": "1.0.9",
       "license": "BSD-3-Clause",
@@ -127,6 +151,12 @@
       "homepage": "Changelog, https://github.com/kjd/idna/blob/master/HISTORY.md"
     },
     {
+      "name": "cffi",
+      "version": "2.1.1",
+      "license": "MIT-0",
+      "homepage": "Documentation, https://cffi.readthedocs.io/"
+    },
+    {
       "name": "fastapi",
       "version": "0.161.1",
       "license": "MIT",
@@ -137,6 +167,12 @@
       "version": "4.15.1",
       "license": "MIT",
       "homepage": "Documentation, https://anyio.readthedocs.io/en/latest/"
+    },
+    {
+      "name": "beautifulsoup4",
+      "version": "4.15.0",
+      "license": "MIT License",
+      "homepage": "Download, https://www.crummy.com/software/BeautifulSoup/bs4/download/"
     },
     {
       "name": "pydantic",
@@ -157,6 +193,12 @@
       "homepage": "https://foss.heptapod.net/openpyxl/et_xmlfile"
     },
     {
+      "name": "argon2-cffi",
+      "version": "25.1.0",
+      "license": "MIT",
+      "homepage": "Documentation, https://argon2-cffi.readthedocs.io/"
+    },
+    {
       "name": "annotated-types",
       "version": "0.8.0",
       "license": "MIT",
@@ -175,10 +217,22 @@
       "homepage": "Source, https://github.com/theskumar/python-dotenv"
     },
     {
+      "name": "reportlab",
+      "version": "5.1.0",
+      "license": "BSD license (see license.txt for details), Copyright (c) 2000-2025, ReportLab Inc.",
+      "homepage": "https://www.reportlab.com/"
+    },
+    {
       "name": "watchfiles",
       "version": "1.3.0",
       "license": "MIT",
       "homepage": "https://github.com/samuelcolvin/watchfiles"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.12",
+      "license": "BSD-3-Clause",
+      "homepage": "Homepage, https://github.com/eliben/pycparser"
     },
     {
       "name": "PyYAML",

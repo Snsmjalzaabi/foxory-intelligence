@@ -24,8 +24,8 @@ if __name__=='__main__':
             result=compose('psql','-U','foxory','-d',database,'-At','-c',f"SELECT count(*) FROM records WHERE id='{id}'",capture_output=True,text=True)
             assert result.stdout.strip()=='1','Restored record was not found'
             version=compose('psql','-U','foxory','-d',database,'-At','-c','SELECT version_num FROM alembic_version',capture_output=True,text=True)
-            assert version.stdout.strip()=='0002'
-        print('PASS: PostgreSQL custom-format dump/restore, record preservation and migration revision 0002')
+            assert version.stdout.strip()=='0003'
+        print('PASS: PostgreSQL custom-format dump/restore, record preservation and migration revision 0003')
     finally:
         if created:compose('dropdb','-U','foxory',database)
         request('/records/'+id,'DELETE')

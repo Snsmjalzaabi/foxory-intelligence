@@ -98,3 +98,115 @@ async def test_embedding_index_and_multi_document_grounding(client,monkeypatch):
     found=(await client.get('/api/documents/retrieve?q=income&model=local-fixture-embedding')).json()
     assert found[0]['document_id']==docs[0] and found[0]['retrieval']=='local_embedding'
     assert citation_manifest('Evidence [1]',found)['valid']
+
+async def test_proxy_transport_preserves_tls_hostname_and_verification():
+    from foxory.pinned_transport import HostnameStream
+    import ssl
+    class Stream:
+        async def start_tls(self,**kwargs):self.kwargs=kwargs;return self
+    stream=Stream();wrapper=HostnameStream(stream,'8.8.8.8','public.example')
+    context=ssl.create_default_context()
+    await wrapper.start_tls(context,'8.8.8.8',5)
+    assert stream.kwargs['server_hostname']=='public.example'
+    assert stream.kwargs['ssl_context'].check_hostname
+    # An HTTPS operator proxy keeps its own TLS hostname for the outer hop.
+    await wrapper.start_tls(context,'proxy.operator.example',5)
+    assert stream.kwargs['server_hostname']=='proxy.operator.example'
+
+async def test_redirect_rebinding_cannot_reach_private_ip(monkeypatch):
+    from foxory import web
+    async def no_robots(url):return 0
+    async def redirect(url,limit=2_000_000):
+        if url=='https://public.example/':return 302,{'location':'http://127.0.0.1/secrets'},b''
+        # Use the actual pinning validation for the redirected destination.
+        return await original(url,limit)
+    original=web.pinned_get
+    monkeypatch.setattr(web,'robots_allowed',no_robots)
+    monkeypatch.setattr(web,'pinned_get',redirect)
+    with pytest.raises(RetrievalError):await web.retrieve_page('https://public.example/')
+
+async def test_parallel_capacity_and_execution_guard(monkeypatch):
+    from foxory import resources,inference
+    monkeypatch.delenv('FOXORY_ALLOW_PARALLEL_COUNCIL',raising=False)
+    assert not (await resources.parallel_capacity(['a','b']))['parallel_allowed']
+    monkeypatch.setenv('FOXORY_ALLOW_PARALLEL_COUNCIL','1')
+    async def installed():return [{'name':'a','size':1_000_000},{'name':'b','size':1_000_000}]
+    monkeypatch.setattr(resources.inference,'models',installed)
+    monkeypatch.setattr(resources,'available_memory',lambda:1_000_000)
+    assert not (await resources.parallel_capacity(['a','b']))['parallel_allowed']
+    monkeypatch.setattr(resources,'available_memory',lambda:16*1024**3)
+    assert (await resources.parallel_capacity(['a','b']))['parallel_allowed']
+    active=0;maximum=0
+    async def stream(*args,**kwargs):
+        nonlocal active,maximum
+        active+=1;maximum=max(active,maximum)
+        try:
+            await asyncio.sleep(.05);yield {'message':{'content':'independent'}}
+        finally:active-=1
+    monkeypatch.setattr(inference,'_stream',stream)
+    data={'type':'council','models':['a','b'],'prompt':'Compare evidence','parallel':True}
+    result=await intelligence.council_step(data)
+    assert maximum==2 and result['step']==2 and len(result['analyses'])==2
+
+async def test_conflicts_require_actual_saved_quotes():
+    text='A sufficiently long actual source quotation.'
+    sources=[{'id':1,'text':text},{'id':2,'text':'Different exact source quotation.'}]
+    fabricated={'conflicts':[{'source_a':1,'source_b':2,'quote_a':'Invented quotation here.','quote_b':'Different exact source quotation.'}]}
+    assert intelligence.assess(json.dumps(fabricated),sources)['conflicts']==[]
+    from foxory.research import validate_citations
+    assert 'Invented quotation here.' not in validate_citations('“Invented quotation here.” [1]',sources)
+
+async def test_uncited_model_output_uses_explicit_extractive_fallback(monkeypatch):
+    async def unsupported(*args):return 'An unsupported fabricated statement without references.'
+    monkeypatch.setattr(intelligence.inference,'complete',unsupported)
+    text='Retrieval augmented generation combines retrieved information with model generation.'
+    source={'id':1,'url':'https://example.test/evidence','title':'Actual evidence','text':text,'evidence_type':'retrieved_page','content_hash':hashlib.sha256(text.encode()).hexdigest()}
+    data={'type':'research','stage':'write','models':['fixture'],'prompt':'What does retrieval augmented generation combine?','sources':[source],'budget':{},'used':{}}
+    result=await intelligence.research_step(data)
+    assert result['status']=='completed' and result['evidence_mode']=='extractive_fallback'
+    assert 'unsupported fabricated statement' not in result['result']
+    assert text in result['result'] and result['citation_verification']['valid']
+
+async def test_page_budget_is_shared_across_subquestions(monkeypatch):
+    queries=[]
+    async def search(query,limit):
+        queries.append(query)
+        return [{'url':f'https://example.test/{query}/{i}'} for i in range(6)]
+    async def page(url,query):
+        text='Evidence for '+url+' '+('source material '*10)
+        return {'url':url,'title':'Actual fixture','text':text,'evidence_type':'retrieved_page','content_hash':hashlib.sha256(text.encode()).hexdigest(),'relevance':1}
+    async def complete(*args):return 'Findings [1] [2]'
+    monkeypatch.setattr(intelligence,'search',search);monkeypatch.setattr(intelligence,'retrieve_page',page);monkeypatch.setattr(intelligence.inference,'complete',complete)
+    data={'type':'research','models':['fixture'],'prompt':'Investigate two questions','stage':'search','queries':['first','second'],'query_index':0,'pending_urls':[],'sources':[],'followup_done':False,'used':{'searches':0,'pages':0},'budget':{'max_searches':2,'max_pages':2}}
+    for _ in range(15):
+        stage=data['stage']
+        if stage=='search':data['used']['searches']+=1
+        if stage=='read' and data['pending_urls']:data['used']['pages']+=1
+        await intelligence.research_step(data)
+        if data.get('status')=='completed':break
+    assert queries==['first','second']
+    assert len(data['sources'])==2 and data['used']['pages']==2
+
+async def test_wall_clock_budget_cancels_active_step(client,monkeypatch):
+    from datetime import datetime,timedelta,timezone
+    cancelled=asyncio.Event()
+    async def slow(*args):
+        try:await asyncio.Event().wait()
+        finally:cancelled.set()
+    monkeypatch.setattr(intelligence.inference,'complete',slow)
+    response=await client.post('/api/jobs',json={'type':'research','prompt':'Bounded question','models':['fixture'],'idempotency_key':'hard-deadline-test'})
+    id=response.json()['id']
+    with Session() as s:
+        r=s.get(Record,id);data=json.loads(r.payload);data['deadline_at']=(datetime.now(timezone.utc)+timedelta(seconds=.2)).isoformat();r.payload=json.dumps(data);s.commit()
+    await asyncio.wait_for(jobs.run_one(),2)
+    assert cancelled.is_set()
+    data=next(r['data'] for r in (await client.get('/api/records/job')).json() if r['id']==id)
+    assert data['status']=='failed' and data['used']['model_calls']==1
+    assert (await client.post('/api/jobs/'+id+'/retry')).status_code==409
+
+async def test_ipv6_translation_destinations_are_declined(monkeypatch):
+    loop=asyncio.get_running_loop()
+    for destination in ['::ffff:127.0.0.1','64:ff9b::7f00:1','2002:7f00:0001::1']:
+        async def translated(*args,**kwargs):return [(10,1,6,'',(destination,80,0,0))]
+        monkeypatch.setattr(loop,'getaddrinfo',translated)
+        with pytest.raises(RetrievalError):await public_addresses('translated.example',80)

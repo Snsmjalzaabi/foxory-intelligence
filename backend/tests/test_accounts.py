@@ -68,3 +68,28 @@ async def test_workspace_isolation_all_domains_and_rbac(client):
         assert (await reader.get('/api/overview',headers={'x-workspace-id':'local'})).status_code==403
         assert (await reader.get('/api/auth/members')).status_code==403
         assert (await reader.post('/api/auth/logout')).status_code==200
+
+async def test_expiry_role_revocation_and_installation_permissions(client):
+    await setup(client)
+    user=(await client.post('/api/auth/members',json={'username':'editor','password':'editor-password-123','role':'editor'})).json()
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://testserver') as editor:
+        r=await editor.post('/api/auth/login',json={'username':'editor','password':'editor-password-123'})
+        editor.headers['x-csrf-token']=r.json()['csrf']
+        assert (await editor.post('/api/records/memory',json={'title':'Editor can write'})).status_code==201
+        assert (await editor.post('/api/models/remove',json={'model':'a','confirmation':'a'})).status_code==403
+        assert (await editor.post('/api/approvals/unknown/approve')).status_code==403
+        # Creating a workspace grants only workspace admin, never installation admin.
+        w=(await editor.post('/api/auth/workspaces',json={'name':'Editor-owned'})).json()
+        editor.headers['x-workspace-id']=w['id']
+        assert (await editor.post('/api/models/remove',json={'model':'a','confirmation':'a'})).status_code==403
+        editor.headers.pop('x-workspace-id')
+        changed=await client.put('/api/auth/members',json={'user_id':user['id'],'role':'viewer'})
+        assert changed.status_code==200
+        assert (await editor.get('/api/overview')).status_code==200
+        assert (await editor.post('/api/records/memory',json={'title':'Denied after downgrade'})).status_code==403
+    # Expiry is checked on the server, not trusted from browser cookie metadata.
+    from foxory.auth import digest
+    with Session() as s:
+        session=s.get(LoginSession,digest(client.cookies.get('foxory_session')))
+        session.expires_at='2000-01-01T00:00:00+00:00';s.commit()
+    assert (await client.get('/api/overview')).status_code==401

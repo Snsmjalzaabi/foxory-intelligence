@@ -1,22 +1,29 @@
 # Architecture
 
-FOXORY is a modular monolith: React/TypeScript built with Vite, served from FastAPI, with SQLAlchemy persistence and explicit Alembic migrations. Vite is used instead of Next.js because this local workspace needs no server-rendering service. Compose uses PostgreSQL 17; native development and automated tests use SQLite WAL. PostgreSQL and SQLite share migration 0001. There is no Redis or pgvector dependency yet.
+FOXORY remains a modular monolith: React/strict TypeScript/Vite served by FastAPI; SQLAlchemy/Alembic; PostgreSQL in Compose, SQLite WAL for local development/tests. No paid inference provider, host shell, Docker socket, external messaging executor or browser tool is exposed to models.
 
-`frontend/src/api.ts` handles authenticated JSON, downloads and SSE. `main.tsx` provides the UI; component extraction is a follow-up maintainability task. `backend/foxory/main.py` owns the HTTP interface, validation and owner authentication. `db.py` owns records, messages and audit events. Documents use established parsers in `documents.py`. `inference.py` speaks the documented Ollama API. `research.py` integrates an administrator-configured SearXNG endpoint. `jobs.py` implements bounded state transitions and optimistic job claims.
+## Modules and boundaries
 
-The job worker runs as an independent asyncio task inside the single API process, irrespective of browser sessions. **Run exactly one application process/replica.** Restart recovery requeues interrupted read-only inference from the last completed step. Optimistic payload comparison prevents a late result from overwriting cancellation or pause. Each step has a 240-second timeout. Manual retries stop after three failed attempts. Research performs at most two searches; council uses at most four models plus one synthesis. There are no autonomous unbounded agent loops. A shared semaphore serializes chat and background inference, and Compose limits Ollama to one loaded model and one parallel request.
+- `auth.py`, `scope.py`, `db.py`: Argon2id accounts, opaque revocable session digests, membership/roles, scoped ORM criteria and guarded writes. Default scope is unauthorized. Public bootstrap works only before the first account. Existing data remains in `local` under migration 0003. Messages are constrained through their owning conversation; exports, audit and optimistic updates use the same tenant boundary.
+- `main.py`: bounded API requests, trusted hosts/origins, CSRF checks, installation vs workspace administration, SSE and endpoint wiring.
+- `inference.py`, `resources.py`: documented Ollama protocol, serialized generation/embedding by default, explicit conservative memory guard for opt-in parallel council. No GPU inference is assumed from model metadata.
+- `research.py`, `web.py`, `pinned_transport.py`: SearXNG or default documented Wikipedia search; validated/pinned public HTTP retrieval and TLS proxy handling, robots/pacing, bounded content, metadata credibility and reference hashes. Every source is untrusted data. Proxy routes and certificate verification are preserved; no unpinned fallback exists.
+- `intelligence.py`, `jobs.py`: research planning/search/read/comparison/write stages, one external operation per durable step, manual bounded retries and cancellation. Follow-up queries are bounded. Reserved dispatch counts survive interrupted/failed calls. A wall-clock deadline includes pauses. Council stores independent results, separate comparison and synthesis. Evidence/claim checks are explicitly distinguished.
+- `parser_worker.py`, `parsing.py`, `documents.py`: preload trusted libraries/codecs, activate Linux seccomp/resource limits, then parse only supplied bytes in a minimal-environment subprocess. Filesystem/network/process access is denied. The parent enforces timeout/output bounds; unavailable policy fails closed.
+- `knowledge.py`: scoped chunk retrieval; optional installed Ollama embedding model, stored vectors and text hashes, cosine similarity. No embedding model is automatically downloaded. Indexing is limited to 200 chunks/document and serialized with generation. Intended for modest libraries; pgvector is a future scaling option.
+- `reports.py`: plain-data PDF, Word and XLSX writers. No generated macros/code; spreadsheet formula prefixes are neutralized.
+- Frontend `Accounts.tsx` and `IntelligenceUI.tsx` provide login/workspaces, source inspection, budgets, exports, indexing and saved-reference checks. Existing workspace features remain in `main.tsx`.
 
-Jobs use deterministic IDs from idempotency keys and a unique primary key. No workflow side effects exist. Approval records contain a full immutable draft snapshot; approval decisions do not activate external actions. A future executor must independently bind permission, exact action parameters, recipient, approval expiry, and idempotency before adding consequential tools.
+## Durability and topology
 
-## Trust boundaries
+Run exactly one API process/replica. The worker runs independently of browser sessions inside that process. Restart recovery requeues interrupted read-only calls from saved checkpoints. Compare-and-swap prevents cancelled/paused jobs from being overwritten by late results; active coroutines are cancelled. Jobs execute within their stored workspace and validate the creator's current membership. New workspace administrators do not inherit global model-management privileges. Generic record endpoints cannot forge jobs/approvals/documents.
 
-1. Browser → bearer-authenticated same-origin API. Token lives in tab session storage, never URLs or ordinary memory records.
-2. API → private database, uploads and configured Ollama/SearXNG. Endpoints come only from operator environment, not user-supplied URLs.
-3. Retrieved text → untrusted context. No model output can invoke a tool or host shell.
-4. Uploads → bounded parsing without macro execution. Extraction currently occurs in a thread, not an isolated parser process; hostile parser resource exhaustion remains a release blocker.
+Adding multi-process workers requires leases and scheduling changes; it is not enabled. Consequential tools remain unavailable. Draft approval records immutable snapshots and one decision, never external execution.
 
-One owner token represents one local workspace. This is not organizational isolation, password authentication, session expiry or RBAC. No multi-user claim is made. Audit records are durable but not tamper-proof against an infrastructure administrator. Generated output is untrusted. Source lists use only retrieved metadata, but snippet evidence is not factual verification.
+## Evidence limitations
 
-## Planned evolution
+Credibility scores are transparent metadata heuristics. Conflict quotations must exist in two saved sources, but the contradiction interpretation is model analysis. Citation verification proves saved reference identifiers/content hashes, not factual correctness or current source availability. When a model omits valid citations, an explicitly extractive fallback returns saved passages instead of attaching arbitrary references to unsupported prose. Character budgets are not exact tokenizer accounting; truncation warnings are retained.
 
-Replace generic JSON records with typed domain tables and normalized lead keys; isolate document parsers; add user/password/OIDC authentication and workspace-scoped authorization before multi-user operation; split durable workers with leases before replication; add verified content retrieval under SSRF/robots/network policy; introduce embeddings only with model capabilities and measured hardware tests. Sandboxes must not mount the host Docker socket.
+## Security/release follow-ups
+
+Independent penetration/sandbox review; image/native dependency SBOM/license/digest review; encryption-at-rest guidance; global tenant storage quotas; larger-library vector indexing; distributed abuse limits and worker leases; accessibility/load testing; Windows/macOS Docker compatibility and actual reference GPU measurements. Public hosting, code/browser execution, live email and autonomous mutation are not enabled by this phase.

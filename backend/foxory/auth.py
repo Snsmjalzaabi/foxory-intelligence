@@ -134,8 +134,8 @@ def existing_member(body:ExistingMember,request:Request):
             if membership.user_id==request.state.identity['id'] and body.role!='admin':raise HTTPException(409,'Cannot demote yourself')
             membership.role=body.role
         else:s.add(Membership(workspace_id=workspace_id.get(),user_id=body.user_id,role=body.role))
-        # Role changes revoke sessions immediately; access is re-evaluated every request too.
-        for login in s.scalars(select(LoginSession).where(LoginSession.user_id==body.user_id)):s.delete(login)
+        # Membership is re-evaluated on every request. A workspace administrator
+        # must not revoke the user's sessions in unrelated workspaces.
         s.commit();return {'updated':True}
 
 @router.get('/members')

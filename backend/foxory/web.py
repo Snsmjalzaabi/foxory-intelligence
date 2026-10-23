@@ -37,7 +37,16 @@ async def public_addresses(host:str,port:int)->list[str]:
         answers=await asyncio.get_running_loop().getaddrinfo(host,port,type=socket.SOCK_STREAM)
         ips=list(dict.fromkeys(x[4][0] for x in answers))
     except OSError as e:raise RetrievalError('DNS resolution failed') from e
-    if not ips or any(not ipaddress.ip_address(ip).is_global or getattr(ipaddress.ip_address(ip),'ipv4_mapped',None) and not ipaddress.ip_address(ip).ipv4_mapped.is_global for ip in ips):
+    def allowed(address):
+        ip=ipaddress.ip_address(address)
+        if not ip.is_global:return False
+        if isinstance(ip,ipaddress.IPv6Address):
+            # Decline transition networks rather than trusting a public-looking
+            # IPv6 address that can translate to a private IPv4 destination.
+            if ip.ipv4_mapped or ip.sixtofour or ip.teredo:return False
+            if ip in ipaddress.ip_network('64:ff9b::/96') or ip in ipaddress.ip_network('64:ff9b:1::/48'):return False
+        return True
+    if not ips or not all(allowed(ip) for ip in ips):
         raise RetrievalError('Private, loopback, reserved and mixed-address destinations are blocked')
     return ips
 
@@ -88,6 +97,7 @@ async def retrieve_page(url:str,query:str=''):
             if not location:raise RetrievalError('Redirect has no destination')
             url=canonical(urljoin(url,location));continue
         if code!=200:raise RetrievalError('Source denied access or returned an error')
+        if any(token in headers.get('x-robots-tag','').lower() for token in ['noarchive','nosnippet','noindex','noai']):raise RetrievalError('Source forbids indexing/archiving')
         mime=headers.get('content-type','').split(';')[0].lower()
         if mime not in {'text/html','application/xhtml+xml','text/plain'}:raise RetrievalError('Only public text and HTML pages are supported')
         return extract_page(url,body.decode('utf-8',errors='replace'),query,mime)
@@ -95,6 +105,9 @@ async def retrieve_page(url:str,query:str=''):
 
 def extract_page(url:str,html:str,query:str='',mime:str='text/html'):
     soup=BeautifulSoup(html,'html.parser')
+    for tag in soup.find_all('meta',attrs={'name':re.compile(r'^(robots|foxoryresearch)$',re.I)}):
+        if any(token in str(tag.get('content','')).lower() for token in ['noindex','noarchive','nosnippet','noai']):raise RetrievalError('Source forbids indexing/archiving')
+    if any(token in html.casefold() for token in ['cf-chl-','g-recaptcha','h-captcha','verify you are human']):raise RetrievalError('Access challenge; no bypass attempted')
     title=soup.title.get_text(' ',strip=True)[:300] if soup.title else urlsplit(url).hostname
     published=None;date_basis=None
     for key in ['article:published_time','datePublished','date','dc.date','pubdate']:

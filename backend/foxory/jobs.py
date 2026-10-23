@@ -62,7 +62,7 @@ async def _run_one():
             with Session() as s:
                 member=s.get(Membership,(workspace,creator))
                 if not member or member.role not in {'admin','editor'}:raise PermissionError('Job creator no longer has execution permission')
-        step_task = asyncio.create_task(asyncio.wait_for(execute_step(dict(data)), timeout=240))
+        step_task = asyncio.create_task(asyncio.wait_for(execute_step(dict(data)), timeout=max(.1,min(240,(datetime.fromisoformat(data["deadline_at"])-datetime.now(timezone.utc)).total_seconds()))))
         try:
             while not step_task.done():
                 await asyncio.wait({step_task}, timeout=0.2)
