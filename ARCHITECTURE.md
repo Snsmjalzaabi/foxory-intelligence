@@ -18,7 +18,7 @@ FOXORY remains a modular monolith: React/strict TypeScript/Vite served by FastAP
 
 Run exactly one API process/replica. The worker runs independently of browser sessions inside that process. Restart recovery requeues interrupted read-only calls from saved checkpoints. Compare-and-swap prevents cancelled/paused jobs from being overwritten by late results; active coroutines are cancelled. Jobs execute within their stored workspace and validate the creator's current membership. New workspace administrators do not inherit global model-management privileges. Generic record endpoints cannot forge jobs/approvals/documents.
 
-Adding multi-process workers requires leases and scheduling changes; it is not enabled. Consequential tools remain unavailable. Draft approval records immutable snapshots and one decision, never external execution.
+Adding multi-process workers requires leases and scheduling changes; it is not enabled. Phase 3 tools are a fixed registry with explicit schemas/grants. Local writes require immutable expiring approval, live configuration checks and a transaction committing the deterministic effect, approval consumption and checkpoint together. External actions remain unavailable. Draft approval remains a review-only snapshot.
 
 ## Evidence limitations
 
@@ -27,3 +27,9 @@ Credibility scores are transparent metadata heuristics. Conflict quotations must
 ## Security/release follow-ups
 
 Independent penetration/sandbox review; image/native dependency SBOM/license/digest review; encryption-at-rest guidance; global tenant storage quotas; larger-library vector indexing; distributed abuse limits and worker leases; accessibility/load testing; Windows/macOS Docker compatibility and actual reference GPU measurements. Public hosting, code/browser execution, live email and autonomous mutation are not enabled by this phase.
+
+## Bounded autonomous agents
+
+`agents.py`, `agent_tools.py`, `agent_api.py`, `agent_memory.py` and `scheduler.py` extend the existing job/Record envelopes. No schema migration is required beyond revision0003; existing unique record IDs provide schedule/task/effect idempotency. The graph plans validated steps, executes each under its assigned agent’s snapshot and current grants, checks quality and consolidates actual outputs. User-reviewed plans use the same validator. Malformed model JSON is retried within configured limits; unavailable tools fail closed. Tool results are untrusted evidence, not commands.
+
+The API lifespan runs a scheduler coroutine and 1–2 configured task loops. Local inference remains serialized. Scheduler dispatch/history and local effects/checkpoints use atomic transactions; interrupted read-only model/tool calls may replay. One API process/replica remains required. Agent facts are user-approved but not independently verified; generated summaries are explicitly unverified and expire under retention settings. See docs/AGENT_EXTENSIONS.md for schemas, extension examples, scheduling semantics and boundaries.

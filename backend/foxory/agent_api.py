@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from .db import Record,Session,get_record,audit,now,uid
 from .scope import workspace_id,actor_id
-from .agents import AgentConfig,templates,validate_plan
+from .agents import AgentConfig,templates,validate_plan,load_config
 from .agent_tools import catalogue
 router=APIRouter(prefix='/api')
 class AgentBody(BaseModel):
@@ -22,6 +22,22 @@ class AgentBody(BaseModel):
 def validate_resources(s,config):
     for id in config.document_ids:get_record(s,id,'document')
     for id in config.delegate_ids:get_record(s,id,'agent')
+
+@router.get('/agents/overview')
+def workforce_overview():
+    # One scoped refresh instead of six polling requests. Document bodies and
+    # complete artifact bodies are unnecessary for permission selectors.
+    groups={key:[] for key in ['agents','jobs','schedules','approvals','documents','artifacts']}
+    names={'agent':'agents','job':'jobs','schedule':'schedules','approval':'approvals','document':'documents','artifact':'artifacts'}
+    with Session() as s:
+        for row in s.scalars(select(Record).where(Record.kind.in_(names)).order_by(Record.updated_at.desc())):
+            value=row.public();d=value['data']
+            if row.kind=='job' and d.get('type')!='agent':continue
+            if row.kind=='approval' and d.get('action')!='agent_tool':continue
+            if row.kind in {'document','artifact'}:value['data']={k:v for k,v in d.items() if k in {'size','characters','job_id'}}
+            key=names[row.kind]
+            if len(groups[key])<200:groups[key].append(value)
+    return groups
 
 @router.get('/agents/templates')
 def template_list():return templates()
@@ -46,12 +62,12 @@ class TaskBody(BaseModel):
     plan:list[dict]|None=Field(default=None,max_length=12)
 
 def task_data(s,agent_id,objective,creator,plan=None):
-    agent=get_record(s,agent_id,'agent');cfg=AgentConfig.model_validate_json(agent.payload).model_dump()
+    agent=get_record(s,agent_id,'agent');cfg=load_config(agent.payload)
     if not cfg['enabled']:raise HTTPException(409,'Agent paused')
     if not cfg['model']:raise HTTPException(422,'Assign a local model')
     delegates={}
     for id in cfg['delegate_ids']:
-        row=get_record(s,id,'agent');d=AgentConfig.model_validate_json(row.payload).model_dump()
+        row=get_record(s,id,'agent');d=load_config(row.payload)
         if not d['enabled'] or not d['model']:raise HTTPException(422,'Delegates need an active configured model')
         delegates[id]=d
     data={'type':'agent','agent_id':agent_id,'agent_snapshot':cfg,'delegates':delegates,'models':[cfg['model']],'prompt':objective,'creator_id':creator,'status':'queued','stage':'plan','step':0,'attempts':0,'agent_model_calls':0,'budget':{'max_seconds':cfg['max_seconds']},'timeline':[]}

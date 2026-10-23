@@ -1,6 +1,6 @@
 # Security policy
 
-FOXORY is pre-release software for local self-hosted testing. Phase 2 implements multiple accounts and workspace roles; this is not an independent security certification or approval for public hosting/regulated production data. Do not expose the service publicly. Use one API process/replica.
+FOXORY is pre-release software for local self-hosted testing. Phase 2 implements multiple accounts and workspace roles; Phase 3 adds fixed-registry tools, bounded agents and approval-gated internal writes; this is not an independent security certification or approval for public hosting/regulated production data. Do not expose the service publicly. Use one API process/replica.
 
 Report vulnerabilities privately to the repository owner's private reporting channel once established. No contact address is invented. Do not post secrets, personal records or exploit details publicly; until a private channel exists, do not submit sensitive reports in public issues.
 
@@ -20,3 +20,5 @@ No independent penetration/sandbox review, encryption at rest, administrator-pro
 Research references/hashes prove saved identifier/content integrity, not truth or current source availability. Credibility and contradiction interpretation remain heuristics/model analysis; source text can be malicious or wrong. Archived reports retain snapshots if originals are later deleted; execution/review records are retained for audit. Prompt instructions are not a complete injection defense. Enforceable tool denial and parser/network controls are the current boundary.
 
 Use encrypted disks, protect volumes/.env/exports/backups, review dependency/model terms and keep the host patched. Computer/browser execution, live email and consequential autonomous tools remain unavailable. Never publish local credentials, research snapshots, private documents or model weights without authorization and license review.
+
+Agent tool grants are enforced on the server, including delegated agents’ independent permissions and explicit document IDs. Configuration snapshots invalidate queued tasks after edits. Approval context binds exact arguments, plan/config hashes, objective and job; expiration/rejection/stale reuse fails closed. Only the same transaction may consume an approval and create its internal artifact/project/task. External communications, purchases, publication and privileged execution have no tool implementation. Prompt-injection policy text is defense in depth; fixed dispatch, schema checks and server grants provide the enforcement. This does not guarantee the factual quality of model output.

@@ -1,6 +1,6 @@
 # Roadmap to v1.0
 
-The owner’s current five-phase delivery plan supersedes the original seven-phase grouping below. Phase 1 was accepted at `3452acd`; Phase 2 acceptance is tracked in [docs/PHASE2_CHECKLIST.md](docs/PHASE2_CHECKLIST.md). The older grouping is retained for traceability; unchecked original items are not silently claimed complete. Phase 3 is not started.
+The owner’s current five-phase delivery plan supersedes the original seven-phase grouping below. Phase 1 was accepted at `3452acd`; Phase 2 acceptance is tracked in [docs/PHASE2_CHECKLIST.md](docs/PHASE2_CHECKLIST.md). The older grouping is retained for traceability; unchecked original items are not silently claimed complete. The current agent milestone is tracked in [docs/PHASE3_CHECKLIST.md](docs/PHASE3_CHECKLIST.md); original seven-phase numbering below remains historical.
 
 Checked items identify implemented/tested slices, not completion of entire phases. PROJECT_STATUS.md contains exact evidence.
 
@@ -45,7 +45,8 @@ Checked items identify implemented/tested slices, not completion of entire phase
 - [x] Durable checkpoints, idempotent job submission, pause/resume/cancel and retry ceiling
 - [x] Immutable draft review snapshots, single decision and audit events
 - [ ] Typed task dependencies/delegation, resource budgets and worker leases
-- [ ] Permission-scoped tools with approval-bound execution and side-effect idempotency
+- [x] Permission-scoped tools with approval-bound internal writes and deterministic effect IDs
+- [ ] Privileged/external side-effect executors (not part of Phase 3)
 
 ## Phase 5 — business (partial)
 - [x] Nine reusable draft-only role templates

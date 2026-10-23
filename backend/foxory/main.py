@@ -89,7 +89,7 @@ async def security(request: Request, call_next):
         if origin and origin.rstrip('/')!=str(request.base_url).rstrip('/'):
             return Response('Cross-origin access denied',403)
         if path not in public:
-            try:actor=identity(request)
+            try:actor=await asyncio.to_thread(identity,request)
             except HTTPException as e:return Response(e.detail,e.status_code)
             request.state.identity=actor
             if request.method not in {'GET','HEAD','OPTIONS'} and actor['role']=='viewer' and path!='/api/auth/logout':
@@ -416,6 +416,12 @@ def control_job(id: str,action: Literal["cancel","pause","resume","retry"]):
         d["status"]={"cancel":"cancelled","pause":"paused","resume":"queued","retry":"queued"}[action]
         changed=s.execute(update(Record).where(Record.id==id,Record.payload==original).values(payload=json.dumps(d),updated_at=now())).rowcount
         if not changed: raise HTTPException(409,"Task changed; refresh and retry")
+        if action=='cancel' and d.get('approval_id'):
+            approval=s.get(Record,d['approval_id'])
+            if approval:
+                a=json.loads(approval.payload)
+                if a.get('status') in {'pending','approved'}:
+                    a.update(status='revoked',reason='Task cancelled',decided_at=now());approval.payload=json.dumps(a);audit(s,'approval.revoked',approval.id,job_id=id)
         audit(s,"job."+action,id);s.commit();s.refresh(r);return r.public()
 
 @app.get("/api/jobs/{id}/export")

@@ -140,6 +140,7 @@ async def test_agent_workspace_isolation_memory_schedules_approvals(client):
     j=await task(client,a,[{'title':'write','tool':'project.create','args':{'title':'Scoped','content':'Private'}}]);d=await finish(j['id'])
     fact=(await client.post('/api/agents/'+a['id']+'/memory',json={'title':'Fact','body':'Private preference'})).json()
     ws=(await client.post('/api/auth/workspaces',json={'name':'Other'})).json();client.headers['X-Workspace-ID']=ws['id']
+    assert all(not rows for rows in (await client.get('/api/agents/overview')).json().values())
     for kind in ['agent','agent_memory','job','schedule','approval']:assert not (await client.get('/api/records/'+kind)).json()
     assert (await client.get('/api/agents/'+a['id']+'/memory')).status_code==404
     assert (await client.post('/api/approvals/'+d['approval_id']+'/approve')).status_code==404
@@ -189,7 +190,7 @@ async def test_schedule_retry_retention_and_missed_skip(client):
         row=s.query(Record).filter(Record.kind=='agent_memory').first();d=json.loads(row.payload);d['expires_at']='2000';row.payload=json.dumps(d);s.commit()
     tick();assert not (await client.get('/api/agents/'+a['id']+'/memory')).json()
 
-async def test_agent_deadline_and_removed_membership_fail_closed(client,monkeypatch):
+async def test_agent_deadline_fails_closed(client,monkeypatch):
     a=await agent(client,max_retries=0)
     j=await task(client,a,[{'title':'Slow','instruction':'Think'}])
     with Session() as s:
@@ -204,3 +205,57 @@ async def test_legacy_agent_tasks_fail_without_discarding_data(client):
     with Session() as s:
         r=Record(kind='job',title='Legacy draft task',payload=json.dumps({'type':'agent','status':'queued','models':['old'],'prompt':'Original objective'}));s.add(r);s.commit();id=r.id
     await run_one();assert state(id)['status']=='failed' and state(id)['prompt']=='Original objective'
+
+async def test_cancel_revokes_pending_approval_and_draft_expiry_renews(client):
+    a=await agent(client,tools=['project.create'])
+    j=await task(client,a,[{'title':'Write','tool':'project.create','args':{'title':'Never','content':'No'}}]);d=await finish(j['id'])
+    assert (await client.post('/api/jobs/'+j['id']+'/cancel')).status_code==200
+    approval=next(r for r in (await client.get('/api/records/approval')).json() if r['id']==d['approval_id']);assert approval['data']['status']=='revoked'
+    assert (await client.post('/api/approvals/'+d['approval_id']+'/approve')).status_code==409
+    draft=(await client.post('/api/records/draft',json={'title':'Review','data':{'body':'Not sending'}})).json()
+    old=(await client.post('/api/drafts/'+draft['id']+'/request-approval')).json()
+    with Session() as s:
+        r=s.get(Record,old['id']);v=json.loads(r.payload);v['expires_at']='2000';r.payload=json.dumps(v);s.commit()
+    tick()
+    renewed=(await client.post('/api/drafts/'+draft['id']+'/request-approval')).json();assert renewed['id']!=old['id'] and renewed['data']['status']=='pending'
+
+async def test_legacy_zero_tool_config_preserves_inert_fields(client,monkeypatch):
+    with Session() as s:
+        row=Record(kind='agent',title='Legacy writer',payload=json.dumps({'model':'fixture','instructions':'Draft carefully','tools':[],'status':'new','notes':'Preserve original notes'}));s.add(row);s.commit();id=row.id
+    async def plan(*args):return json.dumps({'steps':[{'title':'Draft','instruction':'Write a short summary'}]})
+    monkeypatch.setattr(inference,'structured',plan);monkeypatch.setattr(inference,'complete',prose)
+    j=await task(client,{'id':id},key='legacy-config-key');assert (await finish(j['id']))['status']=='completed'
+    with Session() as s:assert json.loads(s.get(Record,id).payload)['notes']=='Preserve original notes'
+
+async def test_result_references_chain_tools_without_changing_grants(client,monkeypatch):
+    monkeypatch.setattr(inference,'complete',prose)
+    a=await agent(client,tools=['math.calculate','data.analyze'])
+    plan=[{'title':'Compute','tool':'math.calculate','args':{'expression':'6*7'}},{'title':'Analyze actual output','tool':'data.analyze','args':{'values':[{'$step':0,'path':['value']},50],'operation':'mean'},'depends_on':[0]}]
+    j=await task(client,a,plan,key='chained-tool-key');d=await finish(j['id']);assert d['status']=='completed',d
+    assert d['outputs'][1]['result']['value']==46
+    bad=[{'title':'Forward reference','tool':'math.calculate','args':{'expression':{'$step':1,'path':['value']}},'depends_on':[]}]
+    r=await client.post('/api/agents/'+a['id']+'/tasks',json={'objective':'Reject forward pointer','plan':bad,'idempotency_key':'bad-reference-key'});assert r.status_code==422
+
+async def test_specialist_limits_are_not_inherited_from_coordinator(client,monkeypatch):
+    specialist=await agent(client,'Limited specialist',max_steps=1,max_model_calls=3)
+    coordinator=await agent(client,'Coordinator',delegates=[specialist['id']],max_steps=6,max_model_calls=20)
+    plan=[{'title':'One','agent_id':specialist['id'],'instruction':'Draft'},{'title':'Two','agent_id':specialist['id'],'instruction':'Draft more'}]
+    response=await client.post('/api/agents/'+coordinator['id']+'/tasks',json={'objective':'Do not bypass specialist budget','plan':plan,'idempotency_key':'specialist-budget-key'});assert response.status_code==422
+    monkeypatch.setattr(inference,'complete',prose)
+    j=await task(client,coordinator,plan[:1],key='specialist-one-key');d=await finish(j['id']);assert d['status']=='completed'
+    assert d['agent_usage'][specialist['id']]['model_calls']==1
+
+async def test_auth_database_wait_does_not_block_public_health(client,monkeypatch):
+    import threading
+    import foxory.main as main
+    entered=threading.Event();release=threading.Event();original=main.identity
+    def waiting(request):
+        entered.set();release.wait(3);return original(request)
+    monkeypatch.setattr(main,'identity',waiting)
+    request=asyncio.create_task(client.get('/api/overview'))
+    try:
+        assert await asyncio.to_thread(entered.wait,1)
+        response=await asyncio.wait_for(client.get('/api/health'),1)
+        assert response.status_code==200 and not release.is_set()
+    finally:release.set()
+    assert (await request).status_code==200

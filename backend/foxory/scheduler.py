@@ -2,7 +2,7 @@
 import json
 from datetime import datetime,timedelta,timezone
 from sqlalchemy import select
-from .db import Session,Record,Membership,audit,now
+from .db import Session,Record,Membership,Audit,audit,now
 from .scope import workspace_id,actor_id,system_scope
 from .agent_api import add_task,TaskBody
 
@@ -12,6 +12,7 @@ def tick(at=None):
         for memory in s.scalars(select(Record).where(Record.kind=='agent_memory')):
             if json.loads(memory.payload).get('expires_at','9999')<at.isoformat():
                 # Explicit internal maintenance; ordinary APIs remain workspace-scoped.
+                s.add(Audit(workspace=memory.workspace,action='agent.memory.expired',target=memory.id,detail=json.dumps({'actor_id':'scheduler','policy':'retention'})))
                 s.delete(memory)
         s.commit()
         expired=[(r.id,r.workspace) for r in s.scalars(select(Record).where(Record.kind=='approval')) if json.loads(r.payload).get('expires_at','9999')<at.isoformat() and json.loads(r.payload).get('status') in {'pending','approved'}]
@@ -20,7 +21,7 @@ def tick(at=None):
         token=workspace_id.set(workspace)
         try:
             with Session() as s:
-                row=s.get(Record,id);d=json.loads(row.payload);d['status']='expired';row.payload=json.dumps(d)
+                row=s.get(Record,id);d=json.loads(row.payload);d['status']='expired';row.payload=json.dumps(d);row.dedupe_key=None
                 context=d.get('context',{});job=s.get(Record,context.get('job_id',''))
                 if job:
                     j=json.loads(job.payload)

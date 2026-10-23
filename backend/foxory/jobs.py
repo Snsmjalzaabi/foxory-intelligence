@@ -20,6 +20,11 @@ async def execute_step(data):
     data.update(status='completed',step=data.get('step',0)+1)
     return data
 
+def unchanged_claim(id,claim):
+    with Session() as s:
+        current=s.get(Record,id)
+        return current is not None and current.payload==claim
+
 async def run_one():
     token=workspace_id.set('__unauthorized__')
     actor_token=actor_id.set('worker')
@@ -50,11 +55,18 @@ async def _run_one():
                 if 'agent_snapshot' not in data:
                     data.update(status='failed',error='Legacy draft agent task: submit a new task with explicit agent grants');job.payload=json.dumps(data);s.commit();continue
                 cfg=data['agent_snapshot']
+                target=(data['plan'][data['cursor']].get('agent_id') or data['agent_id']) if stage=='execute' else data['agent_id']
+                acting=cfg if target==data['agent_id'] else data['delegates'][target]
+                data['active_agent_id']=target
+                actor_usage=data.setdefault('agent_usage',{}).setdefault(target,{'model_calls':0,'deadline_at':(datetime.now(timezone.utc)+timedelta(seconds=acting['max_seconds'])).isoformat()})
+                if actor_usage['deadline_at']<now():
+                    data.update(status='failed',error='Assigned agent wall-clock budget exhausted');job.payload=json.dumps(data);s.commit();continue
                 needs_model=stage in {'plan','review','consolidate'} or stage=='execute' and not data['plan'][data['cursor']].get('tool')
                 if needs_model:
-                    if data.get('agent_model_calls',0)>=cfg['max_model_calls']:
+                    if data.get('agent_model_calls',0)>=cfg['max_model_calls'] or actor_usage['model_calls']>=acting['max_model_calls']:
                         data.update(status='failed',error='Agent model-call budget exhausted');job.payload=json.dumps(data);s.commit();continue
                     data['agent_model_calls']=data.get('agent_model_calls',0)+1
+                    actor_usage['model_calls']+=1
             if operation:used[operation]=used.get(operation,0)+1
             data.update(status="running", started_at=now())
             claim = json.dumps(data)
@@ -75,17 +87,19 @@ async def _run_one():
             with Session() as s:
                 member=s.get(Membership,(workspace,creator))
                 if not member or member.role not in {'admin','editor'}:raise PermissionError('Job creator no longer has execution permission')
-        step_task = asyncio.create_task(asyncio.wait_for(execute_step(working), timeout=max(.1,min(data.get('agent_snapshot',{}).get('step_timeout',240),(datetime.fromisoformat(data["deadline_at"])-datetime.now(timezone.utc)).total_seconds()))))
+        step_timeout=240
+        if data['type']=='agent':
+            target=data['active_agent_id'];cfg=data['agent_snapshot'] if target==data['agent_id'] else data['delegates'][target]
+            step_timeout=min(cfg['step_timeout'],(datetime.fromisoformat(data['agent_usage'][target]['deadline_at'])-datetime.now(timezone.utc)).total_seconds())
+        step_task = asyncio.create_task(asyncio.wait_for(execute_step(working), timeout=max(.1,min(step_timeout,data.get('agent_snapshot',{}).get('step_timeout',240),(datetime.fromisoformat(data["deadline_at"])-datetime.now(timezone.utc)).total_seconds()))))
         try:
             while not step_task.done():
                 await asyncio.wait({step_task}, timeout=0.2)
-                with Session() as s:
-                    current = s.get(Record,id)
-                    if current is None or current.payload != claim:
-                        step_task.cancel()
-                        try: await step_task
-                        except asyncio.CancelledError: pass
-                        return True
+                if not await asyncio.to_thread(unchanged_claim,id,claim):
+                    step_task.cancel()
+                    try: await step_task
+                    except asyncio.CancelledError: pass
+                    return True
             result = step_task.result()
         finally:
             if not step_task.done():
@@ -102,7 +116,8 @@ async def _run_one():
         if data['type']=='agent':
             if isinstance(e,(PermissionError,ValueError)):result['error_detail']=str(e)[:500]
             result['step_failures']=data.get('step_failures',0)+1
-            if not isinstance(e,PermissionError) and result['step_failures']<=data['agent_snapshot']['max_retries']:
+            target=data.get('active_agent_id',data['agent_id']);acting=data['agent_snapshot'] if target==data['agent_id'] else data['delegates'][target]
+            if not isinstance(e,PermissionError) and result['step_failures']<=min(data['agent_snapshot']['max_retries'],acting['max_retries']):
                 result['status']='queued'
             result.setdefault('timeline',[]).append({'event':'step_error','stage':data.get('stage'),'error_type':type(e).__name__,'at':now()})
     with Session() as s:
@@ -144,7 +159,11 @@ async def worker():
 async def schedule_loop():
     from .scheduler import tick
     while True:
-        try:tick()
+        pending=asyncio.create_task(asyncio.to_thread(tick))
+        try:await asyncio.shield(pending)
+        except asyncio.CancelledError:
+            await pending
+            raise
         except Exception:log.exception('Scheduler tick failed')
         await asyncio.sleep(1)
 

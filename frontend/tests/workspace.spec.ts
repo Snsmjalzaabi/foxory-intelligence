@@ -34,7 +34,9 @@ test('document upload, grounded question and validation errors',async({page})=>{
  await page.getByRole('button',{name:'Ask documents'}).click();
  await expect(page.locator('.document-answer')).toContainText('Test fixture response');
  await expect(page.locator('.document-answer')).toContainText('quarter.txt');
+ const rejected=page.waitForResponse(r=>r.url().endsWith('/api/documents')&&r.status()===422,{timeout:25000});
  await page.locator('input[type=file]').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{')});
+ await rejected;
  await expect(page.getByRole('alert')).toContainText('Document rejected');
 });
 

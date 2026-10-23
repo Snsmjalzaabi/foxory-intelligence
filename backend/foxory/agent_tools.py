@@ -6,9 +6,12 @@ import math
 import operator
 from dataclasses import dataclass
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, RootModel, JsonValue
 from sqlalchemy import select
 from .db import Session, Record, get_record
+
+class ToolOutput(RootModel[dict[str,JsonValue]]):
+    """JSON-only output envelope; tool fields are documented in the catalogue."""
 
 class Input(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -54,7 +57,7 @@ TOOLS={
 }
 
 def catalogue():
-    return {name:{'description':t.description,'input_schema':t.schema.model_json_schema(),'permission':t.scope,'approval_required':t.approval,'timeout_seconds':t.timeout} for name,t in TOOLS.items()}
+    return {name:{'description':t.description,'input_schema':t.schema.model_json_schema(),'output_schema':ToolOutput.model_json_schema(),'output_limit_chars':60000,'permission':t.scope,'approval_required':t.approval,'timeout_seconds':t.timeout} for name,t in TOOLS.items()}
 
 def arithmetic(expression:str):
     tree=ast.parse(expression,mode='eval')

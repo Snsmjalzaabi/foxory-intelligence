@@ -4,9 +4,9 @@ Phase 3 uses the existing modular monolith and an explicit persisted state graph
 
 ## Agent templates
 
-Add a named entry to `TEMPLATES` in `backend/foxory/agents.py`. Each template supplies purpose and an explicit list of registered tools. `templates()` derives the corresponding permission scopes and defaults. Users choose an installed local model and explicitly create the agent. The bundled General Coordinator is the default coordination template; it is not secretly instantiated with privileges. Coding and Writing templates have no host execution permissions.
+Add a named entry to `TEMPLATES` in `backend/foxory/agents.py`. Each template supplies purpose and an explicit list of registered tools. The catalogue publishes input schemas, a JSON-only output schema and an output-size bound. `templates()` derives the corresponding permission scopes and defaults. Users choose an installed local model and explicitly create the agent. The bundled General Coordinator is the default coordination template; it is not secretly instantiated with privileges. Coding and Writing templates have no host execution permissions.
 
-Agent configs are validated by `AgentConfig`. Tasks snapshot the coordinator and every explicitly selected specialist. Any live configuration change, pause or deletion invalidates an existing task rather than inheriting new privileges. Delegation is bounded by the validated plan and its backward-only dependency indices. Delegates use their own grants, never the coordinator's; recursive delegation and model-generated changes to tool grants are unsupported.
+Agent configs are validated by `AgentConfig`. Tasks snapshot the coordinator and every explicitly selected specialist. Any live configuration change, pause or deletion invalidates an existing task rather than inheriting new privileges. Delegation is bounded by the validated plan and its backward-only dependency indices. Delegates use their own grants, step/model-call/retry limits and timeouts, never the coordinator's; recursive delegation and model-generated changes to tool grants are unsupported.
 
 ## Safe tool example
 
@@ -39,3 +39,18 @@ Schedule records contain normalized UTC `next_run_at`, IANA timezone, optional e
 The scheduler is an independent coroutine in the API lifespan and does not depend on a browser. Default task concurrency is one. `FOXORY_WORKER_CONCURRENCY=2` permits two task workers, while model calls remain serialized to avoid simultaneous model loading. Only one API process/replica is supported. Scaling requires a database-backed lease/queue and atomic scheduler claims across processes; do not run multiple replicas with this scheduler.
 
 Generated summaries are unverified and retained according to agent retention days (0 disables summaries). Explicit user fact writes are marked user-approved, not independently verified. Facts are shared within the workspace; generated summaries are retrieved only for the owning agent. Expired entries are filtered immediately and pruned by scheduler maintenance. Memory APIs provide editing for approved facts and deletion; execution/audit records remain retained. Never store credentials in semantic or agent memory.
+
+## Chaining actual tool outputs
+
+Arguments may reference JSON from an earlier completed dependency. For example, a Research Agent with explicit `web.search` and `web.retrieve` grants can search, then read the first actual result:
+
+```json
+{"steps":[
+  {"title":"Discover","tool":"web.search","args":{"query":"retrieval augmented generation"}},
+  {"title":"Read first result","tool":"web.retrieve","args":{"url":{"$step":0,"path":["results",0,"url"]}},"depends_on":[0]}
+]}
+```
+
+References are bounded JSON paths, not expressions or attribute access. A reference may only use a declared earlier dependency and cannot alter a tool, assignee or grant. The resolved value passes the actual input schema and resource authorization immediately before execution. Retrieved URLs still pass SSRF/robots controls; document IDs must remain explicitly granted. Approval snapshots bind the final resolved arguments, so approvals cannot be repurposed when a referenced result changes.
+
+Small models may omit requested work despite emitting syntactically valid plans. Execution completion means the validated graph finished, not that the business objective or claims were independently verified. Inspect plan coverage and quality-review notes; choose a more capable local model or supply an explicit reviewed plan through the task API for complex objectives. Malformed/ungranted plans fail within configured budgets rather than pretending to execute.
