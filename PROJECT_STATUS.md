@@ -37,11 +37,12 @@ and production readiness is not claimed. Prior evidence is preserved in
 
 ## Verified in Codex Cloud
 
-- Backend final full run: **141 passed (47.16 seconds)**, including real Python
+- Backend final full run: **142 passed (47.58 seconds)**, including real Python
   sandbox tests, SQLite migrations and mocked OCI lifecycle/approval/tenant cases.
-- **11 Chromium UI journeys passed (2.2 minutes)**. Existing Python execution
+- **12 Chromium UI journeys passed (2.4 minutes)**. Existing Python execution
   uses real Bubblewrap/seccomp. The additional JS packaging/browser screenshot
-  journey uses the explicit test-only mocked OCI boundary, with real HTTP manager,
+  and failure/retry/pause/cancel journeys use the explicit test-only mocked OCI
+  boundary, with real HTTP manager,
   backend, scopes, approval persistence and artifact downloads. Ollama is a fixture
   in browser journeys. These results do not prove actual OCI/browser isolation.
 - Combined multi-agent workflow test passed: web/model/OCI fixtures, real durable
@@ -54,24 +55,37 @@ and production readiness is not claimed. Prior evidence is preserved in
 - Worker supply-chain checks passed offline and online: pinned upstream manifest
   digest plus exact Playwright/playwright-core archive SHA-512 integrity. Worker
   image build/runtime, SBOM/vulnerability audit and real-host isolation remain
-  pending. No worker image was pulled/built here: the large base does not fit the
+  pending. The npm bulk advisory query returned no advisories for the two pinned
+  packages; this excludes OS/Chromium vulnerabilities. No worker image was pulled/built here: the large base does not fit the
   available disk budget safely alongside owner data.
 
 During development, the regression suite exposed repeated shutdown cancellation
 interrupting Python process-map cleanup (128 passed, 3 teardown errors). Cleanup
 is now shielded and repeated cancellation is guarded; the subsequent full 136-test
-run passed. No isolation controls or tests were weakened.
+run passed. Final compatibility review also retained downloads of accepted Python artifact
+records that predate the explicit workspace field, while checking their scoped
+record, consumed approval and workspace-derived manager ID. Rejected approvals
+still prevent downloads. No isolation controls or tests were weakened.
 
-## Pending final verification results
+## Docker, database and actual local-model verification
 
 Current-source application overlay image built and verified:
-`sha256:a293a9e17dec724854bae71015ebd0ddacf5bd9079fa8ded8e9ad454c57aac05`.
+`sha256:4c40f0258785d9a7d3fd7192a0914a2264111367064f99c2205a9b32a5fd09aa`.
 Health, default-disabled execution, memory persistence after restart, source/UI
 hashes, actual non-root UID, read-only filesystem, init/cap-drop and absence of
 runtime socket mounts passed. This reuses the accepted dependency image; it is
 not a fresh canonical Dockerfile build or a worker-image isolation test. Disposable
-smoke resources were removed. PostgreSQL and real local-model rerun results will
-be recorded after execution. Owner containers/volumes remain untouched.
+smoke resources were removed. A separate PostgreSQL 17 container passed revision
+0003 migrations, workspace isolation, duplicate constraints, restart persistence
+and custom-format dump/restore; its container/volume were removed. Owner database
+and application were not accessed by that harness. Real local-model rerun results
+passed with actual `qwen2.5:0.5b`: intentionally failing Python source exited 1
+and was blocked from packaging; model-repaired source exited 0 after real tests,
+consumed separate execution/packaging approvals and produced a matching CRC-valid
+ZIP. Account/session/completed task survived restart. Acceptance tests were
+reviewed deterministic tests, not autonomously generated tests. This verifies
+Python, not the new OCI worker or GPU performance. Owner containers/volumes remain
+untouched.
 
 ## Remaining Phase 4 acceptance
 
@@ -103,3 +117,24 @@ Codex cgroup diagnostics. The next work is the Ubuntu checklist against the pinn
 image and connected manager; investigate failures while keeping quotas, namespace
 isolation and Chromium sandbox intact. Record actual host evidence before marking
 Phase 4 complete. Do not begin Phase 5 or publish/deploy publicly.
+
+## Verification commands executed
+
+```bash
+.venv/bin/pytest -q backend/tests
+npm --prefix frontend run build
+# Run from frontend/:
+FOXORY_E2E_SANDBOX=1 FOXORY_E2E_OCI=1 npm run test:e2e
+# Run from repository root:
+.venv/bin/python scripts/verify_worker_supply_chain.py --online
+.venv/bin/python scripts/phase4_postgres_smoke.py
+.venv/bin/python scripts/phase4_docker_smoke.py --build --image foxory-intelligence-app:phase4-oci-connected
+# The Ollama URL is a discovered local disposable-test connection, supplied by the operator:
+.venv/bin/python scripts/phase4_integration.py --ollama-url http://LOCAL_OLLAMA:11434
+```
+
+`pip check`, Node worker syntax, Compose CPU/GPU syntax and whitespace checks
+also passed. Worker source was reviewed to make output-budget violations fail
+explicitly, then syntax/input-integrity checks were rerun. Its runtime path still
+requires Ubuntu verification. The optional user-service example is not installed.
+No public publishing, production deployment, real communications or purchases.

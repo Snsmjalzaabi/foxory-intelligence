@@ -2,7 +2,7 @@
 
 ## Phase 4 — incomplete, unreleased
 
-Added fail-closed host diagnostics, a reproducible optional Ubuntu OCI probe, fixed rootless OCI command policy and staged offline Playwright/Node/TypeScript workers. New profiles remain disabled and require active host verification plus manager/UI integration. See docs/SANDBOX_HOST_VERIFICATION.md.
+Connected offline Playwright/Node/TypeScript profiles to authenticated manager dispatch, immutable approvals and Computer Mode. Added ownership-scoped lifecycle/cancellation/recovery, strict artifact/download validation, screenshot previews, deterministic OCI-boundary tests and pinned worker-image inputs. Profiles remain disabled by default; actual Ubuntu isolation/image verification is pending. See docs/SANDBOX_HOST_VERIFICATION.md.
 
 Bounded table filtering/grouped statistics and inert SVG chart data; approval-gated source ZIP artifacts; CSV/JSON exports and connected Workforce download controls. Computer Mode now connects optional, explicitly approved single-process Python execution through a separate rootless Bubblewrap manager. Uploaded CSV statistics, report/chart workflows and scoped artifacts are supported. General browser and JavaScript execution remain unavailable. See PROJECT_STATUS.md.
 

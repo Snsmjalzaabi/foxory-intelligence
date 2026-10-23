@@ -105,10 +105,20 @@ def artifact(id:str,index:int,name:str):
         if not item:raise HTTPException(404,'Artifact not found')
         result=output['result']
         grant=data.get('sandbox_authorizations',{}).get(str(index))
-        if result.get('id') or output['tool']!='sandbox.python':
-            if not grant:raise HTTPException(409,'Missing artifact execution grant')
-            expected=hashlib.sha256((workspace_id.get()+':agent:'+grant['approval_id']).encode()).hexdigest()
-            if result.get('id')!=expected or result.get('workspace')!=workspace_id.get():raise HTTPException(409,'Artifact ownership mismatch')
+        if not grant:raise HTTPException(409,'Missing artifact execution grant')
+        approval=json.loads(get_record(session,grant['approval_id'],'approval').payload)
+        context=approval.get('context',{})
+        if (approval.get('status')!='consumed' or approval.get('context_hash')!=grant.get('context_hash')
+            or context.get('job_id')!=id or context.get('effect',{}).get('index')!=index
+            or context.get('effect',{}).get('tool')!=output['tool']):
+            raise HTTPException(409,'Artifact approval mismatch')
+        expected=hashlib.sha256((workspace_id.get()+':agent:'+grant['approval_id']).encode()).hexdigest()
+        # Accepted Python records predate the explicit workspace field; their
+        # scoped row, consumed approval and workspace-derived manager ID bind
+        # ownership without rewriting any stored user data.
+        legacy_python=output['tool']=='sandbox.python' and 'workspace' not in result
+        if result.get('id')!=expected or (not legacy_python and result.get('workspace')!=workspace_id.get()):
+            raise HTTPException(409,'Artifact ownership mismatch')
         try:
             checked=validate_artifacts(result.get('artifacts',{}),allow_png=output['tool']=='sandbox.browser')
             content=base64.b64decode(checked[name]['base64'],validate=True)

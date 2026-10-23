@@ -14,7 +14,10 @@
   actual deterministic calculations, PDF parsing and source ZIP validation.
 - [x] Worker base digest, locked dependencies, input hashes and registry-byte checks.
 - [x] Ubuntu installation, image build and security/recovery validation checklist.
-- [x] Backend, frontend, browser, migration/security and Compose regressions.
+- [x] Backend (142), browser journeys (12), frontend build, migration/security and Compose regressions.
+- [x] Current-source application image health/persistence and separate PostgreSQL 17
+  migrations, tenant/duplicate guards, restart and dump/restore smoke tests.
+- [x] Actual local qwen2.5:0.5b Python repair/test/package/restart regression.
 
 ## Required real-host evidence — do not infer from mocks
 

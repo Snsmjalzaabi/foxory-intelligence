@@ -1,6 +1,6 @@
 # Architecture
 
-FOXORY remains a modular monolith: React/strict TypeScript/Vite served by FastAPI; SQLAlchemy/Alembic; PostgreSQL in Compose, SQLite WAL for local development/tests. No paid inference provider, host shell, Docker socket, external messaging executor or browser tool is exposed to models.
+FOXORY remains a modular monolith: React/strict TypeScript/Vite served by FastAPI; SQLAlchemy/Alembic; PostgreSQL in Compose, SQLite WAL for local development/tests. No paid inference provider, host shell, Docker socket, external messaging executor or unguarded browser tool is exposed to models.
 
 ## Modules and boundaries
 

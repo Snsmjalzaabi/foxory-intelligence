@@ -251,3 +251,30 @@ test('Computer Mode JS packaging and offline browser artifacts through mocked OC
  expect(png.suggestedFilename()).toBe('screenshot-1.png');
  await expect(page.getByText(/MOCK OCI boundary: no code or browser executed/)).toBeVisible();
 });
+
+test('Computer Mode exposes failures, fresh retry approval, pause and cancellation with mocked OCI',async({page})=>{
+ test.skip(process.env.FOXORY_E2E_OCI!=='1','Explicit test-only OCI fixtures required');
+ test.setTimeout(180000);
+ await page.getByRole('button',{name:'Computer',exact:true}).click();
+ await page.getByLabel('Execution profile').selectOption('javascript');
+ await page.getByRole('button',{name:'Create restricted JavaScript agent',exact:true}).click();
+ await page.getByLabel('Execution agent').selectOption({label:'Restricted JavaScript developer'});
+ await page.getByLabel('Computer task objective').fill('MOCK OCI: verify visible failed execution');
+ await page.getByText('Optional reviewed JavaScript source',{exact:true}).click();
+ await page.getByLabel('Source files JSON').fill(JSON.stringify({'test_app.js':'// FOXORY_FIXTURE_FAIL: explicit test-only result'}));
+ await page.getByRole('button',{name:'Plan task',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Approval required'})).toBeVisible();
+ await page.getByRole('button',{name:'approve computer action'}).click();
+ await expect(page.getByRole('heading',{name:'Step 1 · sandbox.javascript · failed'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Download project ZIP'})).toHaveCount(0);
+ await page.getByRole('button',{name:'Review and retry as a new task'}).click();
+ await page.getByLabel('Source files JSON').fill(JSON.stringify({'test_app.js':'// FOXORY_FIXTURE_HANG: explicit test-only delayed boundary'}));
+ await page.getByRole('button',{name:'Plan task',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Approval required'})).toBeVisible();
+ await page.getByRole('button',{name:'approve computer action'}).click();
+ await expect(page.getByRole('status').last()).toContainText('running');
+ await page.getByRole('button',{name:'pause task',exact:true}).click();
+ await expect(page.getByRole('button',{name:'resume task',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'cancel task',exact:true}).click();
+ await expect(page.getByRole('status').last()).toContainText('cancelled');
+});

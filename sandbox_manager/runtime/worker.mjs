@@ -26,12 +26,17 @@ if (request.profile !== 'browser') {
   if (request.profile === 'typescript') args.push('--experimental-strip-types');
   args.push('/work/' + request.entrypoint);
   const child = spawn(process.execPath, args, {cwd:'/work', env:{HOME:'/tmp', LANG:'C.UTF-8'}, stdio:['ignore','pipe','pipe']});
+  let logBudgetExceeded = false;
   const timer = setTimeout(() => child.kill('SIGKILL'), 15000);
   for (const stream of [child.stdout, child.stderr]) stream.on('data', chunk => {
-    try { append(chunk.toString('utf8')); } catch { child.kill('SIGKILL'); }
+    try { append(chunk.toString('utf8')); } catch { logBudgetExceeded = true; child.kill('SIGKILL'); }
   });
   exitCode = await new Promise((resolve, reject) => {child.once('error', reject); child.once('close', code => resolve(code ?? 1));});
   clearTimeout(timer);
+  if (logBudgetExceeded) {
+    exitCode = 1; logs = logs.slice(0, 30000) + '\nExecution output budget exceeded.\n';
+    process.stdout.write(JSON.stringify({event:'progress',message:'Execution output budget exceeded.\n'})+'\n');
+  }
 } else {
   // Offline controlled-site profile: no external navigation or form submission.
   const actions = request.actions;

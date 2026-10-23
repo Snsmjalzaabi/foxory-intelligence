@@ -71,8 +71,11 @@ class Engine:
                 if action['action']=='download':artifacts['result.txt']=artifact(project['files'].get('report.txt','Controlled download').encode())
         else:artifacts['result.json']=artifact(b'{"fixture":true,"answer":42}')
         if self.corrupt:artifacts['result.json']={'base64':'QQ==','size':1,'sha256':'bad'}
+        content='\n'.join(project['files'].values())
+        failed='FOXORY_FIXTURE_FAIL' in content
+        hanging=self.hang or 'FOXORY_FIXTURE_HANG' in content
         return Process([{'event':'progress','message':'Mock worker started\n'},
-                        {'event':'result','exit_code':0,'stdout':text,'artifacts':artifacts}],hang=self.hang)
+                        {'event':'result','exit_code':1 if failed else 0,'stdout':text,'artifacts':artifacts}],hang=hanging,code=1 if failed else 0)
 
     def install(self,patcher):
         from sandbox_manager.oci_runtime import Runtime

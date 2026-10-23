@@ -309,3 +309,26 @@ def test_png_decompression_bomb_and_invalid_compression_rejected():
     header=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',1,1,8,2,0,0,0))
     for compressed in (b'invalid compressed data',zlib.compress(b'\0'*1000000)):
         with pytest.raises(ValueError):validate_png(header+chunk(b'IDAT',compressed)+chunk(b'IEND',b''))
+
+async def test_legacy_python_artifacts_remain_bound_to_consumed_approval(client):
+    from test_agents import agent,finish
+    from foxory.db import Session,get_record
+    from foxory.scope import workspace_id
+    coder=await agent(client,'Legacy coder',['sandbox.python','source.package'])
+    response=await client.post('/api/computer/tasks',json={'agent_id':coder['id'],'objective':'Legacy Python artifact','idempotency_key':'legacy-python-artifact','source':{'title':'Legacy','files':{'a.py':'print(42)'},'entrypoint':'a.py'}})
+    id=response.json()['id'];state=await finish(id);approval_id=state['approval_id']
+    with Session() as session:
+        row=get_record(session,id,'job');data=json.loads(row.payload)
+        approved=get_record(session,approval_id,'approval');approval=json.loads(approved.payload)
+        approval['status']='consumed';approved.payload=json.dumps(approval)
+        data['sandbox_authorizations']={'0':{'approval_id':approval_id,'context_hash':approval['context_hash']}}
+        data['outputs']=[{'index':0,'tool':'sandbox.python','result':{
+            'id':hashlib.sha256((workspace_id.get()+':agent:'+approval_id).encode()).hexdigest(),
+            'status':'completed','artifacts':{'result.txt':artifact(b'legacy output')}}}]
+        data['status']='completed';row.payload=json.dumps(data);session.commit()
+    path='/api/computer/jobs/'+id+'/artifacts/0/result.txt'
+    assert (await client.get(path)).content==b'legacy output'
+    with Session() as session:
+        approved=get_record(session,approval_id,'approval');approval=json.loads(approved.payload)
+        approval['status']='rejected';approved.payload=json.dumps(approval);session.commit()
+    assert (await client.get(path)).status_code==409
