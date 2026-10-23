@@ -2,11 +2,20 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Core product recovery: Search/document chat now share Deep Research’s checked
+reference/extractive fallback, missing document evidence skips inference, and a
+bounded optional chat output limit supports CPU verification. Recovered stale
+model selections, added no-model setup guidance, prioritized document navigation
+and labeled Computer Mode optional. Added a real Ollama/web disposable core
+acceptance harness and expanded browser/grounding regressions. No sandbox
+manager is required by the core installation.
+
 Restricted the Chromium chroot policy correction to browser containers using only
 `SYS_CHROOT`; JS/TS still drop all capabilities. Strengthened both code-profile
 controls probes and added separate fixture pass markers, policy/dispatch tests
-and Ubuntu rebuild/denial-diagnosis instructions. Actual Ubuntu browser startup
-with this correction remains unverified; OCI defaults remain disabled.
+and Ubuntu rebuild/denial-diagnosis instructions. The owner supplied actual Ubuntu
+JS/TS/Chromium fixed-probe passes on image `sha256:248d4afc67fe3b0845b2cedd239d5b378eba4b0ad19e344891fb5fc0873ddbcb`.
+Full host acceptance remains pending; OCI defaults remain disabled.
 
 Connected offline Playwright/Node/TypeScript profiles to authenticated manager dispatch, immutable approvals and Computer Mode. Added ownership-scoped lifecycle/cancellation/recovery, strict artifact/download validation, screenshot previews, deterministic OCI-boundary tests and pinned worker-image inputs. Profiles remain disabled by default; actual Ubuntu isolation/image verification is pending. See docs/SANDBOX_HOST_VERIFICATION.md.
 

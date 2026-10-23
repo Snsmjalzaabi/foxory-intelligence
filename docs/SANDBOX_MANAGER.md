@@ -158,11 +158,12 @@ The main application never runs generated code or mounts a runtime socket.
 JS/TS OCI containers drop all capabilities. Only browser containers add
 `SYS_CHROOT` after dropping all capabilities, for Chromium's chroot-based
 filesystem sandbox and capability-conditioned runtime seccomp policy. All other
-restrictions remain unchanged. The correction is awaiting actual Ubuntu runtime
-verification; see [the investigation and rebuild commands](CHROMIUM_SANDBOX_UBUNTU.md).
+restrictions remain unchanged. The owner supplied passing Ubuntu fixed probes;
+full host security/recovery acceptance remains pending. See [the investigation and rebuild commands](CHROMIUM_SANDBOX_UBUNTU.md).
 
-New OCI lifecycle/workflow tests use an explicitly mocked engine. Real isolated
-OCI/browser execution remains pending the [Ubuntu checklist](SANDBOX_HOST_VERIFICATION.md).
+New OCI lifecycle/workflow tests use an explicitly mocked engine. The owner
+supplied passing actual Ubuntu fixed runtime probes; full manager/security/recovery
+acceptance remains pending the [Ubuntu checklist](SANDBOX_HOST_VERIFICATION.md).
 The manager/worker/image code is connected; mocks are not isolation certification.
 Windows/macOS, NVIDIA performance, live networking and independent escape/security
 review remain unverified. The existing Python-only system unit is unchanged; the

@@ -13,8 +13,13 @@ python scripts/setup.py
 docker compose up -d --build
 ```
 
+**The default stack is the core application, PostgreSQL and Ollama.** It does not
+require Podman, a sandbox manager, delegated cgroups or a dedicated execution OS
+account. Computer Mode is optional and disabled by default.
+
 Open <http://localhost:8000>. On first run, enter `FOXORY_TOKEN` from your private `.env` and create an administrator username/password. Existing Phase 1 data stays in the Local workspace. **The bootstrap token stops granting API access once an account exists.** Subsequent login uses a revocable, HttpOnly session. Do not publish `.env`.
 
+If Ollama is connected but has no models, choose **Choose a model** to open Settings.
 In Settings, explicitly download a completion model (for example a small Qwen model) after reviewing its license. Select an installed model for Chat. Download an embedding-capable model separately if semantic indexing is wanted. No model weights are bundled or downloaded automatically. Model families/variants have different terms and capabilities.
 
 The app binds to `127.0.0.1`; PostgreSQL/Ollama have no published ports. Named volumes survive `docker compose down`. Run **one API process/replica**. Linux containers are required for restricted parsing; native Windows/macOS parsing fails closed. Docker Desktop compatibility/GPU performance remain unverified.
@@ -35,7 +40,7 @@ The app binds to `127.0.0.1`; PostgreSQL/Ollama have no published ports. Named v
 
 ## Limits
 
-This is not independently security-reviewed or approved for public hosting. Live email, browser/JavaScript execution, unapproved workspace writes, parallel GPU verification, OCR and spreadsheet formula execution remain unavailable. Scheduling is fixed-interval and single-process; agent planning/delegation is bounded and can fail visibly on small models. Parser isolation requires Linux/libseccomp and fails closed. Vectors are stored with document records and scanned locally; indexing is bounded to 200 chunks/document and is intended for modest workspaces, not a large-scale vector database.
+This is not independently security-reviewed or approved for public hosting. Live email, public browser automation, unapproved workspace writes, parallel GPU verification, OCR and spreadsheet formula execution remain unavailable. Optional offline browser and JS/TS profiles require separate host acceptance and stay disabled by default. Scheduling is fixed-interval and single-process; agent planning/delegation is bounded and can fail visibly on small models. Parser isolation requires Linux/libseccomp and fails closed. Vectors are stored with document records and scanned locally; indexing is bounded to 200 chunks/document and is intended for modest workspaces, not a large-scale vector database.
 
 Source credibility is a transparent metadata heuristic. Contradiction interpretation is model analysis; matching quotations only proves that the text was present in saved evidence. Reports can remain incomplete or incorrect. Restricted sources are declined; there is no CAPTCHA, authentication or paywall bypass. Deleting an original document does not purge previously saved research snapshots/audit records.
 
@@ -44,11 +49,17 @@ See [INSTALLATION.md](INSTALLATION.md), [CONFIGURATION.md](CONFIGURATION.md), [S
 Optional Phase 4 Computer Mode supports a separately deployed, approval-gated
 single-process Python sandbox and source ZIP downloads. It is disabled by default.
 Review [setup and security limits](docs/SANDBOX_MANAGER.md) before enabling it.
-Phase 4 remains incomplete; general browser and JS/TS execution are unavailable.
+Phase 4 remains incomplete; the core application operates without these optional workers.
 
 
 Phase 4 now connects optional JavaScript/TypeScript and offline Playwright profiles
 through the authenticated manager, approval gates and Computer Mode. They remain
-disabled by default and require actual Ubuntu isolation verification; Codex tests
-use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
+disabled by default. The owner supplied passing actual Ubuntu JS/TS/Chromium fixed
+probes; full host security/recovery acceptance remains pending. Codex lifecycle/UI
+tests use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
 for pinned image builds, lifecycle/ownership controls and remaining limitations.
+
+For current real-model/web checks, reproducible disposable core verification and
+the feature matrix, see [PROJECT_STATUS.md](PROJECT_STATUS.md) and
+[the product recovery report](docs/CORE_PRODUCT_RECOVERY.md). Unit tests and model
+fixtures are not a factual-accuracy benchmark.

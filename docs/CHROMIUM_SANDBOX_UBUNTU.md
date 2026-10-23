@@ -1,12 +1,14 @@
 # Chromium chroot failure under rootless Podman
 
-Status: targeted policy correction implemented; **actual Ubuntu 26.04 Chromium
-verification is pending**. Phase 4 remains incomplete and OCI execution remains
-disabled by default. This document does not certify container isolation.
+Status: the owner supplied a successful **actual Ubuntu 26.04 fixed runtime
+verification** after pulling `aab7884`: JavaScript, TypeScript and Chromium passed.
+See [the exact image and evidence scope](UBUNTU_OCI_RUNTIME_EVIDENCE.md). Phase 4
+remains incomplete and OCI execution remains disabled by default. This document
+does not certify container isolation.
 
 ## Investigation and policy
 
-The reported Ubuntu run builds the immutable image and reaches Chromium startup,
+Before the correction, the reported Ubuntu run built the immutable image and reached Chromium startup,
 then fails at `sys_chroot("/proc/self/fdinfo/") == 0`. The operator reports working
 rootless Podman, delegated cgroups and static checks; JS/TS appear to pass. Those
 are operator observations, not new runtime results from this change.
@@ -72,7 +74,7 @@ host's installed containers/common policy and image Chromium version govern):
 | `backend/tests/test_oci_integration.py` | Authenticated dispatch capability assertions for all three profiles. |
 | `docs/CHROMIUM_SANDBOX_UBUNTU.md` | Investigation, security review, update and host procedures. |
 | `docs/SANDBOX_HOST_VERIFICATION.md` | Explicit capability exception and outstanding acceptance checks. |
-| `docs/PHASE4_CHECKLIST.md` | Implemented policy versus pending actual Chromium verification. |
+| `docs/PHASE4_CHECKLIST.md` | Implemented policy, supplied Ubuntu fixture evidence and remaining acceptance. |
 | `docs/SANDBOX_MANAGER.md` | Manager policy and verification scope. |
 | `sandbox_manager/runtime/README.md` | Image/operator guidance for the exception. |
 | `SECURITY.md` | Capability scope and remaining security verification. |

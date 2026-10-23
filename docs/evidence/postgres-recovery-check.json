@@ -1,0 +1,17 @@
+{
+  "status": "blocked",
+  "command": ".venv/bin/python scripts/phase4_postgres_smoke.py",
+  "attempts": 2,
+  "first_result": "Disposable PostgreSQL did not become ready",
+  "diagnostic_retry": {
+    "container_status": "exited",
+    "exit_code": 1,
+    "oom_killed": false,
+    "initdb_error": "could not create directory /var/lib/postgresql/data/pg_wal: No space left on device"
+  },
+  "migration_started": false,
+  "own_disposable_container_and_volume_removed": true,
+  "owner_database_accessed": false,
+  "prior_accepted_postgres_results": "historical only; this increment is not a fresh PostgreSQL pass",
+  "next_action": "Rerun the disposable PostgreSQL smoke on an authorized host with sufficient container-storage capacity. Never remove owner volumes."
+}

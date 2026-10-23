@@ -59,7 +59,7 @@ try:
         assert docker('exec',name,'id','-u',capture_output=True,text=True).stdout.strip()=='10001'
         assert inspector['HostConfig']['Init'] and inspector['HostConfig']['CapDrop']==['ALL']
         assert all('docker.sock' not in mount.get('Source','') for mount in inspector['Mounts'])
-        for module in ['computer_api.py','sandbox_client.py','agents.py','agent_tools.py','advanced_files.py','sandbox_protocol.py']:
+        for module in ['main.py','research.py','intelligence.py','inference.py','auth.py','computer_api.py','sandbox_client.py','agents.py','agent_tools.py','advanced_files.py','sandbox_protocol.py']:
             actual=docker('exec',name,'sha256sum','/app/backend/foxory/'+module,capture_output=True,text=True).stdout.split()[0]
             assert actual==hashlib.sha256((ROOT/'backend/foxory'/module).read_bytes()).hexdigest()
         image=docker('image','inspect',args.image,'--format','{{.Id}}',capture_output=True,text=True).stdout.strip()

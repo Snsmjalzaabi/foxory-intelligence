@@ -1,6 +1,108 @@
-# FOXORY Intelligence — Phase 4 Chromium policy correction, Ubuntu acceptance pending
+# FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Current increment: browser-only chroot capability
+## Current recovery increment
+
+Branch: `development`. Before edits, the clean Cloud checkout, configured private
+GitHub origin and actual remote development ref all matched
+`aab7884e6a598f4cde1d9f06d4342cc20fb0be08`. The owner's supplied Ubuntu pull reached
+that same commit; the pasted master directive's older Git-discrepancy assumption
+was superseded by these checks. No history rewrite, reset, branch deletion or
+unrelated repository modification was needed. GitHub remains canonical/private.
+
+The owner subsequently supplied actual Ubuntu fixed runtime passes for JavaScript,
+TypeScript and sandboxed Chromium on image
+`sha256:248d4afc67fe3b0845b2cedd239d5b378eba4b0ad19e344891fb5fc0873ddbcb`.
+See [the scope of that host evidence](docs/UBUNTU_OCI_RUNTIME_EVIDENCE.md).
+Application execution stayed disabled. Full host security/recovery acceptance
+remains pending; **Phase 4 is incomplete and Phase 5 has not started**.
+
+### Core usability and feature matrix
+
+Core chat/research/documents/accounts/Council/safe agents run independently of
+Computer Mode. Default Compose has only app, PostgreSQL and Ollama, with loopback
+web binding and persistent volumes. No execution OS account, Podman, sandbox
+manager or delegated cgroups are needed for ordinary core installation.
+
+| Capability | Status and evidence | Remaining limit |
+| --- | --- | --- |
+| Account setup, login/logout, workspace isolation | Implemented and verified: real disposable HTTP workflow plus API/browser authorization tests. | Local single-process deployment; not independently security-reviewed public hosting. |
+| Ollama chat, model selection/history/export | Implemented and verified: actual qwen2.5:0.5b, persisted stream/history, Markdown download; stale-model/no-model UI repaired. | Selector still includes embedding-only models: inspect capabilities and select a completion model. Other runtime protocols not verified. |
+| Web search and cited answers | Implemented and verified with actual Wikipedia API/public-page retrieval, saved source hashes and IDs. Uncited model prose now falls back to labeled source excerpts. | Default discovery is encyclopedia-scoped; citation validity is not claim truth. Live SearXNG is implemented but unverified in this increment. |
+| Deep Research/history/reports | Implemented and verified: actual model planning, two searches/two pages/three model calls, pause/resume, duplicates/cancel, checked citations and PDF/Word/XLSX. | Tiny-model synthesis used extractive fallback. General research usefulness needs broader evidence/model evaluation. |
+| Document intelligence | Implemented and verified: real isolated TXT parsing, JSON rejection, local nomic embeddings/Q&A; seven-format parsing/security regressions. | Linux sealed parser; OCR/macros/formula execution missing or intentionally unsupported. No unrestricted document execution. |
+| Model Council | Implemented and verified: actual qwen2.5:0.5b + smollm2:135m independent analysis/comparison/synthesis, sequential. | Consensus is not factual verification; GPU/parallel performance unverified. |
+| Safe agents and workspace memory | Implemented and verified: actual model arithmetic plan/tool result; actual web-search tool and model review with an explicit research plan. | Complex autonomous task quality remains experimental; model errors are bounded and visible. |
+| Safe scheduling | Implemented: current unit/browser schedule controls and prior accepted real Phase 3 execution evidence. | Fixed intervals, one API process; real timed dispatch not rerun in this increment. |
+| Persistence/recovery | Implemented and verified: real session/history/research process restart and consistent disposable SQLite snapshot restore. | Full final Ubuntu application/manager backup/restore acceptance remains pending. |
+| Core Docker installation | Implemented, partially verified: Compose syntax and disposable source-overlay container health/persistence/hardening. | Fresh canonical Dockerfile + full new Ubuntu installation not rerun; overlay is not a canonical build. |
+| Optional Computer Mode | Experimental and disabled by default. Real Ubuntu fixed JS/TS/browser probes supplied by owner; real Python + mocked OCI UI/lifecycle regressions in Cloud. | Live-manager tenant/approval, exhaustion, cancellation/orphans/recovery and combined model workflows still pending on Ubuntu. |
+| Business modules | Existing optional secondary records/drafts preserved; no business-specific expansion. | No email sending, purchases or publication implementation. |
+| Public browsing/submissions and production release | Disabled/unsupported; v1.0 and Phase 4 completion not claimed. | Security review, image SBOM/CVE/license review, broader compatibility and host acceptance remain outstanding. |
+
+### Repairs and current evidence
+
+The live audit exposed Search chat displaying inaccurate, uncited small-model
+prose despite retrieved pages. Search/document chat now share Deep Research's
+reference check and extractive fallback; empty document evidence skips inference.
+Numeric citation examples reduce literal `[N]` output. This guards reference
+integrity, not every claim's factual correctness. New unit/API regressions cover
+uncited/forged evidence, release/persistence and bounded output requests.
+
+Model refresh now recovers removed selections and prunes unavailable Council
+choices. A connected empty installation has a visible model-setup action. Login
+explains the private bootstrap token, Documents precedes Computer, Computer is
+labeled optional, and Settings states that core tools work independently. A real
+response-budget control reaches the validated local inference request. No new
+runtime dependency, service, schema or paid provider was introduced.
+
+The strict real acceptance harness, `scripts/core_acceptance.py`, passed **14
+checks** with actual local qwen2.5:0.5b, smollm2:135m and nomic-embed-text:latest;
+no model/web fixture and no sandbox manager. Evidence with actual public source
+URLs/hashes is saved in [core-acceptance.json](docs/evidence/core-acceptance.json).
+It uses private disposable SQLite/files, an ephemeral loopback API and already
+installed models. The owner application/database/credentials are not accessed; the explicitly
+supplied existing Ollama endpoint serves local inference.
+
+The initial exploratory harness did not assert citation validity; its successful
+exit is not full core acceptance. Its uncited result prompted the stricter checks
+and fix. A targeted browser regression also failed before stale-model recovery was
+fixed. These failures are retained in [the recovery report](docs/CORE_PRODUCT_RECOVERY.md),
+along with eight inspected UI screenshots, architecture findings and limits.
+
+Final checks executed for this increment:
+
+| Check | Result and scope |
+| --- | --- |
+| `.venv/bin/pytest -q backend/tests` | **156 passed (71.72s)**: API, grounding, auth/tenant, approvals, jobs, migration and parser/security regressions. |
+| `FOXORY_E2E_SANDBOX=1 FOXORY_E2E_OCI=1 npm run test:e2e` in frontend | **13 passed (2.3m)**: actual HTTP UI, fixture Ollama, real restricted Python and explicitly mocked OCI. Intermediate response-budget selector failure was corrected; no timeout/security relaxation. After the final mobile copy-layout fix, the focused mobile journey passed again (13.5s). |
+| Core-only browser run | **10 passed, 3 optional tests skipped (2.1m)** without manager; prior to the final response-budget UI addition. Final core independence is also checked by the real native harness. |
+| `npm --prefix frontend run build` | Strict TypeScript/Vite passed (7.35s), final main JS 299.98kB. |
+| `scripts/core_acceptance.py --ollama-url OPERATOR_LOCAL_OLLAMA` | **14 actual local-model/public-web checks passed**, no model/web/OCI fixture, sandbox disabled. SQLite restart/restore and logout/login included. |
+| `scripts/phase4_docker_smoke.py --build --image foxory-intelligence-app:core-recovery` | Passed backend-current overlay image `sha256:e3ddcd099ef22077a043eab8af34df878e452b26f345e46d1609490421d4f13b`: health, disabled sandbox, persisted memory, core/agent source and frontend hashes, UID10001/read-only/init/cap-drop/no socket. Disposable container/volume removed. This is not a fresh canonical build; its frontend snapshot predates the final mobile paragraph-layout adjustment, checked separately. |
+| `scripts/phase4_postgres_smoke.py` | **Blocked, not passed**: first readiness failure; diagnostic retry exited with `initdb` ENOSPC creating pg_wal, before migrations. Both disposable containers/volumes removed. Existing accepted PostgreSQL evidence below is historical only. Rerun on sufficient container storage; do not remove owner volumes. |
+| Other checks | CPU/GPU Compose syntax, pip dependency consistency, offline worker input integrity, Node syntax, Python compilation, documentation shell syntax and whitespace passed. No GPU runtime or fresh dependency/image security audit. |
+
+Structured evidence: [real core](docs/evidence/core-acceptance.json),
+[Docker overlay](docs/evidence/core-docker-check.json),
+[PostgreSQL blocker](docs/evidence/postgres-recovery-check.json).
+No owner application/database records were accessed by these disposable harnesses.
+The authorized local Ollama endpoint was used for actual inference. Prior
+increment evidence below remains historical, not rerun claims.
+
+### Continuation and Phase 4 boundaries
+
+Use normal GitHub fast-forwards, not bundles when authenticated push is available.
+On Ubuntu, pull development and install/upgrade the core through the documented
+Compose workflow with sandbox enablement off. Review larger local completion
+models and broader search quality when resources permit. Do not redo already
+passing rootless provisioning/Chromium diagnostics. Continue the remaining
+host-only checklist for security, cancellation, orphan/restart handling and actual
+integrated Computer Mode workflows, keeping optional execution disabled until
+accepted. No Phase 5/public release/production readiness claim is justified.
+
+## Historical Chromium correction increment (before owner runtime evidence)
+
+### Original browser-only chroot implementation record
 
 Branch: `development`. Baseline: `d5503e8f785571a146444666b873f13789c60517`.
 Phase 4 remains **incomplete**; Phase 5 has not started. The operator reports
@@ -165,7 +267,7 @@ privileged tools and remote communications remain unsupported/blocked. The
 browser profile is deliberately an offline supplied-site environment. No GPU,
 Windows/macOS or production compatibility verification is claimed.
 
-## Exact continuation
+## Prior continuation (superseded by current recovery notes)
 
 Continue on development HEAD. Do not rebuild the architecture or repeat the known
 Codex cgroup diagnostics. The next work is the Ubuntu checklist against the pinned

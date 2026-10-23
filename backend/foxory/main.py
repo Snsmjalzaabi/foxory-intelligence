@@ -29,7 +29,7 @@ from .documents import extract, retrieve
 from .parsing import isolated_extract
 from .knowledge import document_evidence, index_document
 from .jobs import worker
-from .research import search, gather, evidence_prompt, validate_citations, citation_manifest
+from .research import search, gather, evidence_prompt, citation_manifest, grounded_answer
 from .reports import report
 
 from .logging_config import configure_logging
@@ -213,6 +213,7 @@ class Chat(BaseModel):
     system: str = Field(default="You are FOXORY, a helpful local AI assistant. Be honest about uncertainty.",max_length=10000)
     temperature: float = Field(default=0.7,ge=0,le=2)
     context: int = Field(default=4096,ge=1024,le=32768)
+    max_output: int = Field(default=2048,ge=32,le=2048)
     regenerate: bool = False
     embedding_model:str|None=Field(default=None,max_length=100)
 
@@ -259,16 +260,18 @@ async def chat(id: str, body: Chat, request: Request):
                 yield event("documents",chunks)
             # Evidence consumes a bounded part of the input window.
             system = system[:max(500,body.context if body.mode!="chat" else min(len(system),body.context))]
-            async for data in inference.stream(body.model,[{"role":"system","content":system}]+packed,body.temperature,body.context):
-                if await request.is_disconnected(): status="stopped"; break
-                delta = data.get("message",{}).get("content","")
-                answer += delta
-                # Research output is released only after citation URL filtering.
-                if body.mode=="chat": yield event("delta",delta)
-                if data.get("done"): metadata.update({k:data[k] for k in ["prompt_eval_count","eval_count","total_duration"] if k in data})
+            if body.mode=="chat" or metadata.get('sources'):
+                async for data in inference.stream(body.model,[{"role":"system","content":system}]+packed,
+                                                  body.temperature,body.context,max_output=body.max_output):
+                    if await request.is_disconnected(): status="stopped"; break
+                    delta = data.get("message",{}).get("content","")
+                    answer += delta
+                    # Grounded modes release prose only after reference checks.
+                    if body.mode=="chat": yield event("delta",delta)
+                    if data.get("done"): metadata.update({k:data[k] for k in ["prompt_eval_count","eval_count","total_duration"] if k in data})
             if body.mode!="chat":
-                answer = validate_citations(answer,metadata.get("sources",[]))
-                metadata["citation_verification"]=citation_manifest(answer,metadata.get("sources",[]))
+                answer,verification,mode=grounded_answer(answer,metadata.get('sources',[]),body.content)
+                metadata.update(citation_verification=verification,evidence_mode=mode)
                 yield event("delta",answer)
         except asyncio.CancelledError:
             status="stopped"

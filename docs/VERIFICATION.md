@@ -1,3 +1,7 @@
+> Historical verification snapshots are preserved below. For the latest recovery
+> results, real-model/web evidence, feature matrix and remaining limitations, use
+> [PROJECT_STATUS.md](../PROJECT_STATUS.md) and [CORE_PRODUCT_RECOVERY.md](CORE_PRODUCT_RECOVERY.md).
+
 # Verification record — 2026-10-23
 
 Managed Linux x86_64 cloud environment: Python 3.12.14, Node 24.19.0, Docker 28.4.0, Compose 2.40.3. See PROJECT_STATUS.md for precise scope, failures and limitations.

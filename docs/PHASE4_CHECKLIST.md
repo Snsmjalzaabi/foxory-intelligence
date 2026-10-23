@@ -14,19 +14,20 @@
   actual deterministic calculations, PDF parsing and source ZIP validation.
 - [x] Worker base digest, locked dependencies, input hashes and registry-byte checks.
 - [x] Ubuntu installation, image build and security/recovery validation checklist.
-- [x] Backend (142), browser journeys (12), frontend build, migration/security and Compose regressions.
+- [x] Latest backend (156), browser journeys (13), frontend build, migration/security and Compose regressions; real core acceptance separately records 14 checks.
 - [x] Current-source application image health/persistence and separate PostgreSQL 17
   migrations, tenant/duplicate guards, restart and dump/restore smoke tests.
 - [x] Actual local qwen2.5:0.5b Python repair/test/package/restart regression.
 - [x] Browser-only SYS_CHROOT command policy; JS/TS retain zero capabilities.
   Authenticated dispatch/probe-builder regression tests use mocked OCI execution;
-  the actual Chromium startup correction remains pending Ubuntu verification.
+  the owner subsequently supplied passing actual Ubuntu fixed runtime probes.
 
 ## Required real-host evidence — do not infer from mocks
 
-- [ ] Build and review the pinned image, SBOM, vulnerability/license findings.
-- [ ] Actual rootless Node/TypeScript execution with effective CPU/memory/PID quotas.
-- [ ] Actual sandboxed Chromium navigation, interaction, screenshot and download.
+- [x] Actual Ubuntu immutable image build (operator supplied output).
+- [ ] Review image SBOM and vulnerability/license findings.
+- [x] Actual rootless Node/TypeScript fixed execution with effective CPU/memory/PID quota checks.
+- [x] Actual sandboxed Chromium controlled-site navigation, interaction, screenshot and download.
 - [ ] Real hostile filesystem/network/resource tests and Chromium sandbox checks.
 - [ ] Actual whole-container cancellation, crash/orphan recovery and restart cleanup.
 - [ ] Final application/manager topology and persistence/backup restore checks.
@@ -36,3 +37,5 @@
 Existing Python and real local-model verification is retained in PROJECT_STATUS.md
 and docs/PHASE4_OCI_GROUNDWORK.md. Source ZIPs/zero exits do not establish test
 adequacy. No privileged fallback, public deployment or GPU verification is claimed.
+The actual Ubuntu fixture scope and image ID are recorded in
+[UBUNTU_OCI_RUNTIME_EVIDENCE.md](UBUNTU_OCI_RUNTIME_EVIDENCE.md).

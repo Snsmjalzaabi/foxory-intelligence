@@ -3,7 +3,7 @@ import json
 import re
 from datetime import datetime,timezone
 from . import inference
-from .research import search,evidence_prompt,validate_citations,citation_manifest
+from .research import search,evidence_prompt,validate_citations,citation_manifest,grounded_answer
 from .web import retrieve_page,canonical
 from .knowledge import document_evidence
 
@@ -95,25 +95,16 @@ async def research_step(data):
         else:data['stage']='write'
     else:
         raw=await ask(data,'Write a research report answering '+data['prompt']+'. Include findings with [N] citations, conflicting evidence, limitations and open questions. Do not claim that credibility metadata or model consensus verifies facts. Only use these retrieved sources:\n'+evidence_prompt(material(sources,min(10000,budget.get('max_input_chars',28000))))+'\nComparison (untrusted model analysis): '+json.dumps(data.get('comparison',{})))
-        data['result']='Generated analysis of retrieved evidence. Claims have not been independently verified.\n\n'+validate_citations(raw,sources)
+        answer,verification,mode=grounded_answer(raw,sources,data['prompt'])
+        data['result']=('Generated analysis of retrieved evidence. Claims have not been independently verified.\n\n'+answer
+                        if mode=='model_synthesis' else answer)
+        data['citation_verification']=verification
+        data['evidence_mode']=mode
         from urllib.parse import urlsplit
         if len({urlsplit(s.get('url','')).hostname for s in sources if s['evidence_type']=='retrieved_page'})==1:
             data.setdefault('warnings',[]).append('Web evidence comes from one domain; independent corroboration is missing')
-        data['citation_verification']=citation_manifest(data['result'],sources)
-        if not data['citation_verification']['valid']:
-            # Do not attach arbitrary citations to unsupported model prose.
-            # Return explicitly extractive evidence when the model fails grounding.
-            terms=set(re.findall(r'\w{3,}',data['prompt'].casefold()))
-            passages=[]
-            for source in sources[:6]:
-                sentences=re.split(r'(?<=[.!?])\s+',source['text'])
-                excerpt=max(sentences,key=lambda x:sum(t in x.casefold() for t in terms))[:900]
-                excerpt=re.sub(r'\[\d+\]','',excerpt)
-                passages.append(excerpt+' ['+str(source['id'])+']')
-            data['result']='Extractive evidence report: model synthesis did not contain valid references. These retrieved passages may not fully answer the question; independent review is required.\n\n'+'\n\n'.join(passages)
-            data['evidence_mode']='extractive_fallback'
+        if mode!='model_synthesis':
             data.setdefault('warnings',[]).append('Model synthesis lacked valid references; returned source excerpts rather than unsupported claims')
-            data['citation_verification']=citation_manifest(data['result'],sources)
         data.update(status='completed',stage='completed')
     data['step']=data.get('step',0)+1
     return data

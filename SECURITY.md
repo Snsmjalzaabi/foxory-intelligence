@@ -35,5 +35,6 @@ The browser-only OCI policy adds `SYS_CHROOT` after dropping all capabilities;
 JS/TS retain zero capabilities. Rootless/non-root execution, no-new-privileges,
 runtime seccomp/AppArmor, quotas and mount/network restrictions remain required.
 This expands the browser container's chroot privilege and is not proof of safe
-isolation. The targeted startup correction awaits real Ubuntu verification; see
+isolation. The owner supplied passing Ubuntu fixed startup probes; full host
+security/recovery acceptance remains pending. See
 [the security implications and host procedure](docs/CHROMIUM_SANDBOX_UBUNTU.md).

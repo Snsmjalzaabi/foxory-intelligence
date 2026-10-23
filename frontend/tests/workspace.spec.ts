@@ -11,6 +11,7 @@ test.beforeEach(async({page})=>{
  });
  await page.goto('/');
  await expect(page.getByRole('button',{name:/Sign in|Create administrator/})).toBeVisible();
+ if(test.info().title.startsWith('chat streams'))await page.screenshot({path:'test-results/core-login.png',fullPage:true});
  if(await page.getByLabel('Workspace bootstrap token').isVisible())await page.getByLabel('Workspace bootstrap token').fill('e2e-only-token-with-at-least-24-chars');
  await page.getByLabel('Username',{exact:true}).fill('e2e-owner');
  await page.getByLabel('Password',{exact:true}).fill('e2e-owner-password-123');
@@ -19,8 +20,13 @@ test.beforeEach(async({page})=>{
 });
 
 test('chat streams, persists, regenerates and exports through the real HTTP adapter',async({page})=>{
+ await page.locator('nav').getByRole('button',{name:'Settings',exact:true}).click();
+ await page.getByRole('combobox',{name:'Response budget',exact:true}).selectOption('128');
+ await page.locator('nav').getByRole('button',{name:'Chat',exact:true}).click();
  await page.getByLabel('Message FOXORY').fill('Explain local ownership');
+ const sent=page.waitForRequest(r=>r.url().endsWith('/chat')&&r.method()==='POST');
  await page.getByRole('button',{name:'Send message'}).click();
+ expect((await sent).postDataJSON().max_output).toBe(128);
  await expect(page.locator('.message.assistant')).toContainText('Test fixture response: Explain local ownership');
  await expect(page.getByLabel('Regenerate last response')).toBeVisible();
  await page.getByLabel('Regenerate last response').click();
@@ -40,8 +46,10 @@ test('document upload, grounded question and validation errors',async({page})=>{
  await expect(page.getByRole('heading',{name:'quarter.txt',exact:true})).toBeVisible({timeout:20000});
  await page.getByLabel('Document question').fill('What was revenue?');
  await page.getByRole('button',{name:'Ask documents'}).click();
- await expect(page.locator('.document-answer')).toContainText('Test fixture response');
+ await expect(page.locator('.document-answer')).toContainText('Extractive evidence report');
+ await expect(page.locator('.document-answer')).toContainText('Quarter revenue was 100 units');
  await expect(page.locator('.document-answer')).toContainText('quarter.txt');
+ await page.screenshot({path:'test-results/core-documents.png',fullPage:true});
  const rejected=page.waitForResponse(r=>r.url().endsWith('/api/documents')&&r.status()===422,{timeout:25000});
  await page.locator('input[type=file]').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{')});
  await rejected;
@@ -73,6 +81,7 @@ test('council runs durable sequential steps and exports a result',async({page})=
  await expect(page.locator('.job-detail .status').first()).toContainText('completed',{timeout:60000});
  await expect(page.locator('.job-detail')).toContainText('fixture-a · independent analysis');
  await expect(page.locator('.job-detail')).toContainText('fixture-b · independent analysis');
+ await page.screenshot({path:'test-results/core-council.png',fullPage:true});
 });
 
 test('mobile navigation and theme work',async({page})=>{
@@ -82,6 +91,20 @@ test('mobile navigation and theme work',async({page})=>{
  await expect(page.getByRole('heading',{name:'Settings',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBeTruthy();
  await page.screenshot({path:'test-results/settings-mobile.png',fullPage:true});
+});
+
+test('model recovery and first-run guidance work independently of Computer Mode',async({page})=>{
+ await page.evaluate(()=>localStorage.setItem('foxory-model','removed-local-model'));
+ await page.reload();
+ await expect(page.getByLabel('Select model',{exact:true})).toHaveValue('fixture-a');
+ await page.route('**/api/models',route=>route.fulfill({json:{available:true,models:[]}}));
+ await page.reload();
+ await expect(page.getByText('No local models are installed.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Send message'})).toBeDisabled();
+ await page.screenshot({path:'test-results/core-first-run.png',fullPage:true});
+ await page.getByRole('button',{name:'Choose a model',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Settings',exact:true})).toBeVisible();
+ await expect(page.getByText('Chat, research, documents and safe agents work without Computer Mode.',{exact:true})).toBeVisible();
 });
 
 
@@ -120,6 +143,7 @@ test('document semantic controls and deep research sources/history/exports are c
  await expect(page.locator('.job-detail').getByRole('status')).toContainText('content hashes match');
  await page.locator('.source-card summary').first().click();
  await expect(page.locator('.source-card')).toContainText('Revenue was 123 units');
+ await page.screenshot({path:'test-results/core-research.png',fullPage:true});
  const file=page.waitForEvent('download');await page.locator('.job-detail').getByRole('button',{name:'PDF',exact:true}).click();
  expect((await file).suggestedFilename()).toBe('report.pdf');
  await page.reload();
@@ -151,6 +175,7 @@ test('AI Workforce creates agents, delegates real tools, schedules work and mana
  await page.getByRole('button',{name:'Run agent task',exact:true}).click();
  await expect(page.getByRole('status')).toContainText('completed',{timeout:30000});
  await expect(page.getByText('Calculate actual arithmetic → Browser specialist',{exact:false})).toBeVisible();
+ await page.screenshot({path:'test-results/core-agents.png',fullPage:true});
  await page.getByRole('button',{name:'Memory',exact:true}).last().click();
  await page.getByLabel('Memory agent',{exact:true}).selectOption({label:'Browser coordinator'});
  await page.getByLabel('Fact title').fill('Preferred review');

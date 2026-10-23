@@ -62,3 +62,11 @@ through the authenticated manager, approval gates and Computer Mode. They remain
 disabled by default and require actual Ubuntu isolation verification; Codex tests
 use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
 for pinned image builds, lifecycle/ownership controls and remaining limitations.
+
+## Bounded core verification
+
+`POST /api/conversations/{id}/chat` accepts `max_output` (32–2048 tokens; existing
+default 2048). This bounds requested Ollama generation, not an exact runtime or
+quality guarantee. The disposable core acceptance harness uses 128 tokens for
+foreground checks and context2048/output256 for background stages. It connects
+only to an explicitly supplied local-model endpoint and never downloads weights.

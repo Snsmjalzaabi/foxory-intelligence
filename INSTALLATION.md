@@ -89,3 +89,15 @@ through the authenticated manager, approval gates and Computer Mode. They remain
 disabled by default and require actual Ubuntu isolation verification; Codex tests
 use a mocked OCI boundary. See [host activation and acceptance checklist](docs/SANDBOX_HOST_VERIFICATION.md)
 for pinned image builds, lifecycle/ownership controls and remaining limitations.
+
+## Core and optional execution
+
+The normal Compose stack needs no Podman, dedicated execution OS account or
+sandbox manager. Leave `FOXORY_ENABLE_SANDBOX=0`. Chat, search, Deep Research,
+Council, document intelligence and safe agents operate independently. Missing
+local models are handled in Settings; model weights are not downloaded silently.
+
+Rootless Podman, delegated cgroups, a dedicated execution account and manager
+secrets are requirements only when deliberately enabling advanced Computer Mode.
+See [the host checklist](docs/SANDBOX_HOST_VERIFICATION.md). Its remaining
+security/recovery work does not prevent installing the core product.

@@ -1,9 +1,15 @@
-# Phase 4 Ubuntu host validation — pending real-host verification
+# Phase 4 Ubuntu host validation — fixed probes passed, full acceptance pending
 
 Application dispatch, lifecycle, artifact validation and Computer Mode are
 implemented and tested with a mocked OCI boundary. **Actual rootless Node,
 TypeScript and Chromium isolation is not verified in Codex Cloud.** Keep OCI
 profiles disabled until this checklist passes. Phase 4 is not complete.
+
+The owner has now supplied an actual Ubuntu fixed-probe pass for all three OCI
+profiles and the image build. See [the evidence record](UBUNTU_OCI_RUNTIME_EVIDENCE.md).
+That limited success does not check every composite security/recovery requirement
+below. Do not repeat already-passing provisioning as a substitute for the remaining
+active-manager, hostile-input and recovery tests.
 
 ## 1. Provision a dedicated local sandbox account
 

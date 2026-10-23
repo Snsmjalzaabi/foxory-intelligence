@@ -22,11 +22,14 @@ def docker(*args,**kwargs):
     return subprocess.run(['docker','--host=unix:///var/run/docker.sock',*args],check=True,env=env,**kwargs)
 
 def ready():
-    for _ in range(120):
+    deadline=time.monotonic()+90
+    while time.monotonic()<deadline:
+        state=docker('inspect',name,'--format','{{.State.Status}}',capture_output=True,text=True).stdout.strip()
+        if state in {'exited','dead'}:raise RuntimeError('Disposable PostgreSQL exited during startup')
         check=subprocess.run(['docker','--host=unix:///var/run/docker.sock','exec',name,'pg_isready','-U','foxory','-d','foxory'],
-                             stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                             stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10)
         if check.returncode==0:return
-        time.sleep(.25)
+        time.sleep(.5)
     raise RuntimeError('Disposable PostgreSQL did not become ready')
 
 created=False
@@ -76,6 +79,13 @@ print(id)
         assert result==['1','0003'],result
     print(json.dumps({'postgresql':'17','migration':'0003','workspace_isolation':True,'duplicate_constraint':True,
                       'restart_persistence':True,'dump_restore':True,'owner_database_accessed':False}))
+except Exception:
+    if created:
+        # Inspect only state, never Config.Env (which holds the disposable secret).
+        subprocess.run(['docker','--host=unix:///var/run/docker.sock','inspect',name,
+                        '--format','{{json .State}}'],check=False)
+        subprocess.run(['docker','--host=unix:///var/run/docker.sock','logs','--tail','60',name],check=False)
+    raise
 finally:
     if created:docker('rm','-f',name,stdout=subprocess.DEVNULL)
     # The volume has a unique per-invocation prefix, never an owner volume.

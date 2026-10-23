@@ -1,0 +1,21 @@
+{
+  "image": "sha256:e3ddcd099ef22077a043eab8af34df878e452b26f345e46d1609490421d4f13b",
+  "overlay_build": true,
+  "canonical_dockerfile_build": false,
+  "health": true,
+  "sandbox_disabled_default": true,
+  "restart_memory_persistence": true,
+  "core_and_agent_source_hashes": true,
+  "frontend_bundle_hash": true,
+  "nonroot_uid": 10001,
+  "read_only": true,
+  "init": true,
+  "cap_drop": [
+    "ALL"
+  ],
+  "runtime_socket_mounts": false,
+  "disposable_container_and_volume_removed": true,
+  "owner_containers_recreated_or_removed": false,
+  "owner_volumes_replaced_or_removed": false,
+  "snapshot_note": "Backend/core controls verified on this image. Frontend snapshot predates the final mobile guidance paragraph layout adjustment; the final frontend is rebuilt and checked separately."
+}

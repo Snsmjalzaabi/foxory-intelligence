@@ -23,7 +23,8 @@ podman image inspect localhost/foxory-worker:verification --format '{{.Id}}'
 In a managed cloud build requiring an injected CA, pass it as the optional
 `proxy_ca` build secret, without disabling TLS verification. No certificate,
 credential or host configuration is copied into the image. The base is large;
-image build and execution are pending on the Ubuntu verification host.
+the owner supplied a successful Ubuntu cached image build and all three fixed
+runtime probes. Full host security/recovery acceptance is still pending.
 
 Node supports dependency-free JavaScript and TypeScript type stripping (no
 semantic type checking). The offline browser profile serves only supplied files
@@ -35,7 +36,8 @@ The manager drops all capabilities for JS/TS. Browser alone adds `SYS_CHROOT`
 after dropping all capabilities, to permit Chromium's filesystem sandbox under
 capability-conditioned runtime seccomp. Rootless/non-root execution,
 no-new-privileges, default seccomp/AppArmor and all quotas remain required.
-This correction still needs actual Ubuntu runtime verification; see
+The owner supplied passing actual Ubuntu fixed probes for this correction.
+Full host acceptance remains pending; see
 [the investigation and rebuild procedure](../../docs/CHROMIUM_SANDBOX_UBUNTU.md).
 
 Worker stdout/NDJSON and downloaded files remain untrusted. The manager validates
