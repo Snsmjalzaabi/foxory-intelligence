@@ -49,7 +49,22 @@ limits plus read-only mounts. Those requested settings still require real tests.
 
 ## Required active verification before activation
 
-No end-to-end OCI activation script is available yet. Remaining engineering:
+The opt-in fixed-fixture probe is implemented, but its successful execution is
+**pending an appropriate host**. After the static preflight passes and the image
+has been built/reviewed, use the project virtual environment:
+
+```bash
+.venv/bin/python scripts/verify_oci_runtime.py --image sha256:REPLACE_WITH_LOCAL_IMAGE_ID
+```
+
+This checks rootless identity, effective cgroup limits, read-only paths, absent
+privileged sockets, network interfaces and environment isolation with fixed JS;
+then runs TS and a controlled browser click/type/screenshot/download journey.
+Each container has a 45-second wall deadline and explicit force-removal/absence
+check. It does not enable application profiles and is not an escape audit. Its
+blocked path was tested in Codex; actual OCI probes were not run here.
+
+Remaining engineering:
 
 - Authenticated, approval-bound manager dispatch for the new profiles; explicit
   operator opt-in and immutable local image configuration.

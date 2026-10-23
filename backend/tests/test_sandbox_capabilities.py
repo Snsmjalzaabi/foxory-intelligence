@@ -102,3 +102,15 @@ def test_oci_rejects_malicious_inputs():
     with pytest.raises(ValidationError):
         OCIProject(profile='browser', files={'index.html':'hi'}, actions=[])
     assert OCIProject(profile='typescript', files={'test.ts':'const x:number=1;'}, entrypoint='test.ts')
+
+
+def test_ubuntu_active_probe_never_runs_on_blocked_host(monkeypatch, capsys):
+    from scripts import verify_oci_runtime as verifier
+    from unittest.mock import Mock
+    monkeypatch.setattr(verifier, 'inspect_host', lambda: {'static_requirements_met':False, 'blockers':['no delegation']})
+    monkeypatch.setattr(sys, 'argv', ['verify_oci_runtime.py','--image','sha256:'+'a'*64])
+    run = Mock(side_effect=AssertionError('Must not launch a runtime on an unsafe host'))
+    monkeypatch.setattr(verifier.subprocess, 'run', run)
+    assert verifier.main() == 2
+    assert 'blocked' in capsys.readouterr().out
+    run.assert_not_called()

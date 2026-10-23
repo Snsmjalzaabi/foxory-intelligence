@@ -18,6 +18,9 @@ behavior. Phase 5 has not started. No production readiness is claimed.
   screenshots and selected downloads. Chromium sandbox is mandatory; external
   navigation and non-GET/HEAD requests are rejected. Runtime package installation
   is unsupported. Optional image recipe requires a reviewed immutable base.
+- An opt-in fixed-fixture Ubuntu OCI integration probe for effective limits,
+  JS/TS, browser interactions and cleanup; blocked-path execution tested here,
+  successful host execution pending.
 - Ubuntu verification instructions in `docs/SANDBOX_HOST_VERIFICATION.md` and
   explicit activation prerequisites in `sandbox_manager/runtime/README.md`.
 
