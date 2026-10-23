@@ -43,7 +43,8 @@ def main():
         deadline=time.monotonic()+1250
         while time.monotonic()<deadline:
             try:rows=c.get('/records/job',timeout=60)
-            except httpx.ReadTimeout:continue
+            except httpx.TransportError:
+                print('Retry: transient status connection; persisted job is not resubmitted',flush=True);time.sleep(1);continue
             rows.raise_for_status();d=next(r['data'] for r in rows.json() if r['id']==id)
             if wanted and d['status']==wanted:return d
             if d['status'] in {'completed','failed','cancelled','awaiting_approval'}:

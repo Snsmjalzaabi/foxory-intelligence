@@ -56,7 +56,7 @@ def isolated_extract(name:str,raw:bytes)->str:
     if not PARSER_SLOT.acquire(blocking=False):raise HTTPException(429,'Document parser busy; retry after the current upload')
     try:
         payload=json.dumps({'name':name,'raw':base64.b64encode(raw).decode()}).encode()
-        result=bounded_process([sys.executable,'-I',str(WORKER)],payload)
+        result=bounded_process([sys.executable,'-I',str(WORKER),'--format='+Path(name).suffix.lower()],payload)
         data=json.loads(result)
         if 'error' in data:raise ValueError('Document rejected')
         return data['text']

@@ -10,13 +10,20 @@ import errno
 import json
 import resource
 # All trusted imports occur before untrusted input is read or parsed.
-from pypdf import PdfReader
-from docx import Document
-from openpyxl import load_workbook
+FORMAT=next((arg.split('=',1)[1] for arg in sys.argv if arg.startswith('--format=')),None)
+if FORMAT not in {None,'.txt','.md','.csv','.json','.pdf','.docx','.xlsx'}:raise ValueError('Unknown parser profile')
+# Only a fixed whitelist chooses trusted modules; payload bytes are still unread.
+if FORMAT in {None,'.pdf'}:from pypdf import PdfReader
+if FORMAT in {None,'.docx'}:from docx import Document
+if FORMAT in {None,'.xlsx'}:from openpyxl import load_workbook
+if '--self-test' in sys.argv:import socket,subprocess
 import encodings.cp437, encodings.utf_16_le, encodings.utf_16_be, encodings.utf_8_sig
 for encoding in ("utf-8", "utf-8-sig", "utf-16", "utf-16-le", "utf-16-be", "cp437"):
     codecs.lookup(encoding)
-from foxory.documents import extract
+if FORMAT in {'.txt','.md','.csv','.json'}:
+    from foxory.text_documents import extract_text as extract
+else:
+    from foxory.documents import extract
 
 def seal():
     resource.setrlimit(resource.RLIMIT_AS,(768*1024*1024,768*1024*1024))
@@ -52,6 +59,7 @@ def main():
         print(json.dumps(checks));return
     payload=json.loads(sys.stdin.buffer.read(15_000_000))
     try:
+        if FORMAT is not None and Path(payload['name']).suffix.lower()!=FORMAT:raise ValueError('Parser profile mismatch')
         text=extract(payload['name'],base64.b64decode(payload['raw'],validate=True))
         print(json.dumps({'text':text}))
     except Exception as e:print(json.dumps({'error':type(e).__name__}))

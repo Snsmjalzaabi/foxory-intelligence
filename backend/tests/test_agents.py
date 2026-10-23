@@ -259,3 +259,30 @@ async def test_auth_database_wait_does_not_block_public_health(client,monkeypatc
         assert response.status_code==200 and not release.is_set()
     finally:release.set()
     assert (await request).status_code==200
+
+async def test_two_workers_keep_idempotent_claims_without_duplicate_outputs(client,monkeypatch):
+    monkeypatch.setenv('FOXORY_WORKER_CONCURRENCY','2')
+    monkeypatch.setattr(inference,'complete',prose)
+    a=await agent(client,tools=['math.calculate'])
+    plan=[{'title':'Calculate once','tool':'math.calculate','args':{'expression':'6*7'}}]
+    first=await task(client,a,plan,key='two-workers-first');second=await task(client,a,plan,key='two-workers-second')
+    runner=asyncio.create_task(worker())
+    try:
+        for _ in range(60):
+            if all(state(j['id'])['status']=='completed' for j in [first,second]):break
+            await asyncio.sleep(.1)
+        for j in [first,second]:
+            d=state(j['id']);assert d['status']=='completed' and len(d['outputs'])==1 and d['outputs'][0]['result']['value']==42
+    finally:
+        runner.cancel()
+        with __import__('contextlib').suppress(asyncio.CancelledError):await runner
+
+async def test_small_format_parser_retains_sandbox_without_office_preload():
+    import subprocess,sys,base64
+    from foxory.parsing import WORKER,isolated_extract
+    checked=subprocess.run([sys.executable,'-I',str(WORKER),'--format=.txt','--self-test'],capture_output=True,timeout=20,check=True)
+    assert all(json.loads(checked.stdout).values())
+    assert isolated_extract('unicode.txt',b'\xef\xbb\xbfSafe text')=='Safe text'
+    payload=json.dumps({'name':'wrong.docx','raw':base64.b64encode(b'text').decode()}).encode()
+    checked=subprocess.run([sys.executable,'-I',str(WORKER),'--format=.txt'],input=payload,capture_output=True,timeout=20,check=True)
+    assert 'error' in json.loads(checked.stdout)

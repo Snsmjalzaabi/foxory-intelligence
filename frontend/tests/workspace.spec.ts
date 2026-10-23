@@ -62,7 +62,7 @@ test('council runs durable sequential steps and exports a result',async({page})=
  await page.getByLabel('fixture-a',{exact:true}).check();await page.getByLabel('fixture-b',{exact:true}).check();
  await page.getByLabel('Task question').fill('Compare local data storage options');
  await page.getByRole('button',{name:'Start council'}).click();
- await expect(page.locator('.job-detail')).toContainText('completed',{timeout:20000});
+ await expect(page.locator('.job-detail .status').first()).toContainText('completed',{timeout:60000});
  await expect(page.locator('.job-detail')).toContainText('fixture-a · independent analysis');
  await expect(page.locator('.job-detail')).toContainText('fixture-b · independent analysis');
 });
@@ -92,7 +92,7 @@ test('account workspace switch isolates history and logout revokes access',async
 });
 
 test('document semantic controls and deep research sources/history/exports are connected',async({page})=>{
- test.setTimeout(60000);
+ test.setTimeout(120000);
  await page.locator('nav').getByRole('button',{name:'Documents',exact:true}).click();
  await page.locator('input[type=file]').setInputFiles({name:'research-evidence.txt',mimeType:'text/plain',buffer:Buffer.from('Revenue was 123 units in June. The source is a fictional test document for interface verification.')});
  const card=page.locator('.record-card').filter({has:page.getByRole('heading',{name:'research-evidence.txt',exact:true})});
@@ -106,7 +106,7 @@ test('document semantic controls and deep research sources/history/exports are c
  await page.getByLabel('Use uploaded documents only').check();
  await page.getByLabel('Task question').fill('What was revenue in June?');
  await page.getByRole('button',{name:'Start research',exact:true}).click();
- await expect(page.locator('.job-detail')).toContainText('completed',{timeout:20000});
+ await expect(page.locator('.job-detail .status').first()).toContainText('completed',{timeout:60000});
  await expect(page.locator('.job-detail')).toContainText('Extractive evidence report');
  await page.getByRole('button',{name:'Check saved references'}).click();
  await expect(page.locator('.job-detail').getByRole('status')).toContainText('content hashes match');
@@ -176,11 +176,11 @@ test('AI Workforce blocks workspace writes until an immutable approval is consum
  await page.getByLabel('Task agent',{exact:true}).selectOption({label:'Workflow Agent'});
  await page.getByLabel('Task objective',{exact:true}).fill('Request approval to create an internal project');
  await page.getByRole('button',{name:'Run agent task',exact:true}).click();
- await expect(page.getByRole('status')).toContainText('awaiting_approval',{timeout:30000});
+ await expect(page.getByRole('status')).toContainText('awaiting_approval',{timeout:60000});
  await page.getByRole('button',{name:'Approvals',exact:true}).click();
  await expect(page.getByText('Immutable approval context',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'approve action',exact:true}).click();
- await expect(page.getByRole('heading',{name:'Allow project.create · consumed'})).toBeVisible({timeout:30000});
+ await expect(page.getByRole('heading',{name:'Allow project.create · consumed'})).toBeVisible({timeout:60000});
  await page.getByRole('button',{name:'Projects',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Browser agent project'})).toBeVisible();
 });

@@ -16,18 +16,27 @@ def sql(db,query):return database('psql','-U','foxory','-d',db,'-Atc',query,stdo
 def main():
     saved=json.loads(Path('/tmp/foxory-phase3-test-session.json').read_text())
     c=httpx.Client(base_url='http://127.0.0.1:8003/api',timeout=30,trust_env=False)
+    for _ in range(60):
+        try:
+            if c.get('/health',timeout=3).status_code==200:break
+        except httpx.HTTPError:pass
+        time.sleep(1)
+    else:raise RuntimeError('Verification API did not start')
     login=c.post('/auth/login',json=saved['credentials']);login.raise_for_status();c.headers.update({'X-CSRF-Token':login.json()['csrf'],'X-Workspace-ID':saved['workspace_id']})
+    raw=b'Phase 3 original document survives restart.'
+    uploaded=c.post('/documents',files={'file':('phase3-recovery.txt',raw)});uploaded.raise_for_status();document_id=uploaded.json()['id']
     row=c.post('/agents/'+saved['agent_id']+'/tasks',json={'objective':'Restart-safe read-only task','plan':[{'title':'Draft','instruction':'Summarize the authorized task'}],'idempotency_key':uuid4().hex});row.raise_for_status();id=row.json()['id']
     c.post('/jobs/'+id+'/pause').raise_for_status()
     scheduled=c.post('/agent-schedules',json={'agent_id':saved['agent_id'],'objective':'Recover scheduled task','start_at':(datetime.now(timezone.utc)+timedelta(seconds=8)).isoformat(),'max_runs':1});scheduled.raise_for_status();schedule_id=scheduled.json()['id']
     compose('restart','app')
     for _ in range(60):
         try:
-            if c.get('/health').status_code==200:break
+            if c.get('/health',timeout=3).status_code==200:break
         except httpx.HTTPError:pass
         time.sleep(1)
     else:raise RuntimeError('Container failed to recover')
     assert c.get('/auth/me').status_code==200
+    original=c.get('/documents/'+document_id+'/download');original.raise_for_status();assert original.content==raw
     data=next(r['data'] for r in c.get('/records/job').json() if r['id']==id);assert data['status']=='paused'
     c.post('/jobs/'+id+'/resume').raise_for_status();c.post('/jobs/'+id+'/cancel').raise_for_status()
     for _ in range(30):
@@ -40,7 +49,7 @@ def main():
     compose('restart','app')
     for _ in range(60):
         try:
-            if c.get('/health').status_code==200:break
+            if c.get('/health',timeout=3).status_code==200:break
         except httpx.HTTPError:pass
         time.sleep(1)
     rows=c.get('/records/job');rows.raise_for_status()

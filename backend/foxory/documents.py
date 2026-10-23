@@ -38,10 +38,8 @@ def extract(name: str, raw: bytes):
             wb.close()
             text = "\n".join(lines)
         else:
-            text = raw.decode("utf-8-sig")
-            if "\x00" in text: raise ValueError("Binary content rejected")
-            if ext == ".json": json.loads(text)
-            if ext == ".csv": list(csv.reader(io.StringIO(text)))
+            from .text_documents import extract_text
+            text=extract_text(name,raw)
         if len(text) > 2_000_000: raise ValueError("Extracted text limit exceeded")
         return text
     except HTTPException: raise
