@@ -8,6 +8,10 @@ startup probes and an actual failed-JavaScript test/packaging denial. Thus the
 native startup blocker is fixed on this hosted configuration. The run failed
 later because the qwen2.5:0.5b repair still failed the reviewed arithmetic tests;
 no failing source package was accepted. This is not full acceptance.
+The retained failed summary also identified a controller cleanup-check error:
+direct Podman inherited the inaccessible runner checkout as CWD. The provisioner
+now changes to the dedicated home after dropping identity; no path permissions
+are opened up. Earlier cleanup is not claimed verified.
 
 The integration now explicitly assigns the coding role to the free local
 qwen2.5-coder:1.5b, retaining small general-model sequential coordination. At

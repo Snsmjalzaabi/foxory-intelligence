@@ -59,7 +59,9 @@ def main():
              'coding_model':CODING_MODEL,'coding_attempts':[],
              'worker_image':args.worker_image,'gpu_verified':False,'owner_data_accessed':False,
              'host_kernel':platform.release(),'host_os':dict(line.split('=',1) for line in Path('/etc/os-release').read_text().splitlines() if '=' in line)}
-    manager_prefix=['sudo','-u',account,'-H','env','-i','HOME='+user.pw_dir,'USER='+account,'LOGNAME='+account,
+    # Change directory AFTER dropping identity. Podman must never inherit an
+    # inaccessible controller checkout as its CWD (including final cleanup).
+    manager_prefix=['sudo','-u',account,'-H','env','-i','--chdir='+user.pw_dir,'HOME='+user.pw_dir,'USER='+account,'LOGNAME='+account,
         'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
         'XDG_RUNTIME_DIR=/run/user/'+str(user.pw_uid),'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/'+str(user.pw_uid)+'/bus']
     def manager(*cmd,**kwargs):

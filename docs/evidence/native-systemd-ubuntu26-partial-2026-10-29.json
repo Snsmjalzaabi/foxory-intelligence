@@ -1,0 +1,42 @@
+{
+  "status": "failed",
+  "project": "foxory-host-f6b0cd7d5849",
+  "checks": [
+    {
+      "name": "canonical Compose authentication and socket-activated rootless profiles",
+      "passed": true
+    },
+    {
+      "name": "actual failed tests block source packaging",
+      "passed": true
+    }
+  ],
+  "model": "qwen2.5:0.5b",
+  "worker_image": "sha256:a0b7d0aa8e3d2087cbc283922627479acf57fa9fe033d6259e954888256cbfec",
+  "gpu_verified": false,
+  "owner_data_accessed": false,
+  "host_kernel": "7.0.0-1017-azure",
+  "host_os": {
+    "PRETTY_NAME": "\"Ubuntu 26.04.1 LTS\"",
+    "NAME": "\"Ubuntu\"",
+    "VERSION_ID": "\"26.04\"",
+    "VERSION": "\"26.04.1 LTS (Resolute Raccoon)\"",
+    "VERSION_CODENAME": "resolute",
+    "ID": "ubuntu",
+    "ID_LIKE": "debian",
+    "HOME_URL": "\"https://www.ubuntu.com/\"",
+    "SUPPORT_URL": "\"https://help.ubuntu.com/\"",
+    "BUG_REPORT_URL": "\"https://bugs.launchpad.net/ubuntu/\"",
+    "PRIVACY_POLICY_URL": "\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"",
+    "UBUNTU_CODENAME": "resolute",
+    "LOGO": "ubuntu-logo"
+  },
+  "cleanup_verified": false,
+  "cleanup_errors": [
+    "Manager cleanup: CalledProcessError: cannot chdir to /home/runner/work/foxory-intelligence/foxory-intelligence: Permission denied\n"
+  ],
+  "workflow_run": 40835895873,
+  "job_id": 123320473426,
+  "commit": "1b6473b10a160542ff79b153fa80dbfe6b94e8ac",
+  "scope": "Partial native service acceptance; later local-model repair failed; not a passing full workflow"
+}
