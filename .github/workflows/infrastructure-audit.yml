@@ -1,6 +1,12 @@
 name: Review default infrastructure images
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [current, candidate]
+        default: current
+        description: Current defaults or review-only upgrade candidates (no deployment)
 permissions:
   contents: read
 jobs:
@@ -33,8 +39,9 @@ jobs:
       - name: Inspect the exact default Compose dependency without executing it
         env:
           SERVICE: ${{ matrix.service }}
+          MODE: ${{ inputs.mode }}
         run: |
-          image_ref="$(.venv/bin/python -c 'import os,yaml; print(yaml.safe_load(open("compose.yaml"))["services"][os.environ["SERVICE"]]["image"])')"
+          image_ref="$(.venv/bin/python -c 'import os,yaml; print({"db":"postgres:17-alpine","ollama":"ollama/ollama:0.40.13"}[os.environ["SERVICE"]] if os.environ["MODE"]=="candidate" else yaml.safe_load(open("compose.yaml"))["services"][os.environ["SERVICE"]]["image"])')"
           docker pull --platform linux/amd64 "$image_ref"
           image_id="$(docker image inspect "$image_ref" --format '{{.Id}}')"
           docker image inspect "$image_ref" --format '{{json .RepoDigests}}' > /tmp/repo-digests.json
@@ -42,7 +49,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: infrastructure-${{ matrix.service }}-audit
+          name: infrastructure-${{ inputs.mode }}-${{ matrix.service }}-audit
           path: |
             /tmp/repo-digests.json
             /tmp/image-audit/

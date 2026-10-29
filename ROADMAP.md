@@ -39,9 +39,12 @@ does not introduce active Phases 6/7 or extra milestones.
 - [x] Hosted core and sandbox CI separation without weakening or hiding runtime tests.
 - [x] Hosted canonical core Compose startup and PostgreSQL migration/restart/logical restore.
 - [ ] Final worker-image SBOM, vulnerability/license review and accepted findings.
-- [ ] Real Ubuntu hostile-input/network/resource-exhaustion tests with recorded results.
-- [ ] Real Ubuntu cancellation, process-crash/orphan recovery and restart cleanup.
+- [x] Real Ubuntu 24.04 CPU throttling/PID denial/OOM, filesystem/network checks with counters.
+- [x] Real Ubuntu 24.04 cancellation, process-crash/orphan recovery and restart cleanup (TCP/Unix).
+- [ ] Final owner Ubuntu 26.04 image/topology acceptance; no universal escape certification.
 - [ ] Final app/manager topology, permissions/approvals and independent state backup/restore.
+- [x] Optional private Unix manager API adapter with actual authenticated rootless execution.
+- [ ] Resolve/review actual default PostgreSQL/Ollama image findings before production.
 - [ ] Actual combined local-model coding/browser/research/report workflows on the accepted host.
 - [ ] All remaining [Phase 4 acceptance checks](docs/PHASE4_CHECKLIST.md) pass.
 

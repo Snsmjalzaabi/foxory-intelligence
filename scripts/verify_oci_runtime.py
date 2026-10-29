@@ -36,6 +36,15 @@ assert.equal(fs.readFileSync('/sys/fs/cgroup/memory.max','utf8').trim(),'1073741
 assert.equal(fs.readFileSync('/sys/fs/cgroup/pids.max','utf8').trim(),'128');
 const [quota,period]=fs.readFileSync('/sys/fs/cgroup/cpu.max','utf8').trim().split(/\\s+/).map(Number);
 assert.equal(quota/period,1);
+// Check open-for-write denial without changing any quota or process membership.
+for(const file of ['memory.max','pids.max','cpu.max','cgroup.procs']) {
+  try {
+    const fd=fs.openSync('/sys/fs/cgroup/'+file,fs.constants.O_WRONLY);
+    fs.closeSync(fd);throw Error('Writable resource control: '+file);
+  } catch(error) {
+    assert.ok(['EROFS','EACCES','EPERM'].includes(error.code),'Resource controls must deny write access: '+file);
+  }
+}
 for(const file of ['/etc/foxory-escape','/work/escape','/root/escape']) {
   assert.throws(()=>fs.writeFileSync(file,'escape'));
 }

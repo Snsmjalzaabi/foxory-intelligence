@@ -1,5 +1,35 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Latest verified increment and active blockers
+
+Rootless workflow `40814461238` at `8d5ac6f` passed all **nine TCP and ten Unix
+checks**, including the actual application adapter → private Unix manager → real
+JS execution, resource exhaustion, Chromium artifacts, cancellation and crash/
+orphan recovery. Full default Verify `40814448642` passed all three jobs. This
+is Ubuntu 24.04/Podman 4.9.3; owner 26.04/final systemd/Compose GID mapping remain
+separate. Evidence summary committed. No default execution enablement.
+
+Additional guards: malformed HTTP manager URLs previously reproduced three
+configuration crashes; now report disabled instead. Four regressions pass.
+Current full backend: **193 passed (23.96s)**. Startup JS/TS probes now require
+read-only cgroup control/membership files (open-for-write denial, no quotas are
+changed). Probe syntax checked; updated actual host probe run pending.
+
+Completed default infrastructure scan `40814464356` after fixing hosted scanner
+storage: **Ollama 0.13.5 has 53 HIGH/CRITICAL findings, 410 total**; PostgreSQL
+still has **98 HIGH/CRITICAL, 461 total**. These are now known blockers, not an
+unknown Ollama scan or production clearance. Reports retained. A review-only
+candidate mode audits PostgreSQL 17 Alpine and official Ollama 0.40.13 (latest
+release observed 28 October), without changing Compose/defaults/owner data.
+Candidate scan/runtime/model/data-upgrade compatibility remains unverified.
+
+Continue by reviewing candidate findings, verifying safe disposable model and
+logical database migration compatibility, finishing owner Ubuntu commands in
+`docs/UBUNTU_FINAL_VALIDATION.md`, final topology/independent restore and combined
+real-model workflows. Preserve all owner volumes and current source/history.
+Do not infer patches from vendor-priority differences or bypass failed gates.
+Phase 4 incomplete; Phase 5 not started; no production/public deployment.
+
 PostgreSQL audit summary (98 HIGH/CRITICAL, 461 total) is retained under
 `docs/evidence/postgres-image-audit-2026-10-29.json`. Ollama's first audit was
 incomplete due to scanner temporary storage exhaustion. Its next ephemeral

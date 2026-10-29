@@ -64,3 +64,12 @@ async def test_unsafe_socket_configuration_fails_closed(configured_socket,monkey
     elif unsafe=='absent':monkeypatch.setenv('FOXORY_SANDBOX_SOCKET',str(path.with_name('absent.sock')))
     with pytest.raises(PermissionError):sandbox_client.settings()
     assert not (await sandbox_client.capabilities())['enabled']
+
+
+@pytest.mark.parametrize('url',['http://[::1','http://127.0.0.1:invalid','http://127.0.0.1:99999','http://127.0.0.1:0'])
+async def test_invalid_http_manager_configuration_reports_disabled(monkeypatch,url):
+    monkeypatch.setenv('FOXORY_ENABLE_SANDBOX','1')
+    monkeypatch.setenv('FOXORY_SANDBOX_KEY','x'*40)
+    monkeypatch.setenv('FOXORY_SANDBOX_SOCKET','')
+    monkeypatch.setenv('FOXORY_SANDBOX_URL',url)
+    assert not (await sandbox_client.capabilities())['enabled']

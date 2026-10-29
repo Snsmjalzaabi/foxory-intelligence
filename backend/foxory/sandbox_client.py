@@ -26,7 +26,11 @@ def settings():
         except (OSError,ValueError):
             raise PermissionError('Trusted private manager socket is unavailable') from None
         return 'http://sandbox-manager',key
-    parsed=urlsplit(url)
+    try:
+        parsed=urlsplit(url)
+        if parsed.port is not None and not 1<=parsed.port<=65535:raise ValueError('Invalid port')
+    except ValueError:
+        raise PermissionError('Sandbox trusted local manager endpoint is invalid') from None
     if (os.getenv('FOXORY_ENABLE_SANDBOX','0')!='1' or len(key)<32
         or parsed.scheme not in {'http','https'} or parsed.hostname not in {'localhost','127.0.0.1','::1','sandbox-manager','host.docker.internal'}
         or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment):
