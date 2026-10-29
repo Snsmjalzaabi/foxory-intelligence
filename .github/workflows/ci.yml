@@ -28,7 +28,7 @@ jobs:
         run: npx playwright install --with-deps chromium && npm run test:e2e
         working-directory: frontend
       - name: PostgreSQL migrations, isolation and logical restore
-        run: .venv/bin/python scripts/phase4_postgres_smoke.py
+        run: docker pull postgres:17-bookworm && .venv/bin/python scripts/phase4_postgres_smoke.py
       - name: Canonical pristine Compose install and restart
         run: .venv/bin/python scripts/compose_smoke.py --build --evidence /tmp/compose-evidence.json
       - uses: actions/upload-artifact@v4

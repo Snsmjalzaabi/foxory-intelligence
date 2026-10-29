@@ -2,6 +2,13 @@
 
 ## Latest continuation: independent core and sandbox CI gates
 
+Hosted follow-up for `3398ab2`: sandbox job `123219877303` passed actual runtime
+tests and browser journeys. Core job `123219877058` passed backend/browser work,
+then stopped before PostgreSQL initialization because the fresh runner lacked
+`postgres:17-bookworm` and the safe smoke harness uses `--pull=never`. CI now
+explicitly pulls that standard core image before the smoke. Pristine Compose and
+PostgreSQL hosted acceptance remain pending its next run.
+
 On 29 October 2026, Cloud and GitHub development both matched `4b57d90` before
 edits. Actual GitHub workflow `40038556044` was reviewed through its job logs:
 **139 passed, 17 real sandbox fixture setup errors**. The namespace isolation
