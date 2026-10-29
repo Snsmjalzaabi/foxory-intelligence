@@ -169,8 +169,20 @@ Local backend272 passed. Actual OCI/local-model evidence is separate from mocked
 OCI UI. Image:
 `sha256:0e87ba95854991b50577303c503de50286b449ecb3ef9be915aef7a31b6fd43c`.
 See [issue5-codec-removal-verified-2026-10-29.json](evidence/issue5-codec-removal-verified-2026-10-29.json).
-Requested subject: **Issue 5 Fixed**; send only after this evidence is committed.
+The requested **Issue 5 Fixed** email was sent after the evidence commit; the mail
+service confirmed sending.
 Lower layers/bundled codecs/licenses and the owner's installation are not cleared.
+
+## Issue 6 — PCRE2 dependency remediation, not fixed
+
+Upstream review has verified30 of43 remaining CVE pages;13 lookups remain
+unverified after bounded retries. Ubuntu marks the installed PCRE2 version
+vulnerable, including published CVSS8.2/7.6/7.4 findings despite the scanner's
+Ubuntu MEDIUM labels. The upstream DFA-workspace patch and regression were read;
+no patch has been applied/tested, and no completion email is warranted. The next
+step is a reviewed supported update or maintained backport covering all seven
+PCRE2 CVEs, followed by dependency and exact-image runtime verification. See
+[REMAINING_WORKER_RISK_REVIEW.md](REMAINING_WORKER_RISK_REVIEW.md).
 
 ## Remaining, not started
 

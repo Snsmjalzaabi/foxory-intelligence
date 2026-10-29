@@ -1,5 +1,27 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Current checkpoint — Issues3/4/5 verified; next dependency issue unresolved
+
+Requested **Issue 3 Fixed**, **Issue 4 Fixed** and **Issue 5 Fixed** emails were
+sent only after their verified evidence commits were pushed; the mail service
+confirmed sending. Latest runtime source is `0edf13b`; evidence is in `280e591`.
+All272 backend tests, builds, browser suites, migration/Compose checks and the
+actual Ubuntu26 exact-image7/9/10 runtime groups passed within their stated scope.
+
+Production/distribution remain blocked. The worker's71 findings include PCRE2
+issues with published CVSS scores above7 even though Ubuntu's scanner labels
+them MEDIUM. First-party review verified30 of43 CVE pages;13 timed out/returned503
+and remain unverified. Ubuntu marks Noble PCRE2 vulnerable; upstream patch
+`c932e70451eafef922ebef364ac25042f0031135` was inspected, not applied or tested.
+Do not delete required PCRE2, invent a patched version or suppress those findings.
+Next: review a supported update/backport for all seven PCRE2 CVEs with restricted
+regression/sanitizer tests and fresh exact-image verification. No Issue6 fix or
+notification is claimed. Details and precise continuation requirements are in
+[REMAINING_WORKER_RISK_REVIEW.md](docs/REMAINING_WORKER_RISK_REVIEW.md).
+Binary licenses/sources, compiled-browser coverage and owner-PC activation/reboot
+acceptance remain separate. No production/Phase4 completion, Phase5, GPU or
+owner-PC image rebuild is claimed; unsafe profiles stay disabled by default.
+
 ## Issue 5 fixed and verified — inherited codec/parser dependencies
 
 Source `0edf13b26c6b64fe07e10f9e4dc6ceed8557f73e` excludes17 unused optional
