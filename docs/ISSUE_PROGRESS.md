@@ -16,6 +16,9 @@ The receipt is [cleanup-cloud-2026-10-29.json](evidence/cleanup-cloud-2026-10-29
 
 There is no configured VPN/SSH connection to the owner's Ubuntu PC. Nothing was
 deleted there, and chat attachments themselves cannot be removed by these tools.
+The owner chose reviewed local commands; those are now provided in
+[LOCAL_CACHE_CLEANUP.md](LOCAL_CACHE_CLEANUP.md), backed by the guarded stdlib-only
+cache utility and five filesystem/Git boundary tests. PC execution remains pending.
 Do not describe cloud cleanup as PC cleanup or delete valid files merely because
 their test run failed.
 
@@ -57,7 +60,9 @@ previously mixed reports without writing a successful provenance record.
 
 Requested notification subject: **Issue 1 Fixed**. Email delivery is a separate
 action, reported to the owner only after the verified fix/evidence is committed;
-it is never inferred from test success. This is one fixed issue, not project-
+it is never inferred from test success. The requested Issue1 email was actually
+sent after verification/commit; delivery was confirmed by the mail service.
+This is one fixed issue, not project-
 wide production clearance or owner-PC cleanup.
 All runtime permissions, rootless identity, network/resource restrictions and
 disabled application defaults remain unchanged.

@@ -2,6 +2,14 @@
 
 ## Sequential work — Issue 1 fixed and verified
 
+The requested **Issue 1 Fixed** email was sent and delivery confirmed after its
+passing evidence was committed/pushed (`c2ab061`). The owner selected local PC
+cleanup commands. A stdlib-only, preview-first utility now limits deletion to
+recognized ignored caches and refuses symlinks/tracked files/unexpected contents;
+five temporary-filesystem/Git guard tests passed. Commands are in
+[LOCAL_CACHE_CLEANUP.md](docs/LOCAL_CACHE_CLEANUP.md). PC cleanup remains pending
+execution/output; no remote access or PC deletion is claimed.
+
 Owner requested cleanup followed by one verified issue at a time and a completion
 email per issue. See [ISSUE_PROGRESS.md](docs/ISSUE_PROGRESS.md). Cloud integrity
 audit found no corrupt tracked JSON/PNG/PDF or Git bundles. Only ignored caches
