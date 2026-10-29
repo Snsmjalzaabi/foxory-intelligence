@@ -1,5 +1,12 @@
 # Phase 4 Ubuntu host validation — fixed probes passed, full acceptance pending
 
+Hosted Ubuntu26 now passed full canonical systemd/Compose connection, real
+local-model/browser/coding/data/report workflows, coordinated restore and
+representative TCP/Unix security/recovery tests (`40838680397`). See
+[the exact evidence and limits](UBUNTU26_INTEGRATION_EVIDENCE.md). The owner
+checkboxes below remain unchecked for that installation; do not infer GPU or
+owner-PC execution from the hosted VM. Default profiles remain disabled.
+
 ## Repeatable active acceptance (new, opt-in)
 
 After reviewing/building the current worker, run in the existing dedicated

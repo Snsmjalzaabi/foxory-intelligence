@@ -1,4 +1,9 @@
-# Phase 4 acceptance — host-dependent criteria pending
+# Phase 4 acceptance — hosted runtime passed; distribution/owner acceptance pending
+
+Current evidence: [Ubuntu26 integration](UBUNTU26_INTEGRATION_EVIDENCE.md).
+Run `40838680397` passed actual hosted Ubuntu26 systemd/Compose/OCI workflows,
+coordinated restore and TCP/Unix attack/recovery suites. This does not check the
+owner's installation, GPU, public browsing or universal sandbox security.
 
 ## Implemented and verified in Codex Cloud
 
@@ -14,7 +19,9 @@
   actual deterministic calculations, PDF parsing and source ZIP validation.
 - [x] Worker base digest, locked dependencies, input hashes and registry-byte checks.
 - [x] Ubuntu installation, image build and security/recovery validation checklist.
-- [x] Backend (193), browser journeys (14), frontend build, migration/security and Compose regressions; real core acceptance separately records 14 checks. Counts refer to their stated individual run scopes; canceled CI is not a pass.
+- [x] Backend212, core browser11/full sandbox14 (overlapping suites), frontend
+  build, migration/security and Compose regressions at `5309912`. OCI UI is
+  explicitly mocked; actual hosted runtime evidence is separate. Canceled CI is not a pass.
 - [x] Current-source application image health/persistence and separate PostgreSQL 17
   migrations, tenant/duplicate guards, restart and dump/restore smoke tests.
 - [x] Actual local qwen2.5:0.5b Python repair/test/package/restart regression.
@@ -37,14 +44,19 @@
   timeout, actual manager kill/restart, owned orphan cleanup/foreign preservation.
 - [ ] Repeat relevant final-image/topology acceptance on the owner's Ubuntu
   26.04; hostile-input coverage is representative, not escape certification.
-- [ ] Final application/manager topology and persistence/backup restore checks.
+- [x] Final hosted application/manager topology, systemd activation, Compose
+  GID/socket mapping and coordinated DB/app-files/manager restore.
 - [x] Actual native application adapter → private Unix manager → rootless JS
   execution; TCP/Unix fixture recovery and quotas pass on Ubuntu 24.04.
-- [ ] Final systemd activation/Compose socket GID mapping and owner Ubuntu 26.04.
+- [x] Ubuntu26 hosted TCP/Unix quotas, network/filesystem denial, actual kill/
+  restart, orphan ownership, cancellation/timeout and cleanup with counters.
+- [ ] Owner Ubuntu26 activation/reboot acceptance (separate from hosted proof).
 - [x] Safe default infrastructure upgrade with actual model compatibility and
   separate-volume logical database migration; no automatic owner-volume change.
-- [ ] Combined local-model workflows produce real browser/code/report artifacts.
-- [ ] Final real-host critical tests pass before Phase 4 acceptance or Phase 5.
+- [x] Combined local-model workflows produce real browser/code/CSV/PDF/ZIP artifacts.
+- [x] Current hosted real-runtime critical tests pass within the stated boundary.
+- [ ] Remaining distribution/security findings and supported-scope acceptance
+  resolved before declaring Phase4 complete or beginning Phase5.
 
 Existing Python and real local-model verification is retained in PROJECT_STATUS.md
 and docs/PHASE4_OCI_GROUNDWORK.md. Source ZIPs/zero exits do not establish test

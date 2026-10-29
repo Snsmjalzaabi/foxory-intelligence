@@ -1,0 +1,70 @@
+{
+  "status": "passed",
+  "project": "foxory-host-4c2d8a5cf55b",
+  "checks": [
+    {
+      "name": "canonical Compose authentication and socket-activated rootless profiles",
+      "passed": true
+    },
+    {
+      "name": "actual failed tests block source packaging",
+      "passed": true
+    },
+    {
+      "name": "actual local-model repair, three tests, independent approvals and matching ZIP",
+      "passed": true,
+      "source_sha256": "762c16d89d6c4d34a056925c95168a210e18cf5028d66c2455d4817884059874"
+    },
+    {
+      "name": "actual delegated coding/browser/CSV/PDF workflow with local-model review",
+      "passed": true,
+      "agents": 4,
+      "approved_effects": 7
+    },
+    {
+      "name": "real download workspace isolation and consumed-approval reuse denial",
+      "passed": true
+    },
+    {
+      "name": "real app/manager restart preserves session, completed job and artifact",
+      "passed": true
+    },
+    {
+      "name": "coordinated DB/app-files/manager restore preserves login, docs, approvals and replay prevention",
+      "passed": true
+    }
+  ],
+  "model": "qwen2.5:0.5b",
+  "coding_model": "qwen2.5-coder:1.5b",
+  "coding_attempts": [
+    {
+      "attempt": 1,
+      "status": "completed",
+      "source_sha256": "01123cff2acdda41ce6ac1a2971bd1dbbaf8f2e9ae11d410c423437232d46d15"
+    }
+  ],
+  "worker_image": "sha256:9ff8be0552673bae7d3de0ad67c32d3d5ee78dd068ddf29d3a168d2fa0f25469",
+  "gpu_verified": false,
+  "owner_data_accessed": false,
+  "host_kernel": "7.0.0-1017-azure",
+  "host_os": {
+    "PRETTY_NAME": "\"Ubuntu 26.04.1 LTS\"",
+    "NAME": "\"Ubuntu\"",
+    "VERSION_ID": "\"26.04\"",
+    "VERSION": "\"26.04.1 LTS (Resolute Raccoon)\"",
+    "VERSION_CODENAME": "resolute",
+    "ID": "ubuntu",
+    "ID_LIKE": "debian",
+    "HOME_URL": "\"https://www.ubuntu.com/\"",
+    "SUPPORT_URL": "\"https://help.ubuntu.com/\"",
+    "BUG_REPORT_URL": "\"https://bugs.launchpad.net/ubuntu/\"",
+    "PRIVACY_POLICY_URL": "\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"",
+    "UBUNTU_CODENAME": "resolute",
+    "LOGO": "ubuntu-logo"
+  },
+  "cleanup_verified": true,
+  "workflow_run": 40838680397,
+  "job_id": 123329486948,
+  "commit": "1466e6741b49b4b74470ed82942bb4b71f19c0a2",
+  "scope": "Actual ephemeral hosted Ubuntu26 CPU integration; not owner PC, GPU, public browsing or general escape certification"
+}

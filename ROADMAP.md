@@ -42,12 +42,15 @@ does not introduce active Phases 6/7 or extra milestones.
 - [x] Real Ubuntu 24.04 CPU throttling/PID denial/OOM, filesystem/network checks with counters.
 - [x] Real Ubuntu 24.04 cancellation, process-crash/orphan recovery and restart cleanup (TCP/Unix).
 - [ ] Final owner Ubuntu 26.04 image/topology acceptance; no universal escape certification.
-- [ ] Final app/manager topology, permissions/approvals and independent state backup/restore.
+- [x] Actual Ubuntu26 hosted final app/manager topology, permissions/approvals and
+  coordinated DB/app-files/manager-state restoration (seven integrated checks).
 - [x] Optional private Unix manager API adapter with actual authenticated rootless execution.
 - [x] Replace vulnerable fresh defaults after actual model/database compatibility
   and guarded separate-volume migration; never change owner volumes automatically.
 - [ ] Review remaining lower image findings/compiled binaries and license obligations.
-- [ ] Actual combined local-model coding/browser/research/report workflows on the accepted host.
+- [x] Actual Ubuntu26 local coding/browser/CSV/report delegation, verified code,
+  screenshot/download, PDF and matching ZIP; core real research evidence retained.
+- [x] Actual Ubuntu26 TCP/Unix security/recovery suites (9/10 check groups).
 - [ ] All remaining [Phase 4 acceptance checks](docs/PHASE4_CHECKLIST.md) pass.
 
 ## Phase 5 — Optimization and Open-Source Release Preparation (not started)

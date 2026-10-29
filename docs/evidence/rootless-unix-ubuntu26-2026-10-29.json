@@ -1,0 +1,117 @@
+{
+  "status": "passed",
+  "image": "sha256:9ff8be0552673bae7d3de0ad67c32d3d5ee78dd068ddf29d3a168d2fa0f25469",
+  "os": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.43",
+  "transport": "unix",
+  "checks": [
+    {
+      "name": "actual-startup-js-ts-chromium-probes",
+      "passed": true
+    },
+    {
+      "name": "actual-application-adapter-unix-authenticated-execution",
+      "passed": true
+    },
+    {
+      "name": "authentication-idempotency-tenancy-fs-network-js-ts",
+      "passed": true
+    },
+    {
+      "name": "actual-cpu-throttling-pid-denial-memory-oom",
+      "passed": true,
+      "counters": {
+        "cpu": {
+          "before": {
+            "usage_usec": 90064,
+            "user_usec": 57040,
+            "system_usec": 33023,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 1,
+            "nr_throttled": 0,
+            "throttled_usec": 0,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          },
+          "after": {
+            "usage_usec": 1675495,
+            "user_usec": 1609383,
+            "system_usec": 66112,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 17,
+            "nr_throttled": 16,
+            "throttled_usec": 1281096,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          },
+          "elapsed_ms": 1582.6559849999999
+        },
+        "pids": {
+          "before": {
+            "max": 0
+          },
+          "after": {
+            "max": 1
+          },
+          "current": 128
+        },
+        "memory": {
+          "before": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "after": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 1,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "exit": {
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        }
+      }
+    },
+    {
+      "name": "authenticated-browser-interaction-screenshot-download",
+      "passed": true
+    },
+    {
+      "name": "browser-external-navigation-rejected",
+      "passed": true
+    },
+    {
+      "name": "running-queued-repeat-cancellation-and-cleanup",
+      "passed": true
+    },
+    {
+      "name": "infinite-worker-bounded-timeout-and-cleanup",
+      "passed": true,
+      "elapsed_seconds": 15.304269610000006
+    },
+    {
+      "name": "actual-manager-kill-restart-no-replay-owned-orphan-cleanup",
+      "passed": true
+    },
+    {
+      "name": "foreign-owner-container-preserved",
+      "passed": true
+    }
+  ],
+  "application_execution_enabled": false,
+  "owned_container_cleanup": true,
+  "workflow_run": 40838680397,
+  "job_id": 123329486948,
+  "commit": "1466e6741b49b4b74470ed82942bb4b71f19c0a2",
+  "scope": "Actual ephemeral hosted Ubuntu26 CPU integration; not owner PC, GPU, public browsing or general escape certification"
+}

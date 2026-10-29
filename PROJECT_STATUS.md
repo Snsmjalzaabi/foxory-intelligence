@@ -1,5 +1,44 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Current verified result — technical host blockers fixed
+
+**Actual Ubuntu26 integration `40838680397` passed** at `1466e67`: seven
+canonical systemd/Compose/local-model/workspace/approval/restart/coordinated-
+restore checks, followed by nine TCP and ten Unix real rootless security/recovery
+check groups. These are real execution, not mocked OCI. All owned cleanup passed.
+Worker image: `sha256:9ff8be0552673bae7d3de0ad67c32d3d5ee78dd068ddf29d3a168d2fa0f25469`.
+Host: Ubuntu26.04.1 x86_64, kernel7.0.0-1017-azure, CPU only, disposable hosted
+VM. This is not access to or verification of the owner's PC/GPU.
+
+**Verify `40838103014` passed all three jobs** at `5309912`: 195 core +17 actual
+Python-sandbox backend tests (**212 total**), strict frontend builds, 11 core
+and14 full sandbox browser journeys (overlapping suites; OCI UI is mocked),
+PostgreSQL0003 migration/isolation/persistence/logical restore, pristine canonical
+Compose and actual core/worker image gates. Reports retain26/633 lower findings;
+zero vendor HIGH/CRITICAL is not universal vulnerability clearance.
+
+The failed runtime stages were resolved without weakening isolation: dedicated
+user-manager identity/child environment; explicit coding-specialist model with
+bounded actual-test feedback; retained execution errors and fresh-approval retry
+policy; dedicated controller CWD; empty new-volume ownership before restore.
+qwen2.5-coder:1.5b produced the corrected module on its first recorded attempt;
+qwen2.5:0.5b coordinated the reviewed delegated plan. This is a small functional
+example, not broad autonomous coding/planning or GPU performance evidence.
+
+Bandit1.8.6 Python AST review completed: zero HIGH, three MEDIUM/five LOW,
+no skipped tests/nosec suppressions. Findings concern deliberate subprocess and
+isolated `/tmp` use; contextual review is in
+[UBUNTU26_INTEGRATION_EVIDENCE.md](docs/UBUNTU26_INTEGRATION_EVIDENCE.md).
+This is self-review, not an independent security audit.
+
+**Distribution/production remain uncleared.** Remaining work: compiled-browser/
+OS lower-finding and binary-license/source-delivery review; owner-installation
+activation/reboot validation before enabling its profiles; supported-scope and
+quality acceptance. No public browsing/submissions, GPU, Windows/macOS or general
+escape certification is claimed. Phase4 stays open; Phase5 has not started.
+No completion email has been sent because the complete production/distribution
+gate has not passed. Source/history are preserved on private development.
+
 ## Combined actual Ubuntu26 workflow passed; restore fixture correction
 
 Run `40837443204` at `52432f4` passed six actual integration checks: canonical

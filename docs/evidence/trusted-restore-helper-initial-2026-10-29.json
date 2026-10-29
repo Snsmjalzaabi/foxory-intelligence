@@ -1,0 +1,9 @@
+{
+  "status": "failed",
+  "scope": "Trusted backup helper only; rootful Docker, NOT untrusted execution or rootless-isolation assurance",
+  "image": "sha256:e3ddcd099ef22077a043eab8af34df878e452b26f345e46d1609490421d4f13b",
+  "checks": [],
+  "owned_volumes_removed": true,
+  "failure_stage": "Fixture initialization chmod after relinquishing ownership; actual restore helper was not reached",
+  "helper_executed": false
+}

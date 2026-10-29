@@ -1,0 +1,19 @@
+{
+  "canonical_build": true,
+  "project": "foxory-acceptance-90afb744d33a",
+  "checks": [
+    "pristine Compose startup, health, account and authentication",
+    "canonical image contains readable source license and dependency notices",
+    "Ollama available with no automatic weight download; sandbox absent/disabled",
+    "restricted document parsing, authorized original and invalid-file rejection",
+    "workspace download isolation",
+    "PostgreSQL migrations, account/session, records and originals persist across app restart",
+    "persisted session can be revoked"
+  ],
+  "sandbox_enabled": false,
+  "application_image": "sha256:a28166e7ebc315ccf661cd22bbc5adf7b38b1e438567dd100ed9fa75bf69ca20",
+  "status": "passed",
+  "owned_resources_removed": true,
+  "workflow_run": 40838103014,
+  "commit": "5309912e788d54da047911d5cff178833f565f21"
+}

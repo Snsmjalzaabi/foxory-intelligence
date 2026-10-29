@@ -1,5 +1,5 @@
 {
-  "scope": "Only exact tested model manifests; weights are not vendored or proposed for redistribution",
+  "scope": "License review of listed registry references; runtime digest matching is separately qualified. Weights are not vendored or proposed for redistribution.",
   "models": [
     {
       "model": "qwen2.5:0.5b",
@@ -27,7 +27,8 @@
       "retained_text": "docs/evidence/qwen2.5-0_5b-LICENSE.txt",
       "registry_manifest": "https://registry.ollama.ai/v2/library/qwen2.5-coder/manifests/1.5b",
       "terms_match_project_apache2_terms": true,
-      "runtime_verification": "pending full-host integration"
+      "runtime_verification": "Actual CPU repair/test/package passed in Ubuntu26 run40837443204; not a general coding benchmark",
+      "runtime_manifest_digest_verified": false
     }
   ]
 }

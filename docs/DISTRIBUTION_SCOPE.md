@@ -26,7 +26,11 @@ legal clearance. Dependency changes require renewed review.
 Exact qwen2.5:0.5b and nomic-embed-text manifests used by CPU integration were
 checked against public registry license layers. Blob hashes were verified and
 Apache2 terms compared to retained Apache2 text. Full texts/manifests are in
-`docs/evidence`. Other digests/models require separate review. Weights are not in
+`docs/evidence`. The qwen2.5-coder:1.5b reference's fetched license blob was also
+hash-verified and byte-identical to that retained Apache2 text. Its actual CPU
+repair/test/package passed; that integration retained the model tag rather than
+an installed full manifest digest, so exact runtime-digest matching is not
+claimed for that additional model. Other digests/models require separate review. Weights are not in
 the repository/source archive; no automatic purchase/subscription is required.
 
 **Public prebuilt image/model redistribution is not cleared by this inventory.**
