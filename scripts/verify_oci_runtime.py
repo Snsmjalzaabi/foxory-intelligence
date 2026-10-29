@@ -102,7 +102,13 @@ def run_probe(image: str, project: OCIProject, owner: str = "") -> dict:
                 try:
                     process.wait(timeout=45)
                 except subprocess.TimeoutExpired:
-                    raise RuntimeError('OCI probe wall deadline exceeded') from None
+                    # Fixed fixtures only: retain bounded startup diagnostics
+                    # before owned cleanup. Do not dump container environment.
+                    state=subprocess.run(['podman','--remote=false','inspect','--format',
+                        '{{json .State}}','foxory-task-'+task_id],capture_output=True,text=True,timeout=5)
+                    out.seek(0); err.seek(0)
+                    detail=out.read(8001).decode('utf8','replace')[-8000:]+'\n'+err.read(4001).decode('utf8','replace')[-4000:]
+                    raise RuntimeError('OCI probe wall deadline exceeded; state='+state.stdout[:2000]+'; output='+detail) from None
                 out.seek(0); stdout = out.read(100001)
                 err.seek(0); stderr = err.read(8001)
                 if len(stdout) > 100000:

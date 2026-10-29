@@ -39,7 +39,14 @@ jobs:
       - name: PostgreSQL migrations, isolation and logical restore
         run: docker pull postgres:17-bookworm && .venv/bin/python scripts/phase4_postgres_smoke.py
       - name: Canonical pristine Compose install and restart
-        run: .venv/bin/python scripts/compose_smoke.py --build --evidence /tmp/compose-evidence.json
+        # The PCRE2 derivative adds a builder and the model scan needs a large
+        # temporary image export. Only reclaim unused SDKs on this disposable VM.
+        # No Docker data/volumes or owner/Cloud files are pruned.
+        run: |
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          .venv/bin/python scripts/compose_smoke.py --build --evidence /tmp/compose-evidence.json
       - name: Core image SBOM, license inventory and vulnerability gate
         run: |
           image_id="$(.venv/bin/python -c 'import json; print(json.load(open("/tmp/compose-evidence.json"))["application_image"])')"
