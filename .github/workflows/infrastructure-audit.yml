@@ -43,9 +43,25 @@ jobs:
         run: |
           image_ref="$(.venv/bin/python -c 'import os,yaml; print({"db":"postgres:17-alpine","ollama":"ollama/ollama:0.40.13"}[os.environ["SERVICE"]] if os.environ["MODE"]=="candidate" else yaml.safe_load(open("compose.yaml"))["services"][os.environ["SERVICE"]]["image"])')"
           docker pull --platform linux/amd64 "$image_ref"
+          if [ "$MODE" = candidate ] && [ "$SERVICE" = db ]; then
+            docker build -f deployment/postgres/Dockerfile -t foxory-postgres:review .
+            image_ref=foxory-postgres:review
+          fi
           image_id="$(docker image inspect "$image_ref" --format '{{.Id}}')"
           docker image inspect "$image_ref" --format '{{json .RepoDigests}}' > /tmp/repo-digests.json
           .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/image-audit
+      - name: Candidate PostgreSQL fresh migration, isolation and restore
+        if: inputs.mode == 'candidate' && matrix.service == 'db'
+        run: |
+          .venv/bin/pip install -r backend/requirements.lock
+          .venv/bin/pip install --no-deps -e backend
+          image_id="$(.venv/bin/python -c 'import json; print(json.load(open("/tmp/image-audit/summary.json"))["image"])')"
+          .venv/bin/python scripts/phase4_postgres_smoke.py --image "$image_id" > /tmp/database-runtime.json
+      - name: Candidate actual CPU completion and embedding with temporary free models
+        if: inputs.mode == 'candidate' && matrix.service == 'ollama'
+        run: |
+          image_id="$(.venv/bin/python -c 'import json; print(json.load(open("/tmp/image-audit/summary.json"))["image"])')"
+          .venv/bin/python scripts/ollama_candidate_smoke.py --image "$image_id" --evidence /tmp/model-runtime.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -53,5 +69,7 @@ jobs:
           path: |
             /tmp/repo-digests.json
             /tmp/image-audit/
-# Static inspection only. No model download, server startup, deployment or
-# database migration; owner volumes and running infrastructure are untouched.
+            /tmp/database-runtime.json
+            /tmp/model-runtime.json
+# Current mode is static only. Explicit candidate mode also uses disposable
+# services/models/fresh data after the image gate; no owner volume/deployment.

@@ -5,6 +5,7 @@ postgres:17-bookworm image with --pull=never and removes only its own resources.
 """
 from __future__ import annotations
 import json
+import argparse
 import os
 from pathlib import Path
 import secrets
@@ -14,6 +15,9 @@ import tempfile
 import time
 
 ROOT=Path(__file__).resolve().parents[1]
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--image',default='postgres:17-bookworm',help='Explicit reviewed local image (never pulled here)')
+args=parser.parse_args()
 name='foxory-phase4-pg-'+secrets.token_hex(5)
 volume=name+'-data';password=secrets.token_urlsafe(30)
 env={**os.environ,'POSTGRES_PASSWORD':password}
@@ -36,7 +40,7 @@ created=False
 try:
     docker('run','-d','--pull=never','--name',name,'-e','POSTGRES_USER=foxory','-e','POSTGRES_DB=foxory',
            '-e','POSTGRES_PASSWORD','-p','127.0.0.1::5432','--memory=512m','--pids-limit=128',
-           '--security-opt=no-new-privileges','-v',volume+':/var/lib/postgresql/data','postgres:17-bookworm',stdout=subprocess.DEVNULL)
+           '--security-opt=no-new-privileges','-v',volume+':/var/lib/postgresql/data',args.image,stdout=subprocess.DEVNULL)
     created=True;ready()
     inspection=json.loads(docker('inspect',name,capture_output=True,text=True).stdout)[0]
     port=inspection['NetworkSettings']['Ports']['5432/tcp'][0]['HostPort']
@@ -77,7 +81,7 @@ print(id)
         result=docker('exec',name,'psql','-U','foxory','-d','restored','-At','-v','ON_ERROR_STOP=1','-c',
                      "SELECT count(*) FROM records WHERE dedupe_key='pg-smoke'; SELECT version_num FROM alembic_version",capture_output=True,text=True).stdout.strip().splitlines()
         assert result==['1','0003'],result
-    print(json.dumps({'postgresql':'17','migration':'0003','workspace_isolation':True,'duplicate_constraint':True,
+    print(json.dumps({'postgresql':'17','image':args.image,'migration':'0003','workspace_isolation':True,'duplicate_constraint':True,
                       'restart_persistence':True,'dump_restore':True,'owner_database_accessed':False}))
 except Exception:
     if created:

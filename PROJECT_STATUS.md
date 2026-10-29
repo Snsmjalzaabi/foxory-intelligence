@@ -1,5 +1,14 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+Candidate-engineering update: stock PostgreSQL 17 Alpine also failed its actual
+scan (26 HIGH/CRITICAL, all the old gosu Go runtime). A review-only pinned Alpine
+derivative replaces that helper with signed MIT su-exec 0.3-r0, retaining inventory
+and the upstream user/exec entrypoint contract. Defaults/owner data are untouched.
+The next candidate workflow adds fresh PostgreSQL migration/isolation/restart/
+logical restore and actual quota-limited CPU Ollama completion/embedding checks
+after successful image gates. Scripts/YAML syntax checked; actual candidate
+build/scan/runtime results pending. No physical cross-libc DB migration claim.
+
 ## Latest verified increment and active blockers
 
 Rootless workflow `40814461238` at `8d5ac6f` passed all **nine TCP and ten Unix

@@ -1,0 +1,212 @@
+{
+  "status": "blocked",
+  "image": "sha256:ab20e934b27ba3ff927c1b4c9ff8cf6c32f315f743efe68dd3441182a87fb085",
+  "tools": {
+    "syft": {
+      "version": "1.55.0",
+      "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+      "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+    },
+    "trivy": {
+      "version": "0.76.1",
+      "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+      "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+    }
+  },
+  "coverage_reported": true,
+  "os": {
+    "Family": "alpine",
+    "Name": "3.24.3"
+  },
+  "blocking": [
+    {
+      "id": "CVE-2025-68121",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.24.13, 1.25.7, 1.26.0-rc.3",
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "CVE-2025-61726",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.24.12, 1.25.6",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2025-61729",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.24.11, 1.25.5",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-111943",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.26.10, 1.27.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-25679",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-27145",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-32280",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-32281",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-32283",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-33811",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-33814",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-39820",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-39836",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-42499",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-42504",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-78667",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.26.9, 1.27.2",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-78669",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.26.9, 1.27.2",
+      "severity": "HIGH"
+    },
+    {
+      "id": "CVE-2026-97031",
+      "package": "stdlib",
+      "installed": "v1.24.6",
+      "fixed": "1.26.9, 1.27.2",
+      "severity": "HIGH"
+    }
+  ],
+  "total_findings": 61,
+  "unfixed_findings_ignored": false,
+  "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+  "sbom_components": 871,
+  "workflow_run": 40815264275,
+  "job_id": 123254727159,
+  "commit": "d1800a7b1c52306c0c68a6f9ea43920a54266428"
+}

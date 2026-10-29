@@ -50,3 +50,28 @@ must fail; do not substitute a partial report for a completed audit.
 Production remains blocked on review of these findings, infrastructure coverage,
 compiled-browser/runtime advisories, license obligations and the remaining
 Phase 4 acceptance criteria. No blanket security clearance is asserted.
+
+## Review-only upgrade candidates
+
+Current Compose/defaults remain unchanged. Candidate audit mode reviews official
+Ollama 0.40.13 and a digest-pinned PostgreSQL 17 Alpine derivative; it is not an
+owner deployment. Stock PostgreSQL 17 Alpine still reported 26 HIGH/CRITICAL
+findings in the old embedded Go runtime of `gosu`, despite newer OS packages.
+That unsuccessful scan is retained. The derivative removes that binary and uses
+signed Alpine `su-exec=0.3-r0` for the entrypoint's existing user/exec operation.
+No scanning metadata is removed; no advisory exception is introduced. MIT license
+text was retrieved from ncopa/su-exec v0.3 and is shipped in the candidate.
+
+Only after the image gate passes, candidate CI runs fresh PostgreSQL migrations,
+tenant/duplicate guards, restart and logical restore in its own disposable data.
+This does **not** establish an existing Bookworm/glibc cluster can be physically
+reused under Alpine/musl. Never attach the owner's old database volume. A tested
+logical export/import, roles/extensions/collations and actual owner backups are
+required before proposing that transition.
+
+Ollama candidate CI, after its gate, explicitly downloads the free Apache-2.0
+qwen2.5:0.5b and nomic-embed-text models into quota-limited temporary storage and
+checks actual CPU completion/embedding metadata. It runs non-root, read-only,
+cap-drop ALL/no-new-privileges with no GPU devices and loopback-only publication.
+It never executes generated code, uses owner weights or claims model persistence/
+GPU/quality compatibility from this narrow smoke. Candidate results are pending.
