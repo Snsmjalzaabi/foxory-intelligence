@@ -28,9 +28,16 @@ export function validatePlan(policy, text) {
 }
 
 export function validateSharedLibraryNames(names) {
-  // Inspect the actual merged files as well as dpkg metadata. These are the
-  // reviewed FFmpeg and libsoup3 SONAMEs, not Chromium's bundled codecs.
-  if (names.some(name => /^lib(?:avcodec|avfilter|avformat|avutil|postproc|swresample|swscale|soup-3\.0)\.so(?:\.|$)/.test(name)))
+  // SONAME stems for the reviewed package removals, not Chromium's bundled codecs.
+  // Literal matching avoids interpreting policy values or filenames as regexes.
+  const stems = ['libavcodec', 'libavfilter', 'libavformat', 'libavutil', 'libpostproc',
+    'libswresample', 'libswscale', 'libsoup-3.0', 'libcjson', 'libmbedcrypto',
+    'libOpenEXR-3_1', 'libOpenEXRCore-3_1', 'libOpenEXRUtil-3_1',
+    'libIex-3_1', 'libIlmThread-3_1', 'libmfx', 'libmfxhw64',
+    'libmfx-tracer', 'libzvbi', 'libzvbi-chains', 'libsndfile', 'libopenjp2', 'libvpl',
+    'libfluidsynth', 'libsrt-gnutls', 'libass', 'libduktape', 'libopenh264',
+    'libvo-amrwbenc', 'libwavpack', 'libx264'];
+  if (names.some(name => stems.some(stem => name === stem + '.so' || name.startsWith(stem + '.so.'))))
     throw Error('Excluded media/HTTP library remains on the merged filesystem');
 }
 

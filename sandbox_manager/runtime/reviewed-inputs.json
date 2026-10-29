@@ -1,12 +1,12 @@
 {
   "base": "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea",
   "sha256": {
-    "Dockerfile": "9a8c23f25d75368908a9bca89e95743f8455b8a17a0ecd5484fc7feacf6b84c0",
+    "Dockerfile": "77b81cfcb92bf52b4bec9ffe5b0e9f2bec5e6a97adfb8d1d5abe5eae92b64e8d",
     "worker.mjs": "1bac7b6d314b968fbefde5cf6c906214ed59f5b26db7ae1c44065acab585a885",
     "package.json": "4750ee8ee283f0a3b591fc19a9fdd1cd1d2d5e2ecd7a7d2938134ac63b9b215b",
     "package-lock.json": "a6af4ba6da6f890fa9e99b36ba5be5dfec22d9a953da92a2a599256890c5d6d8",
-    "prune-media.mjs": "a80371fd8461a5b80a1fc56251d0c2ffb45ad73b173c036ee55386e95e397eb7",
-    "worker-packages.json": "ede4e1706f6f3a201ce6161f4e9c9374e49f85a34176e29d7bf690d5a0bac835"
+    "prune-media.mjs": "7cd6ad5a9a31b8b420cfece51911d3d488b745a88a48d4a5be053c47d2bf23f9",
+    "worker-packages.json": "9791e852a3f7e883b024d008bdcecdd4c5a8104d0855da741f306060353fd6db"
   },
-  "review_scope": "Pinned upstream/worker graph, previous Brotli/zlib and FFmpeg fixes retained. Remove unused system FFmpeg and libsoup3 HTTP libraries using guarded apt simulation, preservation of 21 Chromium dependencies, actual installed-package and merged shared-file checks. Build helper removed before runtime; fresh exact-image scan and actual rootless verification required."
+  "review_scope": "Pinned upstream/worker graph and prior fixes retained. Remove unused optional media/codec/parser and WebKit HTTP dependencies using guarded apt simulation, preservation of 21 Chromium dependencies, actual installed-package and merged shared-file checks. Helper removed before runtime; fresh exact-image scan and actual rootless verification required."
 }

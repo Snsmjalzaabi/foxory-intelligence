@@ -45,7 +45,11 @@ def test_build_helper_refuses_direct_host_invocation():
     assert result.returncode!=0 and 'Build-only helper' in result.stderr
 
 
-@pytest.mark.parametrize('filename',['libsoup-3.0.so','libsoup-3.0.so.0','libsoup-3.0.so.0.7.3','libavcodec.so.60'])
+@pytest.mark.parametrize('filename',['libsoup-3.0.so','libsoup-3.0.so.0','libsoup-3.0.so.0.7.3','libavcodec.so.60',
+    'libcjson.so.1','libmbedcrypto.so.7','libOpenEXR-3_1.so.30','libOpenEXRCore-3_1.so.30','libOpenEXRUtil-3_1.so.30','libmfx.so.1',
+    'libzvbi.so.0','libsndfile.so.1','libopenjp2.so.7','libvpl.so.2','libfluidsynth.so.3',
+    'libsrt-gnutls.so.1.5','libass.so.9','libduktape.so.207','libopenh264.so.7',
+    'libvo-amrwbenc.so.0','libwavpack.so.1','libx264.so.164'])
 def test_removed_library_files_rejected_even_without_package_metadata(filename):
     driver='''import {validateSharedLibraryNames} from %s;
 import fs from 'node:fs';

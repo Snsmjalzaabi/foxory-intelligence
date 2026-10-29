@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Reviewed upstream index: Chromium/OS/Node pinned together. Apply the reviewed
-# Brotli/zlib security updates; remove unused WebKit media/HTTP packages and build-only npm.
+# Brotli/zlib security updates; remove unused optional media/parser/HTTP packages and build-only npm.
 FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
 USER root
 WORKDIR /opt/foxory

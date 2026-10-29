@@ -1,5 +1,14 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Issue 5 in progress — unused inherited codec/parser dependencies
+
+Issue4's requested email was sent after its evidence commit. Seventeen remaining
+optional media/parser/crypto packages account for60 of133 worker findings. They
+are outside the pinned Chromium dependency list. The existing removal/SBOM policy
+and shared-library checks now cover them; all21 Chromium packages, previous
+patches and sandbox restrictions must remain. Fresh build/scan/runtime evidence
+is pending; no Issue5 completion or production readiness is claimed.
+
 ## Issue 4 fixed and verified — unused WebKit HTTP libraries
 
 Source `4ea98da1d119ee723265cb856fc73977be64b5b2` excludes libsoup-3.0-0/common

@@ -38,7 +38,24 @@
     "libswresample4",
     "libswscale7",
     "libsoup-3.0-0",
-    "libsoup-3.0-common"
+    "libsoup-3.0-common",
+    "libcjson1",
+    "libmbedcrypto7t64",
+    "libopenexr-3-1-30",
+    "libmfx1",
+    "libzvbi-common",
+    "libzvbi0t64",
+    "libsndfile1",
+    "libopenjp2-7",
+    "libvpl2",
+    "libfluidsynth3",
+    "libsrt1.5-gnutls",
+    "libass9",
+    "libduktape207",
+    "libopenh264-7",
+    "libvo-amrwbenc0",
+    "libwavpack1",
+    "libx264-164"
   ],
-  "scope": "Merged worker runtime only. Chromium supported; system FFmpeg/video processing, WebKit HTTP libraries and Firefox/WebKit profiles are not exposed. Lower-layer distribution obligations remain."
+  "scope": "Merged worker runtime only. Chromium supported; unsupported system media/codec/parser and WebKit HTTP dependencies excluded. Lower-layer and bundled-browser distribution obligations remain."
 }

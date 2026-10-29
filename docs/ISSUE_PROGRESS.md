@@ -147,8 +147,19 @@ fix remain. Scan decreases177→133 findings (44 package findings,22 unique CVEs
 Verify `40866504859` passed all jobs; local backend254, targeted61, frontend build
 and online integrity checks passed. See
 [issue4-libsoup-removal-verified-2026-10-29.json](evidence/issue4-libsoup-removal-verified-2026-10-29.json).
-Requested subject: **Issue 4 Fixed**; send only after committing the evidence.
+The requested **Issue 4 Fixed** email was sent after the evidence commit; delivery
+was confirmed by the mail service.
 Owner-PC image, lower layers, compiled codecs and binary licenses are not cleared.
+
+## Issue 5 — unused inherited codec/parser dependencies
+
+**In progress; no completion email yet.** Seventeen optional codec/parser/crypto
+packages left after prior media removals account for60 of the133 remaining
+package findings. None is in the pinned Chromium dependency list. Extend the same
+trusted apt-plan/package/SBOM guards and literal shared-library checks; retain
+all21 Chromium dependencies, prior patches and isolation/default policies.
+Fresh actual image build, scan and rootless runtime checks are pending. Do not
+claim the60 findings resolved before testing the resulting exact image.
 
 ## Remaining, not started
 
