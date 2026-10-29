@@ -1,5 +1,23 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Corrected upgrade gates passed; full host topology next
+
+At `055a512`, Verify `40828063598` passed all jobs and targeted compatibility
+`40828075459` passed both jobs. Actual Ollama CPU completion, streaming,
+embedding and model-directory restart now pass. The modern DB image passed
+fresh scanning plus Bookworm logical restoration into a separate volume,
+preserved accounts/memberships/sessions/consumed approvals/tenant guards and
+refused physical reuse without changing legacy bytes/ownership. No owner data
+was used. Local backend **206 passed (22.56s)**; new source/defaults are committed.
+
+Added an opt-in ephemeral hosted integration for actual systemd socket activation,
+Compose app/GID/socket mount, private rootless manager, local-model code repair,
+real tests/source ZIP, delegated browser/CSV/PDF workflows, approval/tenant checks
+and app/manager restart. Controller provisions resources; manager account has no
+Docker/sudo membership and application never receives an engine socket. All code
+execution remains in rootless workers after mandatory startup probes. Syntax
+checked; this full integration remains pending its actual run.
+
 ## Safe upgrade implementation and discovered integration failures
 
 Targeted workflow `40825766888` passed the separate-volume logical migration.
