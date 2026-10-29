@@ -21,7 +21,7 @@ their test run failed.
 
 ## Issue 1 — exact audited/executed worker identity
 
-**In progress; completion email not sent.**
+**Fixed and verified** in `614691db39e6475e38828faedf0c6f2257afe451`.
 
 Previous successful CI scanned a separately built Docker worker and executed a
 rootless Podman worker. Both used reviewed inputs, but image IDs differed. Those
@@ -37,7 +37,28 @@ SBOMs, license inventory and scan/runtime reports are retained.
 
 The new report-consistency tests include the actual previously differing image
 IDs and reject that old evidence combination. Synthetic report tests are not
-actual image or runtime verification. Actual Ubuntu26 verification is pending.
+actual image or runtime verification.
+
+Actual Ubuntu26 run `40851799082` passed the exact-image scan and all seven
+canonical integration, nine TCP and ten Unix runtime check groups, followed by
+the new consistency gate. Image/config digest:
+`sha256:0cc27c1f17d6b325abdc5fbaf3c074f65aa6d0981c7d9ffa805ba250cb3c7279`.
+The2,564,278,784-byte stationary export's config and every layer hash were
+verified before/after scanning. All cleanup passed. Static review reports zero
+vendor HIGH/CRITICAL but633 lower findings; those are not silently accepted.
+The actual report is
+[issue1-verified-image-provenance-2026-10-29.json](evidence/issue1-verified-image-provenance-2026-10-29.json).
+
+Verify `40851798371` passed all three jobs:212 core+17 Python-sandbox backend
+tests (229 total), frontend builds,11 core/14 full browser journeys (overlapping,
+OCI UI mocked), database/migrations/Compose and existing image gates. Local
+targeted tests passed26; full backend passed229. The CLI also rejected the real
+previously mixed reports without writing a successful provenance record.
+
+Requested notification subject: **Issue 1 Fixed**. Email delivery is a separate
+action, reported to the owner only after the verified fix/evidence is committed;
+it is never inferred from test success. This is one fixed issue, not project-
+wide production clearance or owner-PC cleanup.
 All runtime permissions, rootless identity, network/resource restrictions and
 disabled application defaults remain unchanged.
 

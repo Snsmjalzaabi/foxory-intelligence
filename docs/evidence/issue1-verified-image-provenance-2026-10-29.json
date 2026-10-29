@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "image": "sha256:0cc27c1f17d6b325abdc5fbaf3c074f65aa6d0981c7d9ffa805ba250cb3c7279",
+  "archive_sha256": "509cca2b84a703bf8f73a49f23702c7b264ead925fd9bc47cedd0908ab44137e",
+  "archive_bytes": 2564278784,
+  "archive_config_digest": "sha256:0cc27c1f17d6b325abdc5fbaf3c074f65aa6d0981c7d9ffa805ba250cb3c7279",
+  "runtime_check_groups": {
+    "integration": 7,
+    "tcp": 9,
+    "unix": 10
+  },
+  "sbom_components": 18450,
+  "total_findings": 633,
+  "limits": "Trusted fixture consistency only. Lower findings, compiled-browser coverage and binary license/source-delivery review remain separate. No owner-PC, GPU, production or universal sandbox assurance.",
+  "source_commit": "614691db39e6475e38828faedf0c6f2257afe451",
+  "workflow_run": 40851799082,
+  "job_id": 123372843924,
+  "artifact_id": 12888780700
+}

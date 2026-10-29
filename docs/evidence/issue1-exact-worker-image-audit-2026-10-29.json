@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "image": "sha256:0cc27c1f17d6b325abdc5fbaf3c074f65aa6d0981c7d9ffa805ba250cb3c7279",
+  "tools": {
+    "syft": {
+      "version": "1.55.0",
+      "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+      "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+    },
+    "trivy": {
+      "version": "0.76.1",
+      "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+      "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+    }
+  },
+  "archive": {
+    "sha256": "509cca2b84a703bf8f73a49f23702c7b264ead925fd9bc47cedd0908ab44137e",
+    "bytes": 2564278784,
+    "config_digest": "sha256:0cc27c1f17d6b325abdc5fbaf3c074f65aa6d0981c7d9ffa805ba250cb3c7279"
+  },
+  "coverage_reported": true,
+  "os": {
+    "Family": "ubuntu",
+    "Name": "24.04"
+  },
+  "blocking": [],
+  "total_findings": 633,
+  "unfixed_findings_ignored": false,
+  "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+  "sbom_components": 18450,
+  "workflow_run": 40851799082,
+  "job_id": 123372843924,
+  "source_commit": "614691db39e6475e38828faedf0c6f2257afe451",
+  "scope": "Exact immutable rootless worker scanned before execution and matched to all three actual runtime suites; lower findings and license review remain open"
+}

@@ -1,6 +1,6 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Sequential work requested — Issue 1 in progress
+## Sequential work — Issue 1 fixed and verified
 
 Owner requested cleanup followed by one verified issue at a time and a completion
 email per issue. See [ISSUE_PROGRESS.md](docs/ISSUE_PROGRESS.md). Cloud integrity
@@ -9,11 +9,18 @@ and proven temporary duplicates (1,337,655 bytes) were removed. Source, history,
 backups, credentials, persistent data and useful raw review evidence are retained.
 The owner's PC is not connected and has not been cleaned remotely.
 
-Issue1 addresses the remaining provenance gap: scan and execute the **same**
-immutable rootless worker image, then fail closed on any identity, coverage,
-check-completeness or cleanup mismatch. Targeted synthetic/archive tests passed26;
-actual same-image Ubuntu26 audit and runtime integration are pending. No Issue1
-completion email has been sent yet. No other issue is being implemented in parallel.
+Issue1 closed the provenance gap: scan and execute the **same** immutable
+rootless worker image, then fail closed on any identity, coverage, check-count
+or cleanup mismatch. Actual Ubuntu26 `40851799082` passed exact-image scanning,
+7/9/10 canonical/TCP/Unix runtime check groups and the new binding gate.
+Image: `sha256:0cc27c1f17d6b325abdc5fbaf3c074f65aa6d0981c7d9ffa805ba250cb3c7279`.
+The source export's config/every layer hash matched; all owned cleanup passed.
+Verify `40851798371` also passed all jobs (229 backend tests, builds,11/14
+overlapping browser suites, database/migration/Compose regressions). Source
+commit `614691d`; exact scan/provenance reports retained in docs/evidence.
+Lower findings and binary-license review stay open. Issue-specific email is sent
+only after a verified commit; delivery is reported separately, not inferred.
+No other issue was implemented in parallel. Owner-PC access remains unavailable.
 
 ## Current verified result — technical host blockers fixed
 
@@ -51,8 +58,8 @@ OS lower-finding and binary-license/source-delivery review; owner-installation
 activation/reboot validation before enabling its profiles; supported-scope and
 quality acceptance. No public browsing/submissions, GPU, Windows/macOS or general
 escape certification is claimed. Phase4 stays open; Phase5 has not started.
-No completion email has been sent because the complete production/distribution
-gate has not passed. Source/history are preserved on private development.
+Full-project completion has not been announced; issue-specific notifications
+follow the owner's later instruction above. Source/history remain private.
 
 ## Combined actual Ubuntu26 workflow passed; restore fixture correction
 
