@@ -232,10 +232,14 @@ def main():
             passed('real download workspace isolation and consumed-approval reuse denial')
             manager('systemctl','--user','restart','foxory-sandbox-oci-uds.service')
             compose('restart','app',stdout=subprocess.DEVNULL)
-            deadline=time.monotonic()+90
+            # Require the manager's active probes after restart, not only the
+            # app's persisted session. Do not stop it halfway through preflight.
+            deadline=time.monotonic()+200
             while time.monotonic()<deadline:
                 try:
-                    if client.get('/auth/me',timeout=3).status_code==200:break
+                    ready=client.get('/auth/me',timeout=3).status_code==200
+                    caps=client.get('/computer/capabilities',timeout=5).json() if ready else {}
+                    if ready and all(caps.get('profiles',{}).get(p,{}).get('enabled') for p in ['javascript','typescript','browser']):break
                 except httpx.HTTPError:pass
                 time.sleep(.5)
             else:raise TimeoutError('Restored app/session startup')
@@ -271,6 +275,10 @@ def main():
             # backup and NEW target volume are mounted. CHOWN/DAC_OVERRIDE are
             # limited to the provisioner; application/workers retain their policy.
             copy_code='''import os,shutil,stat
+if os.listdir('/data'):raise ValueError('Restore target must be a NEW empty volume')
+# Docker initialized this new volume from the app-owned /data directory. Own
+# its root temporarily so copytree may set metadata without CAP_FOWNER.
+os.chown('/data',0,0)
 for root,dirs,files in os.walk('/backup',followlinks=False):
  for name in dirs+files:
   if not (stat.S_ISREG(os.lstat(os.path.join(root,name)).st_mode) or stat.S_ISDIR(os.lstat(os.path.join(root,name)).st_mode)):

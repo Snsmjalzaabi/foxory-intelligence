@@ -1,5 +1,19 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Combined actual Ubuntu26 workflow passed; restore fixture correction
+
+Run `40837443204` at `52432f4` passed six actual integration checks: canonical
+systemd/Compose/OCI connectivity; failed tests block packaging; local coding-model
+repair with three independently checked tests and matching ZIP; delegated real
+browser/CSV/PDF outputs; scoped downloads/consumed approvals; app/manager restart
+and persisted artifacts. The run then failed in the NEW-volume restore helper:
+copytree could not set metadata on the app-owned volume root. No additional
+capability is granted: require an empty new target and temporarily chown only its
+root before copy, then restore UID10001 ownership. The controller now also waits
+for actual manager profile readiness after restart, avoiding an intentional stop
+in the middle of startup probes. Full restore and Ubuntu26 exhaustion/recovery
+tests remain pending. No Phase4 or production completion claim.
+
 ## Native service passed; coding-model quality failure isolated
 
 Real Ubuntu26 run `40835895873` at `1b6473b` passed canonical Compose
