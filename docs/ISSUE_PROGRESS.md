@@ -132,14 +132,23 @@ Existing owner-PC images remain unchanged until rebuilt. No production clearance
 
 ## Issue 4 — unused WebKit HTTP libraries
 
-**In progress; no completion email yet.** The Issue3 exact-image scan has44
+**Fixed and verified** in `4ea98da1d119ee723265cb856fc73977be64b5b2`. The Issue3 exact-image scan had44
 package findings across libsoup-3.0-0/common. These libraries are not in the pinned
 Playwright Chromium dependency list and the worker does not expose WebKit.
 Extend the existing guarded removal/SBOM policy to exclude both packages and
 check their shared-library files independently of package metadata. The21 required
 Chromium packages, earlier patches, sandbox restrictions and disabled defaults
-remain unchanged. Actual image build, scan and rootless runtime verification are
-pending; no completion or finding-count reduction is claimed before those pass.
+remain unchanged. Actual Ubuntu26 run `40866505641` passed the exact-image
+scan,7 canonical/9 TCP/10 Unix runtime check groups, provenance and all cleanup.
+Image: `sha256:8b914553b9f4b0850fe86871711e1ee33df63429dcec54ac9c42128ddb9e93cd`.
+The seven earlier FFmpeg exclusions, both HTTP packages and reverse-dependent
+WebKit networking packages are absent. All21 Chromium dependencies and the zlib
+fix remain. Scan decreases177→133 findings (44 package findings,22 unique CVEs).
+Verify `40866504859` passed all jobs; local backend254, targeted61, frontend build
+and online integrity checks passed. See
+[issue4-libsoup-removal-verified-2026-10-29.json](evidence/issue4-libsoup-removal-verified-2026-10-29.json).
+Requested subject: **Issue 4 Fixed**; send only after committing the evidence.
+Owner-PC image, lower layers, compiled codecs and binary licenses are not cleared.
 
 ## Remaining, not started
 

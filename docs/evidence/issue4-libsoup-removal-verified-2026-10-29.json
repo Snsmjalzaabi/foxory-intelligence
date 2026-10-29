@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "issue": 4,
+  "source_commit": "4ea98da1d119ee723265cb856fc73977be64b5b2",
+  "workflow_run": 40866505641,
+  "job_id": 123422509515,
+  "artifact_id": 12894617369,
+  "artifact_sha256": "5ea4342f28a54c2a6b4b4134e74b383ef2860ead136d834ccf99b43f683b9773",
+  "image": "sha256:8b914553b9f4b0850fe86871711e1ee33df63429dcec54ac9c42128ddb9e93cd",
+  "removed_system_library_packages": [
+    "libsoup-3.0-0",
+    "libsoup-3.0-common"
+  ],
+  "before_findings": 177,
+  "removed_package_findings": 44,
+  "removed_package_unique_cves": 22,
+  "remaining_findings": 133,
+  "worker_package_policy": {
+    "status": "passed",
+    "sha256": "ede4e1706f6f3a201ce6161f4e9c9374e49f85a34176e29d7bf690d5a0bac835",
+    "required_missing": [],
+    "forbidden_present": [],
+    "required_count": 21,
+    "forbidden_count": 9,
+    "scope": "Merged runtime filesystem only; lower-layer binary licensing obligations are not removed."
+  },
+  "runtime_check_groups": {
+    "integration": 7,
+    "tcp": 9,
+    "unix": 10
+  },
+  "all_owned_cleanup": true,
+  "zlib_fix_retained": true,
+  "scope": "Merged runtime HTTP libraries removed with guarded apt purge and shared-file checks. Lower-layer bytes, bundled browser code and binary redistribution licenses are not cleared. No owner-PC image rebuild, GPU or production verification.",
+  "additional_merged_packages_removed": [
+    "gstreamer1.0-plugins-good",
+    "libgssdp-1.6-0",
+    "libgupnp-1.6-0",
+    "libgupnp-igd-1.6-0",
+    "libnice10",
+    "libsoup-3.0-0",
+    "libsoup-3.0-common"
+  ]
+}

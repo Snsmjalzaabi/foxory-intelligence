@@ -1,14 +1,29 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Issue 4 in progress — unused WebKit HTTP libraries
+## Issue 4 fixed and verified — unused WebKit HTTP libraries
 
-Issue3 was committed/pushed and its requested email was delivered. The next
-sequential review targets libsoup-3.0-0/common, which account for44 of the177
-remaining package findings. Neither is a Chromium requirement in the pinned
-Playwright list. The existing trusted removal and SBOM guards now exclude both;
-merged shared-library checks also reject leftover libsoup files. Prior fixes and
-all sandbox controls remain. Build, scan and actual runtime results are pending.
-No Issue4 notification or production clearance yet.
+Source `4ea98da1d119ee723265cb856fc73977be64b5b2` excludes libsoup-3.0-0/common
+using the existing guarded removal policy, plus independent shared-file checks.
+The simulation and actual package checks preserve all21 Chromium dependencies.
+Reverse-dependent WebKit networking packages are removed too; no
+sandbox restrictions, default enablement, host OS or owner data changed.
+
+Actual Ubuntu26 run `40866505641` passed the exact-image audit,7 canonical,
+9 TCP and10 Unix runtime check groups, current-policy provenance and owned
+cleanup. Image:
+`sha256:8b914553b9f4b0850fe86871711e1ee33df63429dcec54ac9c42128ddb9e93cd`.
+All nine excluded packages are absent; previous Brotli/zlib and FFmpeg fixes are
+retained. Findings decrease177→133:44 package findings across22 unique CVEs.
+Verify `40866504859` passed all three jobs. Full local backend254 and targeted61
+tests passed; strict frontend build and online supply-chain integrity passed.
+Actual runtime checks are separate from explicitly mocked OCI UI journeys.
+See [Issue4 evidence](docs/evidence/issue4-libsoup-removal-verified-2026-10-29.json).
+
+The remaining133 findings, compiled browser coverage and binary license/source-
+delivery review remain open. Merged removal does not erase lower image layers.
+The owner-PC image has not been rebuilt remotely; activation/reboot acceptance
+remains separate. Issue3's email was delivered; Issue4 notification follows this
+evidence commit. Phase4 remains open; no production/GPU/Phase5 claim.
 
 ## Issue 3 fixed and verified — unused system FFmpeg libraries
 

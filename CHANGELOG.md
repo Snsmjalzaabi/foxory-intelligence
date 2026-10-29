@@ -2,6 +2,12 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Remove unused libsoup3 HTTP packages and reverse-dependent WebKit networking
+packages with the same Chromium-preserving package guards and independent shared-
+file tests. Exact-image Ubuntu26 scan and all actual runtime/recovery groups
+passed; findings177→133. Regression suite254 passes. Existing isolation and
+disabled defaults remain; no production or binary-license clearance.
+
 Remove unused system FFmpeg libraries with guarded build-time dependency checks,
 merged-filesystem validation and current-policy SBOM/provenance enforcement.
 Actual exact-image Ubuntu26 runtime and regression checks passed. This removes455
