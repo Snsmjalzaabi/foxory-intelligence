@@ -42,7 +42,13 @@ class Runtime:
                    'image':self.image if enabled else None} for p in ('javascript','typescript','browser')}
 
     async def spawn(self,*args,**kwargs):
-        return await asyncio.create_subprocess_exec(*args,**kwargs)
+        # Local immutable-image control/probes need identity and the user's bus,
+        # never manager credentials, socket-activation/notify metadata or remote
+        # engine selectors inherited from the service launcher.
+        allowed=('HOME','USER','LOGNAME','PATH','LANG','LC_ALL','XDG_CONFIG_HOME',
+                 'XDG_DATA_HOME','XDG_RUNTIME_DIR','DBUS_SESSION_BUS_ADDRESS')
+        environment={name:os.environ[name] for name in allowed if name in os.environ}
+        return await asyncio.create_subprocess_exec(*args,env=environment,**kwargs)
 
     async def cli(self,*args:str,timeout:float=10,limit:int=64000)->tuple[int,str,str]:
         process=await self.spawn('podman','--remote=false',*args,

@@ -8,7 +8,8 @@ Type=simple
 WorkingDirectory=%h/foxory-intelligence
 EnvironmentFile=%h/.config/foxory/sandbox.env
 Environment=HOME=%h XDG_CONFIG_HOME=%h/.config XDG_DATA_HOME=%h/.local/share XDG_RUNTIME_DIR=%t DBUS_SESSION_BUS_ADDRESS=unix:path=%t/bus
-UnsetEnvironment=CONTAINERS_STORAGE_CONF CONTAINERS_CONF CONTAINERS_CONF_OVERRIDE CONTAINER_HOST CONTAINER_CONNECTION CONTAINER_SSHKEY GH_TOKEN GITHUB_TOKEN
+# uvicorn explicitly uses fd3. Activation metadata must not confuse child tools.
+UnsetEnvironment=CONTAINERS_STORAGE_CONF CONTAINERS_CONF CONTAINERS_CONF_OVERRIDE CONTAINER_HOST CONTAINER_CONNECTION CONTAINER_SSHKEY GH_TOKEN GITHUB_TOKEN LISTEN_PID LISTEN_FDS LISTEN_FDNAMES
 Sockets=foxory-sandbox-oci-uds.socket
 ExecStart=%h/foxory-intelligence/.venv/bin/python -m uvicorn sandbox_manager.service:app --fd 3 --workers 1
 UMask=0077

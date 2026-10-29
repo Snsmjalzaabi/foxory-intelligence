@@ -13,6 +13,22 @@ from sandbox_manager.oci_runtime import Runtime
 from foxory.sandbox_protocol import validate_artifacts, validate_png, OCIProject
 from scripts.oci_fixture import Engine,SITE,artifact,png
 
+async def test_control_children_only_receive_identity_environment(tmp_path,monkeypatch):
+    values={'HOME':'/home/dedicated','XDG_RUNTIME_DIR':'/run/user/1002',
+            'DBUS_SESSION_BUS_ADDRESS':'unix:path=/run/user/1002/bus',
+            'FOXORY_SANDBOX_KEY':'private-manager-key','GITHUB_TOKEN':'private-token',
+            'LISTEN_FDS':'1','LISTEN_PID':'42','NOTIFY_SOCKET':'/run/notify',
+            'CONTAINER_HOST':'ssh://other-host','CONTAINERS_STORAGE_CONF':'/other/config'}
+    for name,value in values.items():monkeypatch.setenv(name,value)
+    async def child(*args,**kwargs):
+        assert args==('podman','--remote=false','info')
+        assert {name:kwargs['env'][name] for name in ('HOME','XDG_RUNTIME_DIR','DBUS_SESSION_BUS_ADDRESS')}=={
+            name:values[name] for name in ('HOME','XDG_RUNTIME_DIR','DBUS_SESSION_BUS_ADDRESS')}
+        assert set(kwargs['env']).isdisjoint(set(values)-{'HOME','XDG_RUNTIME_DIR','DBUS_SESSION_BUS_ADDRESS'})
+        return 'controlled child'
+    monkeypatch.setattr(asyncio,'create_subprocess_exec',child)
+    assert await Runtime(tmp_path).spawn('podman','--remote=false','info')=='controlled child'
+
 @pytest.fixture
 async def oci(tmp_path,monkeypatch):
     engine=Engine();engine.install(monkeypatch)

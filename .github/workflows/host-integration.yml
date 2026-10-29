@@ -30,7 +30,9 @@ jobs:
           sandbox_uid="$(id -u foxory-ci-sandbox)"
           sandbox_gid="$(id -g foxory-ci-sandbox)"
           sudo install -d -m 0755 "/etc/systemd/system/user@$sandbox_uid.service.d"
-          printf '[Service]\nDelegate=cpu memory pids\n' | sudo tee "/etc/systemd/system/user@$sandbox_uid.service.d/delegate.conf" >/dev/null
+          # This hosted image has runner-wide XDG defaults. Correct only this
+          # NEW account's manager, after PAM env processing; retain notify/delegation.
+          printf '[Service]\nDelegate=cpu memory pids\nExecStart=\nExecStart=/usr/bin/env -u CONTAINERS_STORAGE_CONF -u CONTAINERS_CONF -u CONTAINER_HOST HOME=/home/foxory-ci-sandbox XDG_CONFIG_HOME=/home/foxory-ci-sandbox/.config XDG_DATA_HOME=/home/foxory-ci-sandbox/.local/share XDG_RUNTIME_DIR=/run/user/%s DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%s/bus /usr/lib/systemd/systemd --user\n' "$sandbox_uid" "$sandbox_uid" | sudo tee "/etc/systemd/system/user@$sandbox_uid.service.d/delegate.conf" >/dev/null
           sudo systemctl daemon-reload
           sudo loginctl enable-linger foxory-ci-sandbox
           sudo systemctl start "user@$sandbox_uid.service"

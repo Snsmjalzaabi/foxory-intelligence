@@ -1,5 +1,23 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Native Ubuntu26 service investigation
+
+Run `40833749540` failed closed: Podman info timed out inside native preflight,
+before task execution. The dedicated user manager inherited runner HOME/XDG
+paths (journal showed attempts to read `/home/runner` and another UID's runtime).
+The disposable-host provisioner now sets identity paths at user-manager startup;
+service children receive only an explicit identity/locale/bus environment, not
+activation metadata, remote-engine selectors or manager/GitHub credentials.
+No timeout, resource, namespace or Chromium restriction has been relaxed.
+Actual corrected service verification remains pending. Verify `40833728281`
+passed all jobs at the preceding commit.
+
+Added a fixture-only coordinated restore path for separate database, app-file
+volume and manager directory, checking authentication, document bytes, artifacts,
+consumed approvals and completed-job replay prevention. This path is syntax
+checked but awaits execution after native preflight passes; it is not an owner
+backup or a successful restore claim.
+
 Latest full-host run `40832024253`: dedicated environment isolation fixed Podman
 reconciliation, but native active preflight still failed; profiles remained
 disabled. Added bounded/redacted preflight stdout/stderr diagnostics and a private

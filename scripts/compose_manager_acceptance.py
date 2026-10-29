@@ -75,6 +75,7 @@ def main():
     command=['docker','--host=unix:///var/run/docker.sock','compose','--env-file',os.devnull,'-p',project,
         '-f',str(ROOT/'compose.yaml'),'-f',str(ROOT/'compose.sandbox-socket.yaml')]
     started=False;socket_started=False
+    recovery_config=tempfile.TemporaryDirectory(prefix='foxory-fixture-recovery-')
     def compose(*parts,**kwargs):
         kwargs.setdefault('check',True);kwargs.setdefault('timeout',900)
         return subprocess.run([*command,*parts],env=env,**kwargs)
@@ -222,6 +223,76 @@ def main():
             assert call('GET',artifact_path).content
             assert next(row['data'] for row in call('GET','/records/job') if row['id']==repaired['id'])['status']=='completed'
             passed('real app/manager restart preserves session, completed job and artifact')
+            # Coordinated snapshot of this disposable fixture only. Source DB,
+            # app volume and manager state stay intact until validation finishes.
+            compose('stop','app',stdout=subprocess.DEVNULL)
+            manager('systemctl','--user','stop','foxory-sandbox-oci-uds.socket','foxory-sandbox-oci-uds.service')
+            backup=Path(recovery_config.name)
+            with (backup/'database.dump').open('xb') as stream:
+                compose('exec','-T','db','pg_dump','-U','foxory','-d','foxory','-Fc',stdout=stream)
+            app_id=compose('ps','--all','-q','app',capture_output=True,text=True).stdout.strip()
+            app_image=compose('images','-q','app',capture_output=True,text=True).stdout.strip()
+            def docker(*parts,**kwargs):
+                return subprocess.run(['docker','--host=unix:///var/run/docker.sock',*parts],env=env,check=True,timeout=180,**kwargs)
+            (backup/'app-data').mkdir(mode=0o700)
+            docker('cp',app_id+':/data/.',str(backup/'app-data'))
+            manager(str(manager_source/'.venv/bin/python'),'-c',
+                'import shutil,sys;shutil.copytree(sys.argv[1],sys.argv[2],ignore=shutil.ignore_patterns(".lock"));shutil.copytree(sys.argv[2],sys.argv[3])',
+                str(manager_home/'fixture-state'),str(manager_home/'fixture-state-backup'),str(manager_home/'fixture-state-restored'))
+            compose('exec','-T','db','createdb','-U','foxory','restored_fixture')
+            with (backup/'database.dump').open('rb') as stream:
+                compose('exec','-T','db','pg_restore','--exit-on-error','-U','foxory','-d','restored_fixture',stdin=stream)
+            override=backup/'restore.json'
+            override.write_text(json.dumps({'services':{'app':{
+                'environment':{'DATABASE_URL':f'postgresql+psycopg://foxory:{password}@db:5432/restored_fixture'},
+                'volumes':[{'type':'volume','source':'app_recovery','target':'/data'}]}},'volumes':{'app_recovery':{}}}))
+            command.extend(['-f',str(override)])
+            compose('up','--no-start','--no-deps','--no-build','app',stdout=subprocess.DEVNULL)
+            # Trusted maintenance copy, never generated code. Only this private
+            # backup and NEW target volume are mounted. CHOWN/DAC_OVERRIDE are
+            # limited to the provisioner; application/workers retain their policy.
+            copy_code='''import os,shutil,stat
+for root,dirs,files in os.walk('/backup',followlinks=False):
+ for name in dirs+files:
+  if not (stat.S_ISREG(os.lstat(os.path.join(root,name)).st_mode) or stat.S_ISDIR(os.lstat(os.path.join(root,name)).st_mode)):
+   raise ValueError('Unsafe backup inode')
+shutil.copytree('/backup','/data',dirs_exist_ok=True)
+for root,dirs,files in os.walk('/data',followlinks=False):
+ os.chown(root,10001,10001)
+ for name in files:os.chown(os.path.join(root,name),10001,10001,follow_symlinks=False)
+'''
+            docker('run','--rm','--pull=never','--user=0:0','--network=none','--read-only',
+                '--cap-drop=ALL','--cap-add=CHOWN','--cap-add=DAC_OVERRIDE','--security-opt=no-new-privileges',
+                '--memory=256m','--pids-limit=32','--entrypoint=python',
+                '--mount','type=bind,src='+str(backup/'app-data')+',dst=/backup,readonly',
+                '--mount','type=volume,src='+project+'_app_recovery,dst=/data',app_image,'-c',copy_code)
+            restored_env={**manager_env,'FOXORY_SANDBOX_DATA':str(manager_home/'fixture-state-restored')}
+            manager(str(manager_source/'.venv/bin/python'),'-c',
+                'import os,sys;from pathlib import Path;p=Path(sys.argv[1]);t=p.with_suffix(".restore-new");fd=os.open(t,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600);os.write(fd,sys.stdin.buffer.read());os.close(fd);os.replace(t,p)',
+                str(manager_home/'.config/foxory/sandbox.env'),input=''.join(k+'='+v+'\n' for k,v in restored_env.items()),text=True)
+            manager('systemctl','--user','start','foxory-sandbox-oci-uds.socket')
+            compose('up','-d','--no-deps','--no-build','app',stdout=subprocess.DEVNULL)
+            deadline=time.monotonic()+100
+            while time.monotonic()<deadline:
+                try:
+                    if client.get('/auth/me',timeout=3).status_code==200:break
+                except httpx.HTTPError:pass
+                time.sleep(.5)
+            else:raise TimeoutError('Restored fixture authentication')
+            assert call('GET','/auth/me')['id']==me['id']
+            assert call('GET','/documents/'+upload['id']+'/download').content==b'team,revenue\nA,10\nA,20\nB,5\n'
+            assert call('GET',artifact_path).content
+            assert call('POST','/computer/tasks',json=task)['id']==repaired['id']
+            assert client.post('/approvals/'+first_approval+'/approve').status_code==409
+            # Confirm copied manager records load without replaying code.
+            replay={'profile':'javascript','files':files,'entrypoint':'test.js','actions':[],
+                    'idempotency_key':'agent:'+result['sandbox_authorizations']['0']['approval_id']}
+            control=manager(str(manager_source/'.venv/bin/python'),'-c',
+                'import json,sys,httpx;v=json.load(sys.stdin);c=httpx.Client(base_url="http://manager",transport=httpx.HTTPTransport(uds=v["socket"],trust_env=False),trust_env=False,timeout=200,headers={"Authorization":"Bearer "+v["key"],"X-Foxory-Workspace":v["workspace"]});before=c.get("/v1/jobs/"+v["id"]);before.raise_for_status();after=c.post("/v1/jobs",json=v["request"]);after.raise_for_status();assert before.json()["status"]==after.json()["status"]=="completed";assert before.json()["finished_at"]==after.json()["finished_at"];print("RESTORED_WITHOUT_REPLAY");c.close()',
+                input=json.dumps({'key':key,'socket':str(args.ipc/'manager.sock'),'workspace':workspace,
+                                  'id':result['outputs'][0]['result']['id'],'request':replay}),text=True,capture_output=True)
+            assert 'RESTORED_WITHOUT_REPLAY' in control.stdout
+            passed('coordinated DB/app-files/manager restore preserves login, docs, approvals and replay prevention')
             summary['status']='passed'
     finally:
         errors=[]
@@ -235,9 +306,10 @@ def main():
             if socket_started:manager('systemctl','--user','stop','foxory-sandbox-oci-uds.socket','foxory-sandbox-oci-uds.service')
         except Exception as error:errors.append('Manager stop: '+type(error).__name__)
         try:
-            owner=hashlib.sha256((str(manager_home/'fixture-state')+':'+str(user.pw_uid)).encode()).hexdigest()[:32]
-            remaining=manager('podman','--remote=false','ps','--all','--filter','label=io.foxory.manager='+owner,'--format','json',capture_output=True,text=True)
-            if json.loads(remaining.stdout):errors.append('Manager-owned worker remains')
+            for root in [manager_home/'fixture-state',manager_home/'fixture-state-restored']:
+                owner=hashlib.sha256((str(root)+':'+str(user.pw_uid)).encode()).hexdigest()[:32]
+                remaining=manager('podman','--remote=false','ps','--all','--filter','label=io.foxory.manager='+owner,'--format','json',capture_output=True,text=True)
+                if json.loads(remaining.stdout):errors.append('Manager-owned worker remains')
             # Volatile hosted journals may not expose a per-user journal. Root
             # provisioner reads only this fixture UID/unit; never its environment.
         except Exception as error:
@@ -246,6 +318,7 @@ def main():
         subprocess.run(['sudo','journalctl','_UID='+str(user.pw_uid),'--no-pager','-n','80'],check=False,timeout=20)
         summary['cleanup_verified']=not errors
         if errors:summary.update(status='failed',cleanup_errors=errors)
+        recovery_config.cleanup()
         (args.evidence/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     if summary['status']!='passed':raise RuntimeError('Host acceptance/cleanup failed; inspect retained evidence')
 
