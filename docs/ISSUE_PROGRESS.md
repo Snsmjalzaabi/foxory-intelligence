@@ -153,13 +153,24 @@ Owner-PC image, lower layers, compiled codecs and binary licenses are not cleare
 
 ## Issue 5 — unused inherited codec/parser dependencies
 
-**In progress; no completion email yet.** Seventeen optional codec/parser/crypto
-packages left after prior media removals account for60 of the133 remaining
+**Fixed and verified** in `0edf13b26c6b64fe07e10f9e4dc6ceed8557f73e`. Seventeen optional codec/parser/crypto
+packages left after prior media removals accounted for60 of the133 pre-change
 package findings. None is in the pinned Chromium dependency list. Extend the same
 trusted apt-plan/package/SBOM guards and literal shared-library checks; retain
 all21 Chromium dependencies, prior patches and isolation/default policies.
-Fresh actual image build, scan and rootless runtime checks are pending. Do not
-claim the60 findings resolved before testing the resulting exact image.
+Actual Ubuntu26 run `40868918478` passed the exact-image audit,7 canonical/9 TCP/
+10 Unix check groups, provenance and all owned cleanup. All26 forbidden packages
+are absent; all21 Chromium dependencies and prior fixes remain. Reverse-dependent
+removals eliminate two more findings: total133→71 (62 package findings across54
+unique CVEs). Remaining41 MEDIUM/30 LOW findings are not cleared.
+Verify `40868917095` passed all jobs:255 core+17 Python sandbox tests, strict
+builds,11/14 overlapping UI suites, database/migration/Compose/image checks.
+Local backend272 passed. Actual OCI/local-model evidence is separate from mocked
+OCI UI. Image:
+`sha256:0e87ba95854991b50577303c503de50286b449ecb3ef9be915aef7a31b6fd43c`.
+See [issue5-codec-removal-verified-2026-10-29.json](evidence/issue5-codec-removal-verified-2026-10-29.json).
+Requested subject: **Issue 5 Fixed**; send only after this evidence is committed.
+Lower layers/bundled codecs/licenses and the owner's installation are not cleared.
 
 ## Remaining, not started
 

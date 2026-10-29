@@ -1,13 +1,33 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Issue 5 in progress — unused inherited codec/parser dependencies
+## Issue 5 fixed and verified — inherited codec/parser dependencies
 
-Issue4's requested email was sent after its evidence commit. Seventeen remaining
-optional media/parser/crypto packages account for60 of133 worker findings. They
-are outside the pinned Chromium dependency list. The existing removal/SBOM policy
-and shared-library checks now cover them; all21 Chromium packages, previous
-patches and sandbox restrictions must remain. Fresh build/scan/runtime evidence
-is pending; no Issue5 completion or production readiness is claimed.
+Source `0edf13b26c6b64fe07e10f9e4dc6ceed8557f73e` excludes17 unused optional
+media/parser/crypto packages through the existing guarded apt removal, package
+and literal shared-file checks. Actual removal includes their reverse dependents
+(26 additional merged packages compared with Issue4). All21 reviewed Chromium
+dependencies and the earlier Brotli/zlib/FFmpeg/HTTP fixes remain. No sandbox
+permissions, quotas, disabled defaults, owner data or host OS were changed.
+
+Actual Ubuntu26 run `40868918478` passed the exact-image audit,7 canonical,
+9 TCP and10 Unix runtime check groups, current-policy provenance and all owned
+cleanup. Image:
+`sha256:0e87ba95854991b50577303c503de50286b449ecb3ef9be915aef7a31b6fd43c`.
+All26 excluded packages are absent. Findings decrease133→71:62 package findings
+across54 unique CVEs were associated with the additionally removed packages.
+Remaining scan:41 MEDIUM/30 LOW; no finding is silently waived.
+Verify `40868917095` passed all jobs:255 core+17 Python sandbox backend tests,
+11 core/14 full overlapping browser journeys, strict builds, migrations, Compose
+and image gates. OCI UI uses mocks; the Ubuntu26 checks use actual rootless
+Node/TS/Chromium, local models, approval/tenant boundaries and recovery/restore.
+Full local backend272 passed; online input integrity and Node syntax checks pass.
+See [Issue5 evidence](docs/evidence/issue5-codec-removal-verified-2026-10-29.json).
+
+Issue4's email was delivered. Issue5 notification follows this evidence commit.
+Remaining findings, compiled-browser coverage and binary source/license review
+stay open. Lower image layer bytes are not erased by merged-package removal.
+Owner-PC image/activation/reboot acceptance remains separate. No GPU, production,
+public distribution or Phase5 readiness is claimed; Phase4 remains open.
 
 ## Issue 4 fixed and verified — unused WebKit HTTP libraries
 

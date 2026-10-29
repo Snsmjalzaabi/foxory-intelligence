@@ -2,6 +2,11 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Remove inherited optional codec/parser dependencies with guarded package changes,
+Chromium preservation and literal shared-library checks. Exact-image Ubuntu26
+runtime/recovery/cleanup and all regression jobs passed; findings133→71. The
+remaining41 MEDIUM/30 LOW findings and binary-license review are not cleared.
+
 Remove unused libsoup3 HTTP packages and reverse-dependent WebKit networking
 packages with the same Chromium-preserving package guards and independent shared-
 file tests. Exact-image Ubuntu26 scan and all actual runtime/recovery groups

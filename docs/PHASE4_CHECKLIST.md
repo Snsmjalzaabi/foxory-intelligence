@@ -1,10 +1,10 @@
 # Phase 4 acceptance — hosted runtime passed; distribution/owner acceptance pending
 
 Latest exact-image evidence:
-[Issue4 Ubuntu26 runtime](evidence/issue4-libsoup-removal-verified-2026-10-29.json)
-at `4ea98da`:7 canonical/9 TCP/10 Unix check groups and all owned cleanup passed.
-Current worker scan133 lower findings; compiled coverage/licenses remain open.
-Local backend254 and hosted Verify40866504859 passed; OCI UI remains mocked.
+[Issue5 Ubuntu26 runtime](evidence/issue5-codec-removal-verified-2026-10-29.json)
+at `0edf13b`:7 canonical/9 TCP/10 Unix check groups and all owned cleanup passed.
+Current worker scan71 lower findings; compiled coverage/licenses remain open.
+Local backend272 and hosted Verify40868917095 passed; OCI UI remains mocked.
 Earlier evidence: [Ubuntu26 integration](UBUNTU26_INTEGRATION_EVIDENCE.md).
 Run `40838680397` passed actual hosted Ubuntu26 systemd/Compose/OCI workflows,
 coordinated restore and TCP/Unix attack/recovery suites. This does not check the
