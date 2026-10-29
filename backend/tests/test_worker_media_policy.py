@@ -1,0 +1,44 @@
+"""Pure package-plan/SBOM guards. Never runs apt or generated programs on the host."""
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+
+import pytest
+
+ROOT=Path(__file__).resolve().parents[2]
+spec=importlib.util.spec_from_file_location('media_audit',ROOT/'scripts/image_audit.py')
+audit=importlib.util.module_from_spec(spec);spec.loader.exec_module(audit)
+POLICY=json.loads((ROOT/'sandbox_manager/runtime/worker-packages.json').read_text())
+
+
+def test_sbom_keeps_chromium_and_rejects_removed_or_missing_packages():
+    components=[{'name':name,'purl':'pkg:deb/ubuntu/'+name+'@fixture'} for name in POLICY['required_packages']]
+    assert audit.worker_packages(components)['status']=='passed'
+    assert audit.worker_packages(components[1:])['required_missing']==[POLICY['required_packages'][0]]
+    result=audit.worker_packages(components+[{'name':'libavcodec60','purl':'pkg:deb/ubuntu/libavcodec60@fixture'}])
+    assert result['status']=='blocked' and result['forbidden_present']==['libavcodec60']
+
+
+@pytest.mark.parametrize('variant',['allowed','chromium','incomplete','conflict','install'])
+def test_trusted_node_build_helper_validates_only_fixture_plan(variant):
+    # Importing the module never invokes package-management operations.
+    driver='''import {validatePlan} from %s;
+import fs from 'node:fs';
+const data=JSON.parse(fs.readFileSync(0,'utf8'));
+console.log(JSON.stringify([...validatePlan(data.policy,data.plan)]));'''
+    driver=driver%json.dumps((ROOT/'sandbox_manager/runtime/prune-media.mjs').as_uri())
+    policy=json.loads(json.dumps(POLICY));lines=['Purg '+name+' [fixture]' for name in policy['forbidden_packages']]
+    if variant=='chromium':lines.append('Remv libnss3:amd64 [fixture]')
+    if variant=='incomplete':lines.pop()
+    if variant=='conflict':policy['forbidden_packages'].append(policy['required_packages'][0])
+    if variant=='install':lines.append('Inst replacement-library (fixture)')
+    # Put this reviewed test driver in -e; only JSON fixture data goes on stdin.
+    result=subprocess.run(['node','--input-type=module','-e',driver],input=json.dumps({'policy':policy,'plan':'\n'.join(lines)}),text=True,capture_output=True,timeout=10)
+    if variant=='allowed':assert result.returncode==0 and set(json.loads(result.stdout))==set(POLICY['forbidden_packages'])
+    else:assert result.returncode!=0 and 'Error:' in result.stderr
+
+
+def test_build_helper_refuses_direct_host_invocation():
+    result=subprocess.run(['node',str(ROOT/'sandbox_manager/runtime/prune-media.mjs')],text=True,capture_output=True,timeout=10)
+    assert result.returncode!=0 and 'Build-only helper' in result.stderr

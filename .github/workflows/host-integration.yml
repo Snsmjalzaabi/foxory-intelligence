@@ -63,7 +63,7 @@ jobs:
               trap "rm -f -- \"$archive_dir/worker.tar\"; rmdir -- \"$archive_dir\"" EXIT
               podman --remote=false save --format docker-archive --output "$archive_dir/worker.tar" "$image_id"
               .venv/bin/python scripts/image_audit.py --image "$image_id" \
-                --archive "$archive_dir/worker.tar" --output "$HOME/worker-image-audit"
+                --archive "$archive_dir/worker.tar" --worker --output "$HOME/worker-image-audit"
             '
       - name: Real systemd socket, Compose bridge, local model and delegated workflows
         run: |

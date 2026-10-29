@@ -22,6 +22,10 @@ def required_policy_digest() -> str:
     return hashlib.sha256((ROOT/'deployment/required-security-fixes.json').read_bytes()).hexdigest()
 
 
+def worker_policy_digest() -> str:
+    return hashlib.sha256((ROOT/'sandbox_manager/runtime/worker-packages.json').read_bytes()).hexdigest()
+
+
 def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any],
                    tcp: dict[str, Any], unix: dict[str, Any]) -> dict[str, Any]:
     if not re.fullmatch(r'sha256:[a-f0-9]{64}', image):
@@ -46,6 +50,10 @@ def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any
         raise ValueError('Incomplete or blocking image audit')
     if audit.get('required_security_fixes_sha256') != required_policy_digest():
         raise ValueError('Audit security-remediation policy mismatch')
+    packages=audit.get('worker_package_policy',{})
+    if (packages.get('status')!='passed' or packages.get('sha256')!=worker_policy_digest()
+            or packages.get('required_missing')!=[] or packages.get('forbidden_present')!=[]):
+        raise ValueError('Worker package-removal policy mismatch/incomplete')
     if integration.get('owner_data_accessed') is not False:
         raise ValueError('Disposable fixture boundary was not established')
     groups: dict[str, int] = {}
@@ -70,6 +78,7 @@ def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any
         'runtime_check_groups': groups,
         'sbom_components': audit['sbom_components'],
         'required_security_fixes_sha256': audit['required_security_fixes_sha256'],
+        'worker_package_policy_sha256':packages['sha256'],
         'total_findings': audit.get('total_findings'),
         'limits': 'Trusted fixture consistency only. Lower findings, compiled-browser '
                   'coverage and binary license/source-delivery review remain separate. '

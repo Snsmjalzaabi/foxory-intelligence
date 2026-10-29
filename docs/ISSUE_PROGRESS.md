@@ -94,8 +94,28 @@ passed all three jobs. Reports:
 [issue2-zlib-verified-2026-10-29.json](evidence/issue2-zlib-verified-2026-10-29.json)
 and [issue2-image-provenance-2026-10-29.json](evidence/issue2-image-provenance-2026-10-29.json).
 Image: `sha256:b88a2c2566edaad442c3e9bef6d0287c713d1b365e588547abb67e21d8a0599a`.
-Requested email subject: **Issue 2 Fixed**; actual delivery is reported separately
-after this evidence commit. Existing owner-PC images are unchanged until rebuilt.
+The requested **Issue 2 Fixed** email was sent after the evidence commit; the mail
+service confirmed delivery. Existing owner-PC images are unchanged until rebuilt.
+
+## Issue 3 — remove unused system FFmpeg libraries
+
+**In progress; no completion email yet.** The Issue2 scan has455 package findings
+across seven system FFmpeg libraries. The pinned Playwright1.64.1 Ubuntu24
+dependency table lists libavcodec60 under Firefox, not Chromium. The worker only
+exposes Chromium; video/FFmpeg and Firefox/WebKit profiles are not supported.
+
+A trusted build-only helper simulates removal first and refuses removal of any
+of the21 reviewed Chromium packages, incomplete plans or unexpected installations.
+It then checks actual package changes and absence of the shared libraries on the
+merged filesystem. It is removed from the final runtime. No autoremove, metadata
+stripping, source rewrite or isolation relaxation. Build helper and package policy
+are included in reviewed input hashes. Actual build and runtime testing remain
+pending; the host helper is never used for package management in unit tests.
+
+Worker audits now require all21 Chromium packages present and all seven excluded
+packages absent in the SBOM. Runtime provenance must carry the current package-
+policy hash. Bundled browser codecs, lower image layers and binary distribution
+obligations are separate; removing merged files does not erase these obligations.
 
 ## Remaining, not started
 

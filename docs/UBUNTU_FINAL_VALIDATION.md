@@ -43,7 +43,7 @@ sudo -u foxory-sandbox -H env -i HOME="$manager_home" USER=foxory-sandbox LOGNAM
     archive_dir="$(mktemp -d "$HOME/foxory-image-review.XXXXXX")"
     trap "rm -f \"$archive_dir/worker.tar\"; rmdir \"$archive_dir\"" EXIT
     podman --remote=false save --format docker-archive --output "$archive_dir/worker.tar" "$image_id"
-    .venv/bin/python scripts/image_audit.py --image "$image_id" --archive "$archive_dir/worker.tar" --output "$logs/image-audit" 2>&1 | tee "$logs/image-audit.log"
+    .venv/bin/python scripts/image_audit.py --image "$image_id" --archive "$archive_dir/worker.tar" --worker --output "$logs/image-audit" 2>&1 | tee "$logs/image-audit.log"
     .venv/bin/python scripts/oci_host_acceptance.py --image "$image_id" --evidence "$logs/tcp" 2>&1 | tee "$logs/tcp.log"
     .venv/bin/python scripts/oci_host_acceptance.py --image "$image_id" --transport unix --evidence "$logs/unix" 2>&1 | tee "$logs/unix.log"
     printf "Evidence retained at %s\n" "$logs"

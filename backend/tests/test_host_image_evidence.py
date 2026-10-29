@@ -19,6 +19,7 @@ def reports():
     return {
         'audit': {'status': 'passed', 'image': IMAGE, 'coverage_reported': True,
                   'required_security_fixes_sha256': review.required_policy_digest(),
+                  'worker_package_policy':{'status':'passed','sha256':review.worker_policy_digest(),'required_missing':[],'forbidden_present':[]},
                   'blocking': [], 'unfixed_findings_ignored': False, 'sbom_components': 50,
                   'archive': {'config_digest': IMAGE, 'sha256': 'b' * 64, 'bytes': 4096}},
         'integration': {'status': 'passed', 'worker_image': IMAGE, 'checks': checks(7),
@@ -82,3 +83,13 @@ def test_old_or_changed_required_fix_policy_cannot_attest(digest):
     data['audit']['required_security_fixes_sha256']=digest
     with pytest.raises(ValueError,match='policy mismatch'):
         review.verify_reports(IMAGE,**data)
+
+
+@pytest.mark.parametrize('mutation',['missing','hash','forbidden','required'])
+def test_missing_or_failed_worker_package_policy_cannot_attest(mutation):
+    data=reports()
+    if mutation=='missing':data['audit'].pop('worker_package_policy')
+    elif mutation=='hash':data['audit']['worker_package_policy']['sha256']='c'*64
+    elif mutation=='forbidden':data['audit']['worker_package_policy']['forbidden_present']=['libavcodec60']
+    else:data['audit']['worker_package_policy']['required_missing']=['libnss3']
+    with pytest.raises(ValueError,match='package-removal policy'):review.verify_reports(IMAGE,**data)

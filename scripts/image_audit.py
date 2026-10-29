@@ -24,6 +24,24 @@ import httpx
 
 ROOT=Path(__file__).resolve().parents[1]
 FIXES=ROOT/'deployment/required-security-fixes.json'
+WORKER_PACKAGES=ROOT/'sandbox_manager/runtime/worker-packages.json'
+
+
+def worker_packages(components: list[dict]) -> dict:
+    raw=WORKER_PACKAGES.read_bytes();policy=json.loads(raw)
+    required=policy.get('required_packages');forbidden=policy.get('forbidden_packages')
+    if (policy.get('schema_version')!=1 or not isinstance(required,list) or not required
+            or not isinstance(forbidden,list) or not forbidden
+            or any(not isinstance(name,str) or not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*',name) for name in required+forbidden)
+            or len(set(required))!=len(required) or len(set(forbidden))!=len(forbidden)
+            or set(required)&set(forbidden)):
+        raise ValueError('Invalid worker package policy')
+    installed={c.get('name') for c in components if str(c.get('purl','')).startswith('pkg:deb/ubuntu/')}
+    missing=sorted(set(required)-installed);present=sorted(set(forbidden)&installed)
+    return {'status':'passed' if not missing and not present else 'blocked',
+            'sha256':hashlib.sha256(raw).hexdigest(),'required_missing':missing,
+            'forbidden_present':present,'required_count':len(required),'forbidden_count':len(forbidden),
+            'scope':'Merged runtime filesystem only; lower-layer binary licensing obligations are not removed.'}
 
 
 def required_security_fixes() -> tuple[str, list[dict]]:
@@ -126,6 +144,7 @@ def main() -> int:
     parser.add_argument('--image',required=True)
     parser.add_argument('--archive',type=Path,help='Stationary rootless Podman docker-archive export; no Docker daemon needed')
     parser.add_argument('--output',required=True,type=Path)
+    parser.add_argument('--worker',action='store_true',help='Enforce the reviewed Chromium worker package policy')
     args=parser.parse_args()
     if not re.fullmatch('sha256:[a-f0-9]{64}',args.image):raise ValueError('Immutable local image ID required')
     if platform.system()!='Linux' or platform.machine() not in {'x86_64','amd64'}:
@@ -180,6 +199,9 @@ def main() -> int:
                                                                   'components':licenses},indent=2)+'\n')
         summary['sbom_components']=len(components)
         if not components:summary['status']='blocked'
+        if args.worker:
+            summary['worker_package_policy']=worker_packages(components)
+            if summary['worker_package_policy']['status']!='passed':summary['status']='blocked'
     finally:
         if exported:exported.close()
         (args.output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')

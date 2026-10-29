@@ -1,5 +1,17 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Issue 3 in progress — unused system FFmpeg libraries
+
+Issue2's requested email was actually delivered after verification. Now proceeding
+sequentially to seven unused FFmpeg libraries with455 package findings. Pinned
+Playwright1.64.1 nativeDeps confirms they are not Chromium requirements. The build
+helper protects21 Chromium packages, validates the dry-run dependency plan, denies
+unexpected installs, then checks actual removals and filesystem absence; it is
+removed before runtime. Worker SBOM and current-policy provenance add independent
+guards. Input hashes include both helper and policy. Actual new build/scan and
+Ubuntu26 runtime verification are pending; no Issue3 completion is claimed.
+This changes only the optional worker image, not the owner host or its data.
+
 ## Issue 2 fixed and verified; owner checkout cache check received
 
 The owner's terminal output confirms Ubuntu26.04.1/kernel7.0.0-38-generic,

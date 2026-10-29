@@ -51,7 +51,7 @@ Docker socket, disable the Chromium sandbox, allow arbitrary runtime flags or
 remove cgroup limits. See [Ubuntu checklist](../../docs/SANDBOX_HOST_VERIFICATION.md)
 for activation and real-host tests. Package licenses, vulnerabilities, image
 provenance and upstream changes require review before release/distribution.
-# Reviewed OS-library remediation
+## Reviewed OS-library remediation
 
 The Noble worker pins zlib1g `1:1.3.dfsg-3.1ubuntu2.3` for CVE-2026-85091
 ([USN-8954-1](https://ubuntu.com/security/notices/USN-8954-1)). This changes the
@@ -61,3 +61,20 @@ remediations to the existing HIGH/CRITICAL gate; MEDIUM findings are not relabel
 The current policy digest is bound to accepted runtime provenance. An old report
 cannot clear a new policy. Other lower findings, compiled copies and binary
 license review remain separate; no production clearance follows from this patch.
+
+## Chromium-only system package policy
+
+`worker-packages.json` retains the21 packages in the pinned Playwright1.64.1
+Ubuntu24 Chromium dependency list and excludes seven system FFmpeg libraries.
+`prune-media.mjs` is trusted image-build code, not an agent tool: it requires
+explicit build opt-in/root inside the build, checks the simulated removal plan,
+refuses Chromium removals/installs and verifies actual packages/shared files.
+It is deleted from the final runtime. Never run it on the host; unit tests import
+only its pure validation functions. Actual apt removal runs only during image
+build. No autoremove or package metadata hiding is used.
+
+Worker scans require `--worker`; provenance binds the current package-policy
+digest and rejects missing/failed checks. Chromium bundled codecs are retained.
+Video/system FFmpeg and Firefox/WebKit profiles are not exposed. Merged-file
+removal does not remove old layer bytes or their redistribution obligations.
+Fresh actual build, scan and rootless runtime evidence is required.

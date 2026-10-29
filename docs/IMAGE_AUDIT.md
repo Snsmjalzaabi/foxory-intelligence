@@ -16,7 +16,7 @@ For an already built, reviewed local Docker image:
 
 ```bash
 image_id="$(docker image inspect foxory-worker:ci --format '{{.Id}}')"
-.venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/worker-audit
+.venv/bin/python scripts/image_audit.py --image "$image_id" --worker --output /tmp/worker-audit
 ```
 
 Use a new output directory. The CLI currently supports Linux AMD64 and the local
@@ -30,7 +30,7 @@ without granting this account Docker access:
 umask 077
 podman --remote=false save --format docker-archive --output "$HOME/worker-review.tar" "$image_id"
 .venv/bin/python scripts/image_audit.py --image "$image_id" \
-  --archive "$HOME/worker-review.tar" --output "$HOME/worker-audit-NEW"
+  --archive "$HOME/worker-review.tar" --worker --output "$HOME/worker-audit-NEW"
 ```
 
 The export must be an operator-owned regular file, not writable by others, at

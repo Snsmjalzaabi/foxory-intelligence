@@ -100,7 +100,7 @@ jobs:
       - name: SBOM, license inventory and vulnerability gate
         run: |
           image_id="$(docker image inspect foxory-worker:ci --format '{{.Id}}')"
-          .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/worker-audit
+          .venv/bin/python scripts/image_audit.py --image "$image_id" --worker --output /tmp/worker-audit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
