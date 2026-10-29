@@ -74,3 +74,17 @@ unsupported. No caps, sandbox flags, quotas or network policies change.
 These changes require new image scans and actual rootless Chromium/JS/TS probes;
 the owner's earlier image/probe result does not certify a rebuilt image. Image
 audit success alone will not complete Phase 4 or authorize execution.
+
+Follow-up run `40811156834`: the worker passed with zero HIGH/CRITICAL findings,
+633 lower findings retained, and 18,450 SBOM components. Core Trixie passed real
+Compose checks but still had **44 unfixed HIGH findings**, 170 total. Its report
+is retained separately; the unsuccessful candidate was not accepted as safe.
+
+The next core candidate uses digest-pinned Ubuntu 24.04 security-maintained
+Python 3.12 packages. Runtime and dependency-builder use the same base/ABI;
+only a private installed venv is copied from the builder. Build-only pip and
+distribution venv-wheel packages are absent from the final runtime. OS inventory
+and metadata remain intact for scanning; no vulnerable installed package is
+hidden from the scanner. Application source, Python dependency lock, non-root
+UID, migrations, authentication and sandbox policies remain unchanged. Fresh
+canonical installation/document/persistence and image gates are required.

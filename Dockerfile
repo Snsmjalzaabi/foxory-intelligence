@@ -6,16 +6,29 @@ RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then NODE_E
 COPY frontend/ ./
 RUN npm run build
 
-# Bookworm's scanned runtime has unfixed HIGH/CRITICAL OS findings. Keep Python
-# 3.12, use the reviewed supported Trixie index, then apply repository updates.
-FROM python:3.12-slim-trixie@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 FOXORY_DATA_DIR=/data
+# Debian 12 and 13 both have unfixed blocking OS findings in the actual scans.
+# Ubuntu provides the same Python 3.12 ABI with its maintained security packages.
+FROM ubuntu:24.04@sha256:24737cef17f4e22b1977df7d9a05e77c4e28b7da5b8911f8d8ccda136bf3573c AS python-runtime
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends python3.12 libseccomp2 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 FOXORY_DATA_DIR=/data PATH=/opt/foxory-venv/bin:$PATH
+
+FROM python-runtime AS api-build
+RUN apt-get update && apt-get install -y --no-install-recommends python3.12-venv \
+    && python3.12 -m venv /opt/foxory-venv && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/backend
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends libseccomp2 && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.lock ./
 RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then PIP_CERT=/run/secrets/proxy_ca pip install --no-cache-dir -r requirements.lock; else pip install --no-cache-dir -r requirements.lock; fi
-COPY --chown=10001:10001 backend/ ./
+COPY backend/ ./
 RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then PIP_CERT=/run/secrets/proxy_ca pip install --no-cache-dir --no-deps .; else pip install --no-cache-dir --no-deps .; fi
+# Runtime never installs packages. Do not ship build-only pip or its vendor graph.
+RUN python -m pip uninstall -y pip
+
+FROM python-runtime
+WORKDIR /app/backend
+COPY --from=api-build /opt/foxory-venv /opt/foxory-venv
+COPY --from=api-build --chown=10001:10001 /app/backend /app/backend
 COPY --from=ui --chown=10001:10001 /build/dist /app/frontend/dist
 COPY --chmod=0444 LICENSE NOTICE THIRD_PARTY_NOTICES.txt /usr/share/doc/foxory/
 RUN groupadd --gid 10001 foxory && useradd --uid 10001 --gid 10001 --no-create-home foxory && mkdir /data && chown foxory:foxory /data

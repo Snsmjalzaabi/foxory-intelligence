@@ -2,6 +2,13 @@
 
 ## Image remediation in progress — actual release blockers
 
+Update: core Trixie scan in run `40811156834` finished and still blocked on
+**44 unfixed HIGH findings** (170 total), despite passing canonical Compose.
+Evidence retained separately. The next packaging candidate keeps Python 3.12
+but uses pinned Ubuntu 24.04 security packages and a separate dependency-builder
+venv; build-only pip/wheels are omitted, scanner metadata retained. No advisory
+exception or security-control relaxation. Fresh hosted checks are pending.
+
 The worker remediation at `94f4185` passed its actual hosted image gate
 (`40811156834`, job `123241518956`): zero HIGH/CRITICAL findings, 633 total
 remaining lower-severity findings, 18,450 SBOM components. This does not clear
