@@ -8,11 +8,23 @@ RUN npm run build
 
 # Debian 12 and 13 both have unfixed blocking OS findings in the actual scans.
 # Ubuntu provides the same Python 3.12 ABI with its maintained security packages.
-FROM ubuntu:24.04@sha256:24737cef17f4e22b1977df7d9a05e77c4e28b7da5b8911f8d8ccda136bf3573c AS python-runtime
+FROM ubuntu:24.04@sha256:24737cef17f4e22b1977df7d9a05e77c4e28b7da5b8911f8d8ccda136bf3573c AS python-base
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends python3.12 libseccomp2 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 FOXORY_DATA_DIR=/data PATH=/opt/foxory-venv/bin:$PATH
+
+FROM python-base AS pcre2-build
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential binutils gnupg bzip2 libpcre2-8-0 \
+    && install -d -o 1000 -g 1000 /build /out
+COPY sandbox_manager/runtime/pcre2 /opt/foxory-pcre2
+USER 1000:1000
+RUN --mount=type=secret,id=proxy_ca FOXORY_WORKER_IMAGE_BUILD=1 python3 /opt/foxory-pcre2/prepare.py
+RUN --network=none FOXORY_WORKER_IMAGE_BUILD=1 sh /opt/foxory-pcre2/build.sh
+
+FROM python-base AS python-runtime
+COPY --from=pcre2-build /out/libpcre2-8-0.deb /tmp/foxory-pcre2.deb
+RUN dpkg -i /tmp/foxory-pcre2.deb && rm /tmp/foxory-pcre2.deb && test -z "$(dpkg --audit)"
 
 FROM python-runtime AS api-build
 RUN apt-get update && apt-get install -y --no-install-recommends python3.12-venv \
@@ -25,7 +37,12 @@ RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then PIP_CE
 # Runtime never installs packages. Do not ship build-only pip or its vendor graph.
 RUN python -m pip uninstall -y pip
 
-FROM python-runtime
+# Keep the same reviewed inference runtime; only replace its affected PCRE2 library.
+FROM ollama/ollama:0.40.13@sha256:b2f0122c476bc9fe7ce679d8bb4bd555351e25e2554eefb156f61cb0a89cf429 AS ollama
+COPY --from=pcre2-build /out/libpcre2-8-0.deb /tmp/foxory-pcre2.deb
+RUN dpkg -i /tmp/foxory-pcre2.deb && rm /tmp/foxory-pcre2.deb && test -z "$(dpkg --audit)"
+
+FROM python-runtime AS application
 WORKDIR /app/backend
 COPY --from=api-build /opt/foxory-venv /opt/foxory-venv
 COPY --from=api-build --chown=10001:10001 /app/backend /app/backend

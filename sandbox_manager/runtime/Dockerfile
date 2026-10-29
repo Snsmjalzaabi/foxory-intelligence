@@ -1,9 +1,23 @@
 # syntax=docker/dockerfile:1
 # Reviewed upstream index: Chromium/OS/Node pinned together. Apply the reviewed
 # Brotli/zlib security updates; remove unused optional media/parser/HTTP packages and build-only npm.
-FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
+FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea AS upstream
+FROM upstream AS pcre2-build
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential binutils python3 gnupg ca-certificates bzip2 \
+    && install -d -o 1000 -g 1000 /build /out
+COPY pcre2 /opt/foxory-pcre2
+USER 1000:1000
+RUN --mount=type=secret,id=proxy_ca FOXORY_WORKER_IMAGE_BUILD=1 python3 /opt/foxory-pcre2/prepare.py
+# Reviewed upstream tests run without network; no agent-generated code or host mounts.
+RUN --network=none FOXORY_WORKER_IMAGE_BUILD=1 sh /opt/foxory-pcre2/build.sh
+
+FROM upstream
 USER root
 WORKDIR /opt/foxory
+COPY --from=pcre2-build /out/libpcre2-8-0.deb /tmp/foxory-pcre2.deb
+RUN dpkg -i /tmp/foxory-pcre2.deb && rm /tmp/foxory-pcre2.deb \
+    && test -z "$(dpkg --audit)"
 COPY worker-packages.json prune-media.mjs /opt/foxory-build/
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

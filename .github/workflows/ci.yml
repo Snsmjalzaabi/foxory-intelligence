@@ -43,7 +43,9 @@ jobs:
       - name: Core image SBOM, license inventory and vulnerability gate
         run: |
           image_id="$(.venv/bin/python -c 'import json; print(json.load(open("/tmp/compose-evidence.json"))["application_image"])')"
-          .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/core-image-audit
+          .venv/bin/python scripts/image_audit.py --image "$image_id" --pcre2 --output /tmp/core-image-audit
+          model_image="$(.venv/bin/python -c 'import json; print(json.load(open("/tmp/compose-evidence.json"))["ollama_image"])')"
+          .venv/bin/python scripts/image_audit.py --image "$model_image" --pcre2 --output /tmp/pcre2-model-image-audit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -52,6 +54,7 @@ jobs:
             frontend/test-results/
             /tmp/compose-evidence.json
             /tmp/core-image-audit/
+            /tmp/pcre2-model-image-audit/
             /tmp/source-license-inventory.json
   sandbox:
     # Required, separate job: preflight must actually pass, without host-policy

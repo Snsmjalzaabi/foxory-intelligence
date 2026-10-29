@@ -1,12 +1,21 @@
 {
   "base": "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea",
   "sha256": {
-    "Dockerfile": "77b81cfcb92bf52b4bec9ffe5b0e9f2bec5e6a97adfb8d1d5abe5eae92b64e8d",
+    "Dockerfile": "82484f6b5ca11a311c0b0acd41d905b04ed6d9724eb14c25d1e525605012bf40",
+    ".dockerignore": "aa189ac5635ee4feb6bbc4cbc2a0b9b5ff9b9a6b0e07262136e05f03861670aa",
     "worker.mjs": "1bac7b6d314b968fbefde5cf6c906214ed59f5b26db7ae1c44065acab585a885",
     "package.json": "4750ee8ee283f0a3b591fc19a9fdd1cd1d2d5e2ecd7a7d2938134ac63b9b215b",
     "package-lock.json": "a6af4ba6da6f890fa9e99b36ba5be5dfec22d9a953da92a2a599256890c5d6d8",
     "prune-media.mjs": "7cd6ad5a9a31b8b420cfece51911d3d488b745a88a48d4a5be053c47d2bf23f9",
-    "worker-packages.json": "9791e852a3f7e883b024d008bdcecdd4c5a8104d0855da741f306060353fd6db"
+    "worker-packages.json": "d821a2f10e04e2402d727097b92d8002e3528d089986daef851da04fdba9f326",
+    "pcre2/source.json": "b1639717ca3bb0660f29972f33c3429514c03bbb51c17676ce93f3862168f3fc",
+    "pcre2/release-key.asc": "24867285b8603cee390f195d321aeca11e6c835d31bc3b2c342fe8830d6826e9",
+    "pcre2/prepare.py": "8cf05453f748eeed7b82b51c3f9b4956fb917a51844978c918ac460a4986fd5c",
+    "pcre2/build.sh": "82ee4bde7a33f4862514c3aa435858dd7933ddb29abeb6a71da28d468b78cecb",
+    "pcre2/package.py": "e17cee633cac283077371779ba22138b9581ad1d91db338f24ce9206be449bcf",
+    "pcre2/probe.c": "0aebbad684357bf6f83b05e392f5aa2a1064ed98e6183af7d8f7f4791b4df1f2",
+    "pcre2/LICENCE.md": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+    "pcre2/SLJIT-LICENSE": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb"
   },
-  "review_scope": "Pinned upstream/worker graph and prior fixes retained. Remove unused optional media/codec/parser and WebKit HTTP dependencies using guarded apt simulation, preservation of 21 Chromium dependencies, actual installed-package and merged shared-file checks. Helper removed before runtime; fresh exact-image scan and actual rootless verification required."
+  "review_scope": "Existing source graph, fixes and sandbox policy retained. Signed upstream PCRE2 10.49 source replaces the vulnerable library as a correctly versioned custom DEB; full normal and ASan/UBSan upstream tests, public ABI/SONAME and installed-native regressions required. Actual exact-image execution verification pending."
 }

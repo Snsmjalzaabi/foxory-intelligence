@@ -44,13 +44,20 @@ jobs:
           if [ "$SERVICE" = db ]; then
             docker build --target modern -f deployment/postgres/Dockerfile -t foxory-postgres:review .
             image_ref=foxory-postgres:review
+          elif [ "$MODE" = current ]; then
+            docker build --target ollama -t foxory-ollama:review .
+            image_ref=foxory-ollama:review
           else
             image_ref="$(.venv/bin/python -c 'import os,json,yaml; print(json.load(open("deployment/reviewed-infrastructure.json"))["ollama"]["reference"] if os.environ["MODE"]=="candidate" else yaml.safe_load(open("compose.yaml"))["services"]["ollama"]["image"])')"
             docker pull --platform linux/amd64 "$image_ref"
           fi
           image_id="$(docker image inspect "$image_ref" --format '{{.Id}}')"
           docker image inspect "$image_ref" --format '{{json .RepoDigests}}' > /tmp/repo-digests.json
-          .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/image-audit
+          if [ "$SERVICE" = ollama ] && [ "$MODE" = current ]; then
+            .venv/bin/python scripts/image_audit.py --image "$image_id" --pcre2 --output /tmp/image-audit
+          else
+            .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/image-audit
+          fi
       - name: Candidate PostgreSQL fresh migration, isolation and restore
         if: inputs.mode == 'candidate' && matrix.service == 'db'
         run: |

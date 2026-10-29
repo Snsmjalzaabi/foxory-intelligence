@@ -64,6 +64,7 @@ jobs:
               podman --remote=false save --format docker-archive --output "$archive_dir/worker.tar" "$image_id"
               .venv/bin/python scripts/image_audit.py --image "$image_id" \
                 --archive "$archive_dir/worker.tar" --worker --output "$HOME/worker-image-audit"
+              .venv/bin/python scripts/verify_oci_runtime.py --image "$image_id" > "$HOME/pcre2-runtime-probe.json"
             '
       - name: Real systemd socket, Compose bridge, local model and delegated workflows
         run: |
@@ -98,6 +99,10 @@ jobs:
           if sudo test -d /home/foxory-ci-sandbox/worker-image-audit; then
             sudo cp -r /home/foxory-ci-sandbox/worker-image-audit /tmp/full-host-evidence/image-audit
             sudo chown -R "$(id -u):$(id -g)" /tmp/full-host-evidence/image-audit
+          fi
+          if sudo test -f /home/foxory-ci-sandbox/pcre2-runtime-probe.json; then
+            sudo cp /home/foxory-ci-sandbox/pcre2-runtime-probe.json /tmp/full-host-evidence/pcre2-runtime-probe.json
+            sudo chown "$(id -u):$(id -g)" /tmp/full-host-evidence/pcre2-runtime-probe.json
           fi
       - name: Require the audited and executed immutable worker to match
         run: |

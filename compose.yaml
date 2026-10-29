@@ -57,7 +57,10 @@ services:
     mem_limit: 1g
     restart: unless-stopped
   ollama:
-    image: ollama/ollama:0.40.13@sha256:b2f0122c476bc9fe7ce679d8bb4bd555351e25e2554eefb156f61cb0a89cf429
+    build:
+      context: .
+      target: ollama
+    image: foxory-ollama:0.40.13-pcre2-10.49-community
     environment:
       OLLAMA_NO_CLOUD: "true"
       OLLAMA_MAX_LOADED_MODELS: "1"

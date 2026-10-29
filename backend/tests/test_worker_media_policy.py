@@ -14,6 +14,8 @@ POLICY=json.loads((ROOT/'sandbox_manager/runtime/worker-packages.json').read_tex
 
 def test_sbom_keeps_chromium_and_rejects_removed_or_missing_packages():
     components=[{'name':name,'purl':'pkg:deb/ubuntu/'+name+'@fixture'} for name in POLICY['required_packages']]
+    components += [{'name':name,'version':version,'purl':'pkg:deb/ubuntu/'+name+'@'+version}
+                   for name,version in POLICY['required_versions'].items()]
     assert audit.worker_packages(components)['status']=='passed'
     assert audit.worker_packages(components[1:])['required_missing']==[POLICY['required_packages'][0]]
     for name in POLICY['forbidden_packages']:

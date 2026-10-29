@@ -19,7 +19,7 @@ def reports():
     return {
         'audit': {'status': 'passed', 'image': IMAGE, 'coverage_reported': True,
                   'required_security_fixes_sha256': review.required_policy_digest(),
-                  'worker_package_policy':{'status':'passed','sha256':review.worker_policy_digest(),'required_missing':[],'forbidden_present':[]},
+                  'worker_package_policy':{'status':'passed','sha256':review.worker_policy_digest(),'required_missing':[],'forbidden_present':[],'version_mismatches':[]},
                   'blocking': [], 'unfixed_findings_ignored': False, 'sbom_components': 50,
                   'archive': {'config_digest': IMAGE, 'sha256': 'b' * 64, 'bytes': 4096}},
         'integration': {'status': 'passed', 'worker_image': IMAGE, 'checks': checks(7),

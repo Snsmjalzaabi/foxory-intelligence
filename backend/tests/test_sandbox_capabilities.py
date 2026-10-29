@@ -192,7 +192,9 @@ def test_probe_reports_partial_success_without_activating_application(monkeypatc
             return {'stdout':'FOXORY_BROWSER_OK', 'artifacts':{
                 'screenshot-1.png':artifact(png()), 'result.txt':artifact(b'Controlled fixture download')}}
         assert project.files[project.entrypoint].startswith(verifier.PROBE)
-        return {'stdout':'FOXORY_OCI_CONTROLS_OK'}
+        return {'stdout':'FOXORY_OCI_CONTROLS_OK','artifacts':{
+            'result.json':artifact(json.dumps({'pcre2':{'version':'10.49 fixture',
+                'dfa_error':-63,'jit_stack_error':-46}}).encode())}}
     monkeypatch.setattr(verifier, 'inspect_host', lambda: {'static_requirements_met':True})
     monkeypatch.setattr(verifier.subprocess, 'run', lambda *args, **kwargs: SimpleNamespace(stdout='true'))
     monkeypatch.setattr(verifier, 'run_probe', run_probe)

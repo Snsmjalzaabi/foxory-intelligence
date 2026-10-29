@@ -4,7 +4,13 @@
     "linux_amd64_config": "sha256:46d2fa8707cc254faa5ccdb16ac2b4e6d5cb38cd079035a24174a5141f087297",
     "version": "0.40.13",
     "scan_evidence": "docs/evidence/ollama-candidate-image-audit-2026-10-29.json",
-    "review_scope": "Exact reviewed image/config; scanner-selected severities only. Runtime/model compatibility is a separate required check."
+    "review_scope": "Exact reviewed image/config; scanner-selected severities only. Runtime/model compatibility is a separate required check.",
+    "derived_current": {
+      "dockerfile": "Dockerfile",
+      "target": "ollama",
+      "pcre2_version": "10.49-0foxory1",
+      "review_status": "New source build and exact-image audit/runtime verification pending; previous evidence covers upstream base only."
+    }
   },
   "postgres": {
     "dockerfile": "deployment/postgres/Dockerfile",

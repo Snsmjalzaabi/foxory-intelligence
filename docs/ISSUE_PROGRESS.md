@@ -173,16 +173,16 @@ The requested **Issue 5 Fixed** email was sent after the evidence commit; the ma
 service confirmed sending.
 Lower layers/bundled codecs/licenses and the owner's installation are not cleared.
 
-## Issue 6 — PCRE2 dependency remediation, not fixed
+## Issue 6 — PCRE2 dependency remediation, implementation pending verification
 
-Upstream review has verified30 of43 remaining CVE pages;13 lookups remain
-unverified after bounded retries. Ubuntu marks the installed PCRE2 version
-vulnerable, including published CVSS8.2/7.6/7.4 findings despite the scanner's
-Ubuntu MEDIUM labels. The upstream DFA-workspace patch and regression were read;
-no patch has been applied/tested, and no completion email is warranted. The next
-step is a reviewed supported update or maintained backport covering all seven
-PCRE2 CVEs, followed by dependency and exact-image runtime verification. See
-[REMAINING_WORKER_RISK_REVIEW.md](REMAINING_WORKER_RISK_REVIEW.md).
+Only this issue is active. Upstream10.49 is the signed security release containing
+all seven fixes; the GPG archive signature and fix-commit ancestry were verified.
+Baseline scans show10.42 in worker, application and Ollama images. A shared
+non-root source recipe now produces a correctly versioned replacement DEB for
+all three without changing host packages, model versions/data or sandbox controls.
+It must pass full upstream and sanitizer tests, ABI/SONAME checks, installed-native
+regressions, exact-image audits and real workflows. Fresh actual builds/tests are
+pending; no fix email is warranted yet. Other blockers are not being implemented.
 
 ## Remaining, not started
 

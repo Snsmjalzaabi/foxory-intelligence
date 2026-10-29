@@ -12371,3 +12371,11 @@ Review-only PostgreSQL candidate image (not the default deployed database):
   candidate image. Source: https://github.com/ncopa/su-exec/tree/v0.3
   This small C helper replaces the removed gosu binary in that review image.
   No database binary or model weight is vendored in this repository.
+
+PCRE2 10.49 source-built runtime library (custom package 10.49-0foxory1):
+BSD-3-Clause WITH PCRE2-exception; PCRE2 JIT/SLJIT: BSD-2-Clause.
+Upstream source and signing/hash pins: sandbox_manager/runtime/pcre2/source.json.
+Retained full terms: sandbox_manager/runtime/pcre2/LICENCE.md and SLJIT-LICENSE.
+Runtime package retains these notices under /usr/share/doc/libpcre2-8-0/.
+This is an upstream-source build, not a Canonical-issued Ubuntu security update.
+Other bundled binary licenses and distribution review remain separate.

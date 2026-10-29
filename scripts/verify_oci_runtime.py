@@ -23,6 +23,8 @@ from sandbox_manager.oci import OCIProject, command
 PROBE = '''import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import os from 'node:os';
+import crypto from 'node:crypto';
+import {spawnSync} from 'node:child_process';
 assert.equal(process.getuid(),1000);
 const status=fs.readFileSync('/proc/self/status','utf8');
 for(const field of ['CapInh','CapPrm','CapEff','CapBnd','CapAmb']) {
@@ -52,7 +54,21 @@ assert.equal(fs.existsSync('/run/docker.sock'),false);
 assert.equal(fs.existsSync('/var/run/docker.sock'),false);
 assert.equal(process.env.FOXORY_SANDBOX_KEY,undefined);
 assert.deepEqual(Object.keys(os.networkInterfaces()),['lo']);
-fs.writeFileSync('/out/result.json',JSON.stringify({isolation_probe:'passed'}));
+// Verify the actual installed native library, not only dpkg/SBOM version text.
+const pcre=JSON.parse(fs.readFileSync('/opt/foxory/pcre2-runtime.json','utf8'));
+assert.equal(pcre.version,'10.49');
+assert.equal(pcre.source_sha256,'53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384');
+assert.equal(pcre.normal_upstream_tests,'passed');
+assert.equal(pcre.asan_ubsan_upstream_tests,'passed');
+assert.match(pcre.library_path,new RegExp('^/usr/lib/(x86_64|aarch64)-linux-gnu/libpcre2-8[.]so[.]0[.][0-9.]+$'));
+assert.equal(crypto.createHash('sha256').update(fs.readFileSync(pcre.library_path)).digest('hex'),pcre.library_sha256);
+const native=spawnSync('/opt/foxory/pcre2-verify',[],{timeout:5000,maxBuffer:4096,env:{LANG:'C.UTF-8'}});
+assert.equal(native.status,0,native.stderr?.toString());
+const actual=JSON.parse(native.stdout.toString());
+assert.ok(actual.version.startsWith('10.49 '));
+assert.equal(actual.dfa_error,-63);assert.equal(actual.jit_stack_error,-46);
+assert.equal(actual.unicode,true);assert.equal(actual.jit,true);
+fs.writeFileSync('/out/result.json',JSON.stringify({isolation_probe:'passed',pcre2:{...pcre,...actual}}));
 console.log('FOXORY_OCI_CONTROLS_OK');
 '''
 SITE = '''<!doctype html><html><body><input id="name"><button id="show"
@@ -138,7 +154,10 @@ def main() -> int:
         result = run_probe(args.image, OCIProject(profile=profile, files={filename:code}, entrypoint=filename), args.owner)
         if 'FOXORY_OCI_CONTROLS_OK' not in result['stdout']:
             raise RuntimeError('Missing controls attestation from fixed fixture')
-        evidence.append({'profile':profile,'fixture_passed':True})
+        proof=json.loads(base64.b64decode(result['artifacts']['result.json']['base64'],validate=True))['pcre2']
+        if not proof.get('version','').startswith('10.49 ') or proof.get('dfa_error')!=-63 or proof.get('jit_stack_error')!=-46:
+            raise RuntimeError('Missing installed PCRE2 security regression evidence')
+        evidence.append({'profile':profile,'fixture_passed':True,'pcre2':proof})
         print('FOXORY_PROBE_PASSED '+profile, file=sys.stderr, flush=True)
     browser = OCIProject(profile='browser', files={'index.html':SITE,'report.txt':'Controlled fixture download'}, actions=[
         {'action':'navigate','target':'/'}, {'action':'type','target':'#name','text':'FOXORY_BROWSER_OK'},
@@ -156,7 +175,7 @@ def main() -> int:
         raise RuntimeError('Download mismatch')
     evidence.append({'profile':'browser','fixture_passed':True})
     print('FOXORY_PROBE_PASSED browser', file=sys.stderr, flush=True)
-    print(json.dumps({'status':'fixed_probes_passed','evidence':evidence,
+    print(json.dumps({'status':'fixed_probes_passed','image':args.image,'evidence':evidence,
                       'application_execution_enabled':False,
                       'warning':'Not comprehensive sandbox security assurance; complete the Ubuntu host acceptance checklist.'},indent=2))
     return 0

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "version": "10.49",
+  "package_version": "10.49-0foxory1",
+  "release_url": "https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.49",
+  "archive_url": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.bz2",
+  "archive_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+  "signature_sha256": "195ed167511ccb6b34f9676d5e37f7cc71490ca6ec00fc65851bacb3fb43bdcb",
+  "public_key_sha256": "24867285b8603cee390f195d321aeca11e6c835d31bc3b2c342fe8830d6826e9",
+  "signing_subkey_fingerprint": "BACF71F10404D5761C09D392021DE40BFB63B406",
+  "primary_key_fingerprint": "A95536204A3BB489715231282A98E77EB6F24CA8",
+  "tag_object": "388ef3c412ab5269b8f76101a6bef2d416974a15",
+  "tag_commit": "6f9d7c1373262c541324a16a358785b33ef116cf",
+  "source_date_epoch": 1790599717,
+  "fixes": [
+    {
+      "cve": "CVE-2026-86145",
+      "fix_commit": "c932e70451eafef922ebef364ac25042f0031135",
+      "behind_by": 0,
+      "merge_base": "c932e70451eafef922ebef364ac25042f0031135",
+      "status": "ahead"
+    },
+    {
+      "cve": "CVE-2026-103111",
+      "fix_commit": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+      "behind_by": 0,
+      "merge_base": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+      "status": "ahead"
+    },
+    {
+      "cve": "CVE-2026-89156",
+      "fix_commit": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+      "behind_by": 0,
+      "merge_base": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+      "status": "ahead"
+    },
+    {
+      "cve": "CVE-2026-89157",
+      "fix_commit": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+      "behind_by": 0,
+      "merge_base": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+      "status": "ahead"
+    },
+    {
+      "cve": "CVE-2026-89158",
+      "fix_commit": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+      "behind_by": 0,
+      "merge_base": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+      "status": "ahead"
+    },
+    {
+      "cve": "CVE-2026-89160",
+      "fix_commit": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+      "behind_by": 0,
+      "merge_base": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+      "status": "ahead"
+    },
+    {
+      "cve": "CVE-2026-89161",
+      "fix_commit": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+      "behind_by": 0,
+      "merge_base": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+      "status": "ahead"
+    }
+  ],
+  "license": "BSD-3-Clause WITH PCRE2-exception; JIT/SLJIT BSD-2-Clause"
+}

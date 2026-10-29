@@ -1,5 +1,23 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Issue6 implementation in progress — PCRE2 only
+
+Signed upstream10.49 contains the seven reviewed PCRE2 fixes; all fix commits
+were verified ancestors of the pinned release. Source archive SHA256 and detached
+GPG signature were checked against the pinned primary/signing fingerprints.
+The worker, application and Ollama baseline scans all contain the same seven
+10.42 findings, so this one dependency fix covers all three managed images.
+
+A non-root source builder now packages10.49 with truthful Debian version/source
+metadata, retained licenses, upstream normal/ASan+UBSan checks, ABI/SONAME
+preservation and fixed native DFA/growable-JIT regressions. Final images get no
+compiler/source/test suite. Image gates require the exact package version;
+startup probes verify the actual installed library bytes and native version/
+regressions under existing rootless controls. All scanner entries remain intact.
+Actual image compilation, sanitizer success, scan and full runtime verification
+are pending. No Issue6 completion or email is claimed. No other blocker, owner
+host package, data volume, GPU setting or sandbox permission has been changed.
+
 ## Current checkpoint — Issues3/4/5 verified; next dependency issue unresolved
 
 Requested **Issue 3 Fixed**, **Issue 4 Fixed** and **Issue 5 Fixed** emails were

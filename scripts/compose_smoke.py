@@ -54,6 +54,22 @@ def main() -> None:
                                   args.image or project+':test','--format','{{.Id}}'],
                                  env=env,check=True,capture_output=True,text=True).stdout.strip()
             evidence['application_image']=image
+            model_id=compose('ps','-q','ollama',capture_output=True,text=True).stdout.strip()
+            evidence['ollama_image']=subprocess.run(['docker','--host=unix:///var/run/docker.sock','inspect',
+                model_id,'--format','{{.Image}}'],check=True,capture_output=True,text=True).stdout.strip()
+            evidence['pcre2_runtime']={}
+            for service in ['app','ollama']:
+                native=json.loads(compose('exec','-T',service,'/opt/foxory/pcre2-verify',capture_output=True,text=True).stdout)
+                assert native['version'].startswith('10.49 ') and native['dfa_error']==-63 and native['jit_stack_error']==-46
+                manifest=json.loads(compose('exec','-T',service,'cat','/opt/foxory/pcre2-runtime.json',capture_output=True,text=True).stdout)
+                expected=json.loads((ROOT/'sandbox_manager/runtime/pcre2/source.json').read_text())
+                assert manifest['source_sha256']==expected['archive_sha256']
+                assert manifest['normal_upstream_tests']==manifest['asan_ubsan_upstream_tests']=='passed'
+                assert manifest['library_path'].startswith('/usr/lib/') and '..' not in Path(manifest['library_path']).parts
+                actual_hash=compose('exec','-T',service,'sha256sum',manifest['library_path'],capture_output=True,text=True).stdout.split()[0]
+                assert actual_hash==manifest['library_sha256']
+                evidence['pcre2_runtime'][service]={**manifest,**native}
+            passed('actual installed PCRE2 native ABI, Unicode, DFA and growable-JIT regressions in app and model services')
             with httpx.Client(base_url=f'http://127.0.0.1:{port}/api',trust_env=False,timeout=30) as client:
                 def call(method, path, **kwargs):
                     response = client.request(method,path,**kwargs);response.raise_for_status()

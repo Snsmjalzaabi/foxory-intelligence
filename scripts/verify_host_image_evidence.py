@@ -52,7 +52,8 @@ def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any
         raise ValueError('Audit security-remediation policy mismatch')
     packages=audit.get('worker_package_policy',{})
     if (packages.get('status')!='passed' or packages.get('sha256')!=worker_policy_digest()
-            or packages.get('required_missing')!=[] or packages.get('forbidden_present')!=[]):
+            or packages.get('required_missing')!=[] or packages.get('forbidden_present')!=[]
+            or packages.get('version_mismatches')!=[]):
         raise ValueError('Worker package-removal policy mismatch/incomplete')
     if integration.get('owner_data_accessed') is not False:
         raise ValueError('Disposable fixture boundary was not established')
@@ -97,6 +98,26 @@ def load_report(path: Path) -> dict[str, Any]:
     return report
 
 
+def verify_pcre2_probe(image: str, probe: dict[str, Any]) -> dict[str, Any]:
+    policy=json.loads((ROOT/'sandbox_manager/runtime/pcre2/source.json').read_text())
+    rows=probe.get('evidence',[])
+    if (probe.get('image')!=image or probe.get('status')!='fixed_probes_passed'
+            or len(rows)!=3 or {r.get('profile') for r in rows}!={'javascript','typescript','browser'}
+            or not all(r.get('fixture_passed') is True for r in rows)):
+        raise ValueError('Missing exact-image native PCRE2 probe')
+    native=[r.get('pcre2',{}) for r in rows if r['profile']!='browser']
+    if native[0]!=native[1]:raise ValueError('PCRE2 JS/TS evidence mismatch')
+    p=native[0]
+    if (not str(p.get('version','')).startswith(policy['version']+' ')
+            or p.get('source_sha256')!=policy['archive_sha256']
+            or not re.fullmatch('[a-f0-9]{64}',str(p.get('library_sha256','')))
+            or p.get('jit') is not True or p.get('unicode') is not True
+            or p.get('normal_upstream_tests')!='passed' or p.get('asan_ubsan_upstream_tests')!='passed'
+            or p.get('dfa_error')!=-63 or p.get('jit_stack_error')!=-46):
+        raise ValueError('Invalid installed PCRE2 security evidence')
+    return p
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--image', required=True)
@@ -109,6 +130,7 @@ def main() -> None:
     report = verify_reports(args.image,
         load_report(root / 'image-audit/summary.json'), load_report(root / 'summary.json'),
         load_report(root / 'security/tcp/summary.json'), load_report(root / 'security/unix/summary.json'))
+    report['pcre2_runtime']=verify_pcre2_probe(args.image,load_report(root/'pcre2-runtime-probe.json'))
     report['source_commit'] = os.getenv('GITHUB_SHA', '')
     descriptor = os.open(root / 'verified-image-provenance.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(descriptor, 'w') as output:

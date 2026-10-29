@@ -27,6 +27,16 @@ FIXES=ROOT/'deployment/required-security-fixes.json'
 WORKER_PACKAGES=ROOT/'sandbox_manager/runtime/worker-packages.json'
 
 
+def pcre2_version(components: list[dict]) -> dict:
+    policy=json.loads((ROOT/'sandbox_manager/runtime/pcre2/source.json').read_text())
+    versions={c.get('version') for c in components if c.get('name')=='libpcre2-8-0'
+              and str(c.get('purl','')).startswith('pkg:deb/ubuntu/')}
+    return {'status':'passed' if versions=={policy['package_version']} else 'blocked',
+            'expected':policy['package_version'],'observed':sorted(versions,key=str),
+            'source_sha256':policy['archive_sha256'],
+            'scope':'Actual upstream source rebuild; raw distribution scanner entries remain unchanged.'}
+
+
 def worker_packages(components: list[dict]) -> dict:
     raw=WORKER_PACKAGES.read_bytes();policy=json.loads(raw)
     required=policy.get('required_packages');forbidden=policy.get('forbidden_packages')
@@ -36,10 +46,20 @@ def worker_packages(components: list[dict]) -> dict:
             or len(set(required))!=len(required) or len(set(forbidden))!=len(forbidden)
             or set(required)&set(forbidden)):
         raise ValueError('Invalid worker package policy')
-    installed={c.get('name') for c in components if str(c.get('purl','')).startswith('pkg:deb/ubuntu/')}
+    debs=[c for c in components if str(c.get('purl','')).startswith('pkg:deb/ubuntu/')]
+    installed={c.get('name') for c in debs}
+    versions=policy.get('required_versions')
+    if (not isinstance(versions,dict) or not versions or any(
+            not isinstance(name,str) or not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*',name)
+            or not isinstance(version,str) or not re.fullmatch(r'[0-9][A-Za-z0-9.:+~_-]{0,99}',version)
+            for name,version in versions.items())):
+        raise ValueError('Invalid worker version policy')
+    mismatches=[name for name,version in versions.items()
+                if {c.get('version') for c in debs if c.get('name')==name}!={version}]
     missing=sorted(set(required)-installed);present=sorted(set(forbidden)&installed)
-    return {'status':'passed' if not missing and not present else 'blocked',
+    return {'status':'passed' if not missing and not present and not mismatches else 'blocked',
             'sha256':hashlib.sha256(raw).hexdigest(),'required_missing':missing,
+            'version_mismatches':mismatches,'required_versions':versions,
             'forbidden_present':present,'required_count':len(required),'forbidden_count':len(forbidden),
             'scope':'Merged runtime filesystem only; lower-layer binary licensing obligations are not removed.'}
 
@@ -145,6 +165,7 @@ def main() -> int:
     parser.add_argument('--archive',type=Path,help='Stationary rootless Podman docker-archive export; no Docker daemon needed')
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--worker',action='store_true',help='Enforce the reviewed Chromium worker package policy')
+    parser.add_argument('--pcre2',action='store_true',help='Require the reviewed PCRE2 build in an application/model image')
     args=parser.parse_args()
     if not re.fullmatch('sha256:[a-f0-9]{64}',args.image):raise ValueError('Immutable local image ID required')
     if platform.system()!='Linux' or platform.machine() not in {'x86_64','amd64'}:
@@ -202,6 +223,9 @@ def main() -> int:
         if args.worker:
             summary['worker_package_policy']=worker_packages(components)
             if summary['worker_package_policy']['status']!='passed':summary['status']='blocked'
+        if args.worker or args.pcre2:
+            summary['pcre2_version']=pcre2_version(components)
+            if summary['pcre2_version']['status']!='passed':summary['status']='blocked'
     finally:
         if exported:exported.close()
         (args.output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
