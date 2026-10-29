@@ -1,5 +1,11 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+First custom PostgreSQL candidate still reported gosu-path Go findings despite
+the replacement symlink; it is not accepted. The next build removes that path
+entirely and changes only the checked single upstream entrypoint invocation to
+su-exec. No scanner exclusion/cache bypass is used. Fresh static and actual
+database checks remain required. Default infrastructure/data are unchanged.
+
 Candidate-engineering update: stock PostgreSQL 17 Alpine also failed its actual
 scan (26 HIGH/CRITICAL, all the old gosu Go runtime). A review-only pinned Alpine
 derivative replaces that helper with signed MIT su-exec 0.3-r0, retaining inventory
