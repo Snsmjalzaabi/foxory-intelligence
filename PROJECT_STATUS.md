@@ -2,6 +2,13 @@
 
 ## Image remediation in progress — actual release blockers
 
+First opt-in hosted OCI run `40811732631` stopped before build/execution: the
+runner's inherited `CONTAINERS_STORAGE_CONF` referenced `/home/runner`, correctly
+inaccessible to the dedicated account. The workflow now starts the user scope
+with an explicit clean HOME/USER/PATH/runtime-bus environment. It does not grant
+access to runner credentials/storage or weaken Podman isolation. Runtime checks
+remain pending the corrected run.
+
 Update: core Trixie scan in run `40811156834` finished and still blocked on
 **44 unfixed HIGH findings** (170 total), despite passing canonical Compose.
 Evidence retained separately. The next packaging candidate keeps Python 3.12

@@ -29,8 +29,10 @@ jobs:
       - name: Build and verify under rootless dedicated scope
         run: |
           sandbox_uid="$(id -u foxory-ci-sandbox)"
-          sudo -u foxory-ci-sandbox -H env XDG_RUNTIME_DIR="/run/user/$sandbox_uid" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$sandbox_uid/bus" \
-            systemd-run --user --scope --property=Delegate=yes bash -c '
+          sudo -u foxory-ci-sandbox -H env -i HOME=/home/foxory-ci-sandbox USER=foxory-ci-sandbox LOGNAME=foxory-ci-sandbox \
+            PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+            XDG_RUNTIME_DIR="/run/user/$sandbox_uid" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$sandbox_uid/bus" \
+            systemd-run --user --scope --property=Delegate=yes --expand-environment=no bash -c '
               set -euo pipefail
               umask 077
               cd "$HOME/source"
