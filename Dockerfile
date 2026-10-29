@@ -15,7 +15,7 @@ RUN apt-get update && apt-get upgrade -y \
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 FOXORY_DATA_DIR=/data PATH=/opt/foxory-venv/bin:$PATH
 
 FROM python-base AS pcre2-build
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential binutils gnupg bzip2 libpcre2-8-0 \
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential binutils python3 gnupg bzip2 libpcre2-8-0 \
     && install -d -o 1000 -g 1000 /build /out
 COPY sandbox_manager/runtime/pcre2 /opt/foxory-pcre2
 USER 1000:1000
