@@ -16,6 +16,7 @@ test = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = ["sandbox_runtime: requires actual Linux Bubblewrap/seccomp isolation; never mocked or silently skipped"]
 
 [tool.setuptools.packages.find]
 include = ["foxory*"]

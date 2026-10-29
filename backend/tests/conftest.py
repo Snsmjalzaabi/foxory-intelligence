@@ -12,6 +12,13 @@ from foxory.db import Session, Record, Message, Audit, User, Membership, LoginSe
 from foxory.scope import workspace_id, system_scope
 from foxory.main import app, requests_by_client, active_chats
 
+def pytest_collection_modifyitems(items):
+    # Keep real namespace execution separately selectable; default pytest still
+    # runs everything. Unsupported sandbox hosts must not hide core regressions.
+    for item in items:
+        if 'sandbox' in item.fixturenames:
+            item.add_marker(pytest.mark.sandbox_runtime)
+
 @pytest.fixture(autouse=True)
 def database():
     cfg=Config(str(Path(__file__).resolve().parents[1]/'alembic.ini'))

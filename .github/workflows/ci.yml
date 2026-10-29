@@ -3,8 +3,46 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: sudo apt-get update && sudo apt-get install -y libseccomp2
+      - run: python -m venv .venv
+      - run: .venv/bin/pip install -r backend/requirements.lock && .venv/bin/pip install --no-deps -e backend && .venv/bin/pip install 'pytest>=8,<10' 'pytest-asyncio>=0.24,<2'
+      - name: Core API, authorization, parser and persistence regressions
+        run: .venv/bin/pytest -q backend/tests -m 'not sandbox_runtime'
+      - run: .venv/bin/python scripts/verify_worker_supply_chain.py && node --check sandbox_manager/runtime/worker.mjs
+      - run: npm ci && npm run build
+        working-directory: frontend
+      - name: Core browser journeys without a manager
+        run: npx playwright install --with-deps chromium && npm run test:e2e
+        working-directory: frontend
+      - name: PostgreSQL migrations, isolation and logical restore
+        run: .venv/bin/python scripts/phase4_postgres_smoke.py
+      - name: Canonical pristine Compose install and restart
+        run: .venv/bin/python scripts/compose_smoke.py --build --evidence /tmp/compose-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-verification
+          path: |
+            frontend/test-results/
+            /tmp/compose-evidence.json
+  sandbox:
+    # Required, separate job: preflight must actually pass, without host-policy
+    # weakening. Ubuntu 26.04 OCI acceptance is a distinct owner-host gate.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,21 +56,15 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y bubblewrap libseccomp2
       - run: python -m venv .venv
       - run: .venv/bin/pip install -r backend/requirements.lock && .venv/bin/pip install --no-deps -e backend && .venv/bin/pip install 'pytest>=8,<10' 'pytest-asyncio>=0.24,<2'
-      - run: ../.venv/bin/pytest -q
-        working-directory: backend
-      - run: .venv/bin/python scripts/verify_worker_supply_chain.py && node --check sandbox_manager/runtime/worker.mjs
+      - name: Actual Bubblewrap isolation, attacks, cancellation and approvals
+        run: .venv/bin/pytest -q backend/tests -m sandbox_runtime
       - run: npm ci && npm run build
         working-directory: frontend
-      - run: npx playwright install --with-deps chromium && FOXORY_E2E_SANDBOX=1 FOXORY_E2E_OCI=1 npm run test:e2e
+      - name: Actual Python and explicitly mocked OCI browser journeys
+        run: npx playwright install --with-deps chromium && FOXORY_E2E_SANDBOX=1 FOXORY_E2E_OCI=1 npm run test:e2e
         working-directory: frontend
-      - run: python scripts/setup.py && docker compose config --quiet && docker compose -f compose.yaml -f compose.gpu.yaml config --quiet
-      - run: docker build -t foxory-ci .
-      - run: docker run -d --name foxory-smoke -p 127.0.0.1:8000:8000 -e FOXORY_TOKEN=ci-only-token-with-at-least-24-chars --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges -v foxory-ci-data:/data foxory-ci
-      - run: FOXORY_TOKEN=ci-only-token-with-at-least-24-chars python scripts/smoke.py
-      - run: docker logs foxory-smoke && docker rm -f foxory-smoke
-        if: always()
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: browser-test-results
+          name: sandbox-ui-evidence
           path: frontend/test-results/

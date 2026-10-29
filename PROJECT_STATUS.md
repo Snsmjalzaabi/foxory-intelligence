@@ -1,5 +1,38 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Latest continuation: independent core and sandbox CI gates
+
+On 29 October 2026, Cloud and GitHub development both matched `4b57d90` before
+edits. Actual GitHub workflow `40038556044` was reviewed through its job logs:
+**139 passed, 17 real sandbox fixture setup errors**. The namespace isolation
+preflight failed on the hosted runner, and all frontend/build/install checks were
+consequently skipped. Prior local success was not a hosted-CI success.
+
+CI now has separate core (Ubuntu 24.04) and sandbox (Ubuntu 22.04) jobs. Both
+contribute to overall workflow status; repository branch-protection settings are
+unchanged. The default pytest command still runs all tests. A registered
+`sandbox_runtime` marker selects the 17 tests requiring actual Bubblewrap; no
+test is silently mocked/skipped or security policy weakened. Core includes the
+remaining 139 tests, parser/authorization/default-disabled guards, manager-free
+browser journeys, real PostgreSQL migration/restore and a new pristine Compose
+installation harness. Sandbox still requires actual preflight/attack/cancel/
+approval tests plus real Python and explicitly mocked OCI UI journeys.
+
+`scripts/compose_smoke.py` creates a generated project name, independent secrets,
+loopback port and fresh app/database/model volumes, uses the canonical Dockerfile
+with `--build`, and removes only its own resources. It checks account creation,
+Ollama availability without downloading weights, disabled execution, restricted
+documents/invalid uploads, tenant download isolation and account/session/records/
+originals across restart. It never reads the owner's .env or connects to the
+owner installation. An explicit reviewed `--image` supports noncanonical checks.
+
+Local verification of this CI change: **156 tests passed (45.60s)**; selection
+identifies all 17 real-runtime tests separately. Compose harness syntax/CLI and
+whitespace checks passed. Actual hosted jobs/pristine Compose execution are
+pending the push; no fresh successful installation claim is made from script
+existence. Existing Cloud disk limits are not worked around by deleting owner
+data. Phase 4 remains incomplete; Phase 5 has not started.
+
 ## Current recovery increment
 
 Branch: `development`. Before edits, the clean Cloud checkout, configured private
