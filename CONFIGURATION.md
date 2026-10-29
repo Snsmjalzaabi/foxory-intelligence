@@ -1,5 +1,10 @@
 # Configuration
 
+Optional Linux manager Unix transport is described in
+[SANDBOX_UNIX_SOCKET.md](docs/SANDBOX_UNIX_SOCKET.md). It requires explicit
+enablement/key, a private verified socket and an empty `FOXORY_SANDBOX_URL`.
+The socket Compose override is not part of default installation.
+
 Keep `.env` private and out of source control. `scripts/setup.py` creates unique random values and preserves an existing file. Never paste secrets into chats, memories, documents or logs.
 
 | Variable | Meaning |

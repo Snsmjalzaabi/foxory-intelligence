@@ -3,6 +3,8 @@ import asyncio
 import os
 import hashlib
 import json
+from pathlib import Path
+import stat
 from urllib.parse import urlsplit
 import httpx
 from .scope import workspace_id
@@ -11,6 +13,19 @@ from .sandbox_protocol import validate_artifacts
 def settings():
     url=os.getenv('FOXORY_SANDBOX_URL','').rstrip('/')
     key=os.getenv('FOXORY_SANDBOX_KEY','')
+    socket=os.getenv('FOXORY_SANDBOX_SOCKET','')
+    if socket:
+        path=Path(socket)
+        if os.getenv('FOXORY_ENABLE_SANDBOX','0')!='1' or len(key)<32 or url:
+            raise PermissionError('Explicit sandbox opt-in/key and a single manager transport are required')
+        try:
+            mode=path.lstat().st_mode;parent=path.parent.lstat().st_mode
+            if (not path.is_absolute() or len(socket.encode())>100 or not stat.S_ISSOCK(mode)
+                    or mode&0o002 or not stat.S_ISDIR(parent) or parent&0o022):
+                raise PermissionError('Manager socket and private parent permissions are not safe')
+        except (OSError,ValueError):
+            raise PermissionError('Trusted private manager socket is unavailable') from None
+        return 'http://sandbox-manager',key
     parsed=urlsplit(url)
     if (os.getenv('FOXORY_ENABLE_SANDBOX','0')!='1' or len(key)<32
         or parsed.scheme not in {'http','https'} or parsed.hostname not in {'localhost','127.0.0.1','::1','sandbox-manager','host.docker.internal'}
@@ -20,8 +35,10 @@ def settings():
 
 def transport():
     url,key=settings()
+    socket=os.getenv('FOXORY_SANDBOX_SOCKET','')
     return httpx.AsyncClient(base_url=url,headers={'Authorization':'Bearer '+key,'X-Foxory-Workspace':workspace_id.get()},
-                             timeout=3,trust_env=False,follow_redirects=False)
+                             timeout=3,trust_env=False,follow_redirects=False,
+                             transport=httpx.AsyncHTTPTransport(uds=socket,trust_env=False) if socket else None)
 
 async def capabilities():
     try:

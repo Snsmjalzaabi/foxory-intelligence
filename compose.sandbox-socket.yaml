@@ -1,0 +1,18 @@
+# Explicit Linux-only optional override after owner host acceptance. No manager
+# state or runtime socket is mounted; this is the authenticated FOXORY API socket.
+services:
+  app:
+    environment:
+      FOXORY_ENABLE_SANDBOX: '1'
+      FOXORY_SANDBOX_URL: ''
+      FOXORY_SANDBOX_SOCKET: /run/foxory-sandbox/manager.sock
+      FOXORY_SANDBOX_KEY: ${FOXORY_SANDBOX_KEY:?Set the private manager key}
+    group_add:
+      - ${FOXORY_SANDBOX_GID:?Set the dedicated manager account GID}
+    volumes:
+      - type: bind
+        source: ${FOXORY_SANDBOX_SOCKET_DIR:?Set the verified private manager IPC directory}
+        target: /run/foxory-sandbox
+        read_only: true
+        bind:
+          create_host_path: false

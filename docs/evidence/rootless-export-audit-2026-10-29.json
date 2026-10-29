@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "image": "sha256:91046de9003460e122d0fbb950fd543f57bc4fbcef319cda2b760bec7091f03f",
+  "tools": {
+    "syft": {
+      "version": "1.55.0",
+      "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+      "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+    },
+    "trivy": {
+      "version": "0.76.1",
+      "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+      "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+    }
+  },
+  "archive": {
+    "sha256": "4058037156ce73d18287f9cfc8d29fe79d46747fd2588646dfbb6f023b41909f",
+    "bytes": 2564338688,
+    "config_digest": "sha256:91046de9003460e122d0fbb950fd543f57bc4fbcef319cda2b760bec7091f03f"
+  },
+  "coverage_reported": true,
+  "os": {
+    "Family": "ubuntu",
+    "Name": "24.04"
+  },
+  "blocking": [],
+  "total_findings": 633,
+  "unfixed_findings_ignored": false,
+  "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+  "sbom_components": 18450,
+  "workflow_run": 40812880482,
+  "job_id": 123247092003,
+  "commit": "e7c7a25f42f0f400cc0ca0ba5ef6abb4c7aefcef"
+}

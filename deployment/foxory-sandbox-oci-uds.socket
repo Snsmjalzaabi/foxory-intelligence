@@ -1,0 +1,11 @@
+# Optional systemd USER socket. Dedicated account's primary GID is added only to
+# the application container; private manager state stays in a different directory.
+[Unit]
+Description=FOXORY authenticated manager Unix API socket
+[Socket]
+ListenStream=%t/foxory-sandbox-api/manager.sock
+SocketMode=0660
+DirectoryMode=0750
+Service=foxory-sandbox-oci-uds.service
+[Install]
+WantedBy=sockets.target

@@ -84,11 +84,12 @@ console.log('FOXORY_DENIALS_OK');'''
 RUNNING = "console.log('FOXORY_RUNNING');setInterval(()=>{},1000);"
 
 
-async def acceptance(image: str, evidence: Path) -> None:
+async def acceptance(image: str, evidence: Path, transport: str = 'tcp') -> None:
     if os.getuid() == 0 or platform.system() != 'Linux':
         raise ValueError('Dedicated non-root Linux account required')
     if not re.fullmatch(r'sha256:[a-f0-9]{64}', image):
         raise ValueError('Immutable local image ID required')
+    if transport not in {'tcp','unix'}:raise ValueError('Invalid manager transport')
     evidence.mkdir(mode=0o700, parents=True, exist_ok=False)
     state = evidence / 'manager-state'
     state.mkdir(mode=0o700)
@@ -102,12 +103,18 @@ async def acceptance(image: str, evidence: Path) -> None:
            'FOXORY_SANDBOX_OCI_ENABLED': '1', 'FOXORY_SANDBOX_OCI_IMAGE': image}
     process = None
     foreign_id = None
+    listener = None
+    socket_path = evidence / 'manager.sock'
+    if transport == 'unix':
+        listener = socket.socket(socket.AF_UNIX)
+        listener.bind(str(socket_path));listener.listen(128);socket_path.chmod(0o660)
     log = (evidence / 'manager.log').open('xb')
-    summary = {'status': 'failed', 'image': image, 'os': platform.platform(),
+    summary = {'status': 'failed', 'image': image, 'os': platform.platform(), 'transport':transport,
                'checks': [], 'application_execution_enabled': False}
     client = httpx.AsyncClient(base_url=f'http://127.0.0.1:{port}', trust_env=False,
                                timeout=10, headers={'Authorization': 'Bearer ' + key,
-                                                    'X-Foxory-Workspace': 'host-fixture'})
+                                                    'X-Foxory-Workspace': 'host-fixture'},
+                               transport=httpx.AsyncHTTPTransport(uds=str(socket_path),trust_env=False) if listener else None)
 
     async def request(method, path, **kwargs):
         result = await client.request(method, path, **kwargs)
@@ -118,8 +125,9 @@ async def acceptance(image: str, evidence: Path) -> None:
         nonlocal process
         process = await asyncio.create_subprocess_exec(
             sys.executable, '-m', 'uvicorn', 'sandbox_manager.service:app',
-            '--host', '127.0.0.1', '--port', str(port), '--workers', '1', '--no-access-log',
-            cwd=ROOT, env=env, stdout=log, stderr=log)
+            *(['--fd',str(listener.fileno())] if listener else ['--host','127.0.0.1','--port',str(port)]),
+            '--workers', '1', '--no-access-log', cwd=ROOT, env=env, stdout=log, stderr=log,
+            pass_fds=(listener.fileno(),) if listener else ())
         deadline = time.monotonic() + 190
         while time.monotonic() < deadline:
             if process.returncode is not None:
@@ -177,6 +185,29 @@ async def acceptance(image: str, evidence: Path) -> None:
     try:
         await start()
         record('actual-startup-js-ts-chromium-probes')
+        if listener:
+            # Exercise the actual application adapter too, not just the harness
+            # HTTP client. Temporary control-process env is never sent to workers.
+            from foxory import sandbox_client
+            from foxory.scope import workspace_id
+            overrides={'FOXORY_ENABLE_SANDBOX':'1','FOXORY_SANDBOX_KEY':key,
+                       'FOXORY_SANDBOX_URL':'','FOXORY_SANDBOX_SOCKET':str(socket_path)}
+            saved={name:os.environ.get(name) for name in overrides}
+            token=workspace_id.set('host-fixture')
+            try:
+                os.environ.update(overrides)
+                caps=await sandbox_client.capabilities()
+                assert caps['profiles']['javascript']['enabled']
+                result=await sandbox_client.run_profile({'files':{'app.js':"console.log('REAL_UNIX_ADAPTER_OK')"},
+                    'entrypoint':'app.js'},secrets.token_hex(16),'javascript')
+                assert result['status']=='completed' and 'REAL_UNIX_ADAPTER_OK' in result['stdout'],result
+                await absent(result['id'])
+                record('actual-application-adapter-unix-authenticated-execution')
+            finally:
+                workspace_id.reset(token)
+                for name,value in saved.items():
+                    if value is None:os.environ.pop(name,None)
+                    else:os.environ[name]=value
         assert (await client.get('/v1/health', headers={'Authorization': 'Bearer wrong'})).status_code == 401
         for profile in ['javascript', 'typescript']:
             body, job = await submit(DENIALS, profile=profile)
@@ -279,6 +310,8 @@ async def acceptance(image: str, evidence: Path) -> None:
             summary['status'] = 'failed'
             summary['cleanup_error'] = type(error).__name__
         log.close()
+        if listener:
+            listener.close();socket_path.unlink(missing_ok=True)
         (evidence / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
     if summary['status'] != 'passed':
         raise RuntimeError('Host acceptance failed; inspect retained evidence')
@@ -288,9 +321,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--image', required=True)
     parser.add_argument('--evidence', required=True, type=Path, help='NEW private evidence directory')
+    parser.add_argument('--transport',choices=['tcp','unix'],default='tcp')
     args = parser.parse_args()
     os.umask(0o077)
-    asyncio.run(acceptance(args.image, args.evidence.resolve()))
+    asyncio.run(acceptance(args.image, args.evidence.resolve(),args.transport))
 
 
 if __name__ == '__main__':

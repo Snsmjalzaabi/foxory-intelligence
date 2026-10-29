@@ -1,0 +1,19 @@
+# Optional systemd USER service, socket-activated; requires real host validation.
+[Unit]
+Description=FOXORY rootless sandbox manager over a private Unix API socket
+Requires=foxory-sandbox-oci-uds.socket
+After=foxory-sandbox-oci-uds.socket
+[Service]
+Type=simple
+WorkingDirectory=%h/foxory-intelligence
+EnvironmentFile=%h/.config/foxory/sandbox.env
+Sockets=foxory-sandbox-oci-uds.socket
+ExecStart=%h/foxory-intelligence/.venv/bin/python -m uvicorn sandbox_manager.service:app --fd 3 --workers 1
+UMask=0077
+Delegate=cpu memory pids
+KillMode=control-group
+MemoryMax=2G
+TasksMax=256
+CPUQuota=100%
+Restart=on-failure
+TimeoutStopSec=60

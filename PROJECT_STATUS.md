@@ -1,5 +1,33 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Current continuation: private manager connection and final Ubuntu commands
+
+Actual exported-rootless-image audit and all nine runtime checks passed again
+in `40812880482` at `e7c7a25`. Config/layer identity and archive hash were verified
+before/after scanning; no Docker access was given to the dedicated account.
+Exact archive/image evidence is committed separately. Verify workflow
+`40812806745` passed core, real Python sandbox and worker-image jobs.
+
+Added an optional authenticated Unix API transport to resolve Docker bridge vs
+host-loopback connectivity without exposing a TCP listener. Explicit enablement,
+same private key, workspace scope, private parent/socket permissions, no proxies
+and ambiguous-config denial remain enforced. Default Compose stays disabled.
+Optional socket-only read-only bind/GID override and systemd user socket/FD
+templates are supplied; no manager home/state or engine socket is mounted.
+Nine tests passed, including actual Unix HTTP with a controlled server. Complete
+backend regression: **189 passed (26.58s)**. Actual rootless Unix manager/adapter
+execution and owner systemd/Compose/GID mapping remain pending their real tests.
+
+`docs/UBUNTU_FINAL_VALIDATION.md` contains syntax-checked commands updating the
+owner checkout/source archive, rebuilding/auditing the exact rootless image and
+running TCP/Unix active fixtures with separate disposable state and retained
+evidence. Existing venv/data/environment and owner volumes are preserved.
+
+Infrastructure audit `40813368693` found **98 PostgreSQL HIGH/CRITICAL findings**;
+Ollama inspection failed with ENOSPC, so its vulnerability status is unknown.
+No owner infrastructure was changed and no failed audit is treated as passed.
+Final production readiness remains blocked; Phase 4 incomplete/Phase 5 not begun.
+
 ## Current security review scope
 
 Full local regression now passed **180 tests (26.01s)**, including six export
