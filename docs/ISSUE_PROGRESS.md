@@ -75,7 +75,7 @@ disabled application defaults remain unchanged.
 
 ## Issue 2 — Ubuntu worker zlib security update
 
-**In progress; no completion email yet.** The exact Issue1 image reports
+**Fixed and verified** in `d277a214c155e723a8c831cbdca756dbe91a1a8b`. The exact Issue1 image reports
 CVE-2026-85091 in zlib1g1:1.3.dfsg-3.1ubuntu2.2. Canonical's CVE page and
 USN-8954-1 confirm the Noble fix1:1.3.dfsg-3.1ubuntu2.3. The worker now pins
 that signed Ubuntu package. This scope is the OS library, not a claim about all
@@ -85,8 +85,17 @@ The scanner now blocks this specifically reviewed remediation even though its
 vendor severity is MEDIUM, without relabeling severity or suppressing other
 findings. Exact-image runtime verification additionally requires the current
 required-fixes policy hash, so an older-policy report cannot be reused.
-Targeted synthetic/archive tests passed31. Fresh actual image build/scan and
-Ubuntu26 runtime verification are required before closing Issue2.
+Targeted synthetic/archive tests passed31; full local backend passed239. Actual
+Ubuntu26 run `40859366853` passed the new exact image's audit,7/9/10 canonical/
+TCP/Unix runtime check groups and current-policy provenance gate. All owned
+cleanup passed. SBOM confirms zlib1g1:1.3.dfsg-3.1ubuntu2.3; the specific package
+finding is absent. Remaining findings are632, not zero. Verify `40859365775`
+passed all three jobs. Reports:
+[issue2-zlib-verified-2026-10-29.json](evidence/issue2-zlib-verified-2026-10-29.json)
+and [issue2-image-provenance-2026-10-29.json](evidence/issue2-image-provenance-2026-10-29.json).
+Image: `sha256:b88a2c2566edaad442c3e9bef6d0287c713d1b365e588547abb67e21d8a0599a`.
+Requested email subject: **Issue 2 Fixed**; actual delivery is reported separately
+after this evidence commit. Existing owner-PC images are unchanged until rebuilt.
 
 ## Remaining, not started
 

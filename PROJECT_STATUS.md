@@ -1,6 +1,6 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Issue 2 in progress; owner checkout cache check received
+## Issue 2 fixed and verified; owner checkout cache check received
 
 The owner's terminal output confirms Ubuntu26.04.1/kernel7.0.0-38-generic,
 successful pre-pull Git fsck, fast-forward4b57d90→3a59e19 and clean final working
@@ -10,9 +10,14 @@ acceptance. No authentication-check URL/credentials are retained in evidence.
 
 Issue2 is the specific OS zlib1g CVE-2026-85091 remediation. Canonical confirms
 Ubuntu24.04 fixed version1:1.3.dfsg-3.1ubuntu2.3; the old worker hasubuntu2.2.
-Package pin and reviewed-fix regression/policy-identity gates are implemented;
-targeted synthetic/archive tests passed31. Fresh same-image audit and actual
-Ubuntu26 runtime results are pending. No Issue2 completion email has been sent.
+Package pin and reviewed-fix regression/policy-identity gates are implemented.
+Actual Ubuntu26 run40859366853 atd277a21 passed the same-image audit and7/9/10
+canonical/TCP/Unix real runtime check groups, provenance and all owned cleanup.
+SBOM confirms the fixed package; its CVE finding is absent. Remaining findings632
+are not waived. Local backend239 passed; Verify40859365775 passed all jobs.
+Image: `sha256:b88a2c2566edaad442c3e9bef6d0287c713d1b365e588547abb67e21d8a0599a`.
+Requested per-issue email follows the evidence commit; actual delivery is
+reported separately. The owner's existing image was not rebuilt remotely.
 Other image/compiled-browser and license findings are not claimed resolved.
 
 ## Sequential work — Issue 1 fixed and verified

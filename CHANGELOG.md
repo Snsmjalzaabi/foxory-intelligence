@@ -2,6 +2,13 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Sequential verified fixes: bind actual rootless image audits and runtime reports
+to one immutable image/config and the current remediation policy. Update worker
+OS zlib1g to1:1.3.dfsg-3.1ubuntu2.3 for CVE-2026-85091 (USN-8954-1), with a
+specific mandatory gate despite its MEDIUM vendor severity. Exact-image Ubuntu26
+runtime, recovery and regression verification passed. Other findings and binary
+license review remain open; default execution stays disabled.
+
 Hosted core and actual sandbox CI now pass independently, including a pristine
 canonical Compose installation and PostgreSQL migration/persistence/logical
 restore. Added reported model capability roles with server-side compatibility
