@@ -1,0 +1,14 @@
+{
+  "ollama": {
+    "reference": "ollama/ollama:0.40.13@sha256:b2f0122c476bc9fe7ce679d8bb4bd555351e25e2554eefb156f61cb0a89cf429",
+    "linux_amd64_config": "sha256:46d2fa8707cc254faa5ccdb16ac2b4e6d5cb38cd079035a24174a5141f087297",
+    "version": "0.40.13",
+    "scan_evidence": "docs/evidence/ollama-candidate-image-audit-2026-10-29.json",
+    "review_scope": "Exact reviewed image/config; scanner-selected severities only. Runtime/model compatibility is a separate required check."
+  },
+  "postgres": {
+    "dockerfile": "deployment/postgres/Dockerfile",
+    "scan_evidence": "docs/evidence/postgres-candidate-image-audit-2026-10-29.json",
+    "review_scope": "Pinned derivative inputs; rebuilt image requires a fresh audit. Cross-image restore does not authorize physical reuse of owner volumes."
+  }
+}

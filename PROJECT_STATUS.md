@@ -1,5 +1,19 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Active blocker resolution — hosted verification resumed
+
+The owner's instruction to solve the blockers renews authorization for necessary
+hosted tests and pushes, resolving the earlier cancellation ambiguity. Preserve
+all previous results/history and avoid duplicate audits. Added a focused manual
+compatibility workflow: exact digest/config-pinned previously scanned Ollama
+0.40.13 → actual CPU completion/streaming/embeddings/model-directory restart;
+freshly rebuilt/audited PostgreSQL derivative → Bookworm logical restore into a
+separate owned volume. No owner installation, credentials or data are used.
+Ollama fixture runs non-root, read-only/cap-drop ALL with private temporary model
+storage and no GPU devices. Syntax checks passed; actual results pending.
+Fresh-install/upgrade defaults will change only after relevant compatibility
+evidence; no in-place glibc-to-musl database-volume reuse. Phase 4 remains open.
+
 ## Current handoff — candidate evidence retained; hosted execution paused
 
 The revised PostgreSQL candidate at `c33c009` passed **zero reported image

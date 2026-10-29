@@ -1,0 +1,68 @@
+name: Missing infrastructure compatibility checks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  postgres:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m venv .venv && .venv/bin/pip install -r backend/requirements.lock && .venv/bin/pip install --no-deps -e backend
+      - name: Build and audit the exact derivative used by the missing restore test
+        run: |
+          docker build -f deployment/postgres/Dockerfile -t foxory-postgres:compatibility .
+          image_id="$(docker image inspect foxory-postgres:compatibility --format '{{.Id}}')"
+          .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/database-image-review
+      - name: Old Bookworm cluster to separate candidate volume (fictional data)
+        run: |
+          docker pull postgres:17-bookworm
+          image_id="$(docker image inspect foxory-postgres:compatibility --format '{{.Id}}')"
+          .venv/bin/python scripts/phase4_postgres_smoke.py --restore-image "$image_id" > /tmp/database-logical-migration.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: database-upgrade-compatibility
+          path: |
+            /tmp/database-image-review/
+            /tmp/database-logical-migration.json
+  ollama:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m venv .venv && .venv/bin/pip install httpx==0.28.1
+      - name: Reserve space on this ephemeral model test VM
+        run: |
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          df -h /
+      - name: Pull only the previously scanned immutable model runtime
+        run: |
+          image_ref="$(.venv/bin/python -c 'import json; print(json.load(open("deployment/reviewed-infrastructure.json"))["ollama"]["reference"])')"
+          expected="$(.venv/bin/python -c 'import json; print(json.load(open("deployment/reviewed-infrastructure.json"))["ollama"]["linux_amd64_config"])')"
+          docker pull --platform linux/amd64 "$image_ref"
+          test "$(docker image inspect "$image_ref" --format '{{.Id}}')" = "$expected"
+      - name: Real CPU completion, streaming, embeddings and model persistence
+        run: |
+          image_id="$(.venv/bin/python -c 'import json; print(json.load(open("deployment/reviewed-infrastructure.json"))["ollama"]["linux_amd64_config"])')"
+          .venv/bin/python scripts/ollama_candidate_smoke.py --image "$image_id" --evidence /tmp/model-runtime.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actual-model-upgrade-compatibility
+          path: /tmp/model-runtime.json
+# No repeated scan of unchanged Ollama bytes, owner services, paid inference,
+# generated-code host execution, deployment, GPU or production readiness claim.
