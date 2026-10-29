@@ -23,6 +23,20 @@ No manual correct-source fallback. A related real defect was fixed: successful
 worker dispatch had cleared the agent's reported execution failure message.
 The new regression preserves the failure and confirms packaging stays blocked.
 
+Terminal failed agent execution now rejects generic in-place retry with a clear
+409 requiring reviewed inputs and fresh approvals. Previously this transition
+queued an unusable `done` stage. Workforce/general controls no longer offer that
+invalid action; Computer Mode retains its working review-and-submit-new-task
+flow. Targeted agent/OCI tests **50 passed** and strict frontend build passed.
+Full local backend before this narrow transition change: **212 passed (28.17s)**.
+Current CI/host results remain pending, not inferred from these local checks.
+
+Superseded full-host run `40837192838` was deliberately canceled before task
+verification to use the corrected provisioner CWD; duplicate Verify `40837311480`
+was canceled while the same production-code Verify `40837192321` continued.
+Canceled runs are not passes. Harness-only changes now use their dedicated
+opt-in workflow rather than repeating unrelated image scans.
+
 The same host workflow will run representative actual resource, network,
 cancellation and crash/orphan suites on Ubuntu26 after integrated acceptance.
 No sandbox policy is weakened. The owner's PC and GPU remain untested here.

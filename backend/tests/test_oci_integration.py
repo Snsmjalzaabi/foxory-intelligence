@@ -220,6 +220,9 @@ async def test_failed_computer_execution_keeps_diagnostic_and_blocks_packaging(c
     result=await finish(id)
     assert result['status']=='failed' and 'Sandbox execution failed' in result['error']
     assert len(result['outputs'])==1 and result['outputs'][0]['result']['exit_code']==1
+    retry=await client.post('/api/jobs/'+id+'/retry')
+    assert retry.status_code==409 and 'fresh approvals' in retry.json()['detail']
+    assert (await finish(id))['status']=='failed'
     assert engine.runs==1 and not engine.containers
 
 async def test_manager_rejects_unsafe_browser_and_runtime_fields(oci):

@@ -1,9 +1,11 @@
 name: Verify
 on:
   push:
-    paths-ignore: ['*.md', 'docs/**', 'sandbox_manager/runtime/README.md']
+    # The opt-in full-host workflow executes its own provisioner. Changes only
+    # to that harness should not repeat unrelated app/worker image audits.
+    paths-ignore: ['*.md', 'docs/**', 'sandbox_manager/runtime/README.md', 'scripts/compose_manager_acceptance.py', '.github/workflows/host-integration.yml']
   pull_request:
-    paths-ignore: ['*.md', 'docs/**', 'sandbox_manager/runtime/README.md']
+    paths-ignore: ['*.md', 'docs/**', 'sandbox_manager/runtime/README.md', 'scripts/compose_manager_acceptance.py', '.github/workflows/host-integration.yml']
   workflow_dispatch:
 permissions:
   contents: read

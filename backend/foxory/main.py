@@ -417,6 +417,8 @@ def control_job(id: str,action: Literal["cancel","pause","resume","retry"]):
         r=get_record(s,id,"job");original=r.payload;d=json.loads(original);status=d["status"]
         allowed={"cancel":{"queued","running","paused","failed","awaiting_approval"},"pause":{"queued","running"},"resume":{"paused"},"retry":{"failed"}}
         if status not in allowed[action]: raise HTTPException(409,"Invalid state transition")
+        if action=='retry' and d.get('type')=='agent' and d.get('stage')=='done':
+            raise HTTPException(409,'Execution ended; create a new task with reviewed inputs and fresh approvals')
         if action=="retry" and d.get("deadline_at",now())<now():raise HTTPException(409,"Wall-clock budget expired; create a new bounded job")
         if action=="retry" and d.get("attempts",0)>=3: raise HTTPException(409,"Retry budget exhausted")
         d["status"]={"cancel":"cancelled","pause":"paused","resume":"queued","retry":"queued"}[action]
