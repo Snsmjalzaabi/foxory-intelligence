@@ -18,6 +18,16 @@
       "retained_text": "docs/evidence/nomic-embed-text-latest-LICENSE.txt",
       "registry_manifest": "https://registry.ollama.ai/v2/library/nomic-embed-text/manifests/latest",
       "terms_match_project_apache2_terms": true
+    },
+    {
+      "model": "qwen2.5-coder:1.5b",
+      "manifest_digest": "sha256:d7372fd828518a4d38b1eb196c673c31a85f2ed302b3d1e406c4c2d1b64a0668",
+      "license_layer_digest": "sha256:832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+      "license": "Apache-2.0",
+      "retained_text": "docs/evidence/qwen2.5-0_5b-LICENSE.txt",
+      "registry_manifest": "https://registry.ollama.ai/v2/library/qwen2.5-coder/manifests/1.5b",
+      "terms_match_project_apache2_terms": true,
+      "runtime_verification": "pending full-host integration"
     }
   ]
 }

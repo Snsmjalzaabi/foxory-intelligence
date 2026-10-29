@@ -107,7 +107,9 @@ async def _run_one():
                 try: await step_task
                 except asyncio.CancelledError: pass
         if result["status"] == "running": result["status"] = "queued"
-        result["error"] = None
+        # A tool can complete its call but report failed execution. Preserve its
+        # actionable failure; clear stale retry errors only on a successful step.
+        if result['status']!='failed':result["error"] = None
         if data['type']=='agent':result['step_failures']=0
     except Exception as e:
         log.warning("Job step failed: %s", type(e).__name__)

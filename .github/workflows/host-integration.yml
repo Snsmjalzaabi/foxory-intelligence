@@ -66,6 +66,27 @@ jobs:
           image_id="$(sudo -u foxory-ci-sandbox cat /home/foxory-ci-sandbox/worker-image-id.txt)"
           .venv/bin/python scripts/compose_manager_acceptance.py --worker-image "$image_id" \
             --ipc "/run/foxory-fixture-$GITHUB_RUN_ID" --evidence /tmp/full-host-evidence
+      - name: Actual CPU PID OOM cancellation and crash recovery on the same OS
+        run: |
+          sandbox_uid="$(id -u foxory-ci-sandbox)"
+          sudo -u foxory-ci-sandbox -H env -i HOME=/home/foxory-ci-sandbox USER=foxory-ci-sandbox LOGNAME=foxory-ci-sandbox \
+            PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+            XDG_RUNTIME_DIR="/run/user/$sandbox_uid" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$sandbox_uid/bus" \
+            systemd-run --user --scope --property=Delegate=yes --expand-environment=no bash -c '
+              set -euo pipefail
+              umask 077
+              cd "$HOME/foxory-intelligence"
+              image_id="$(cat "$HOME/worker-image-id.txt")"
+              .venv/bin/python scripts/oci_host_acceptance.py --image "$image_id" --evidence "$HOME/acceptance/tcp"
+              .venv/bin/python scripts/oci_host_acceptance.py --image "$image_id" --transport unix --evidence "$HOME/acceptance/unix"
+            '
+      - name: Retain only disposable fixture security evidence
+        if: always()
+        run: |
+          if sudo test -d /home/foxory-ci-sandbox/acceptance; then
+            sudo cp -r /home/foxory-ci-sandbox/acceptance /tmp/full-host-evidence/security
+            sudo chown -R "$(id -u):$(id -g)" /tmp/full-host-evidence/security
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

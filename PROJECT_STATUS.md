@@ -1,5 +1,28 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Native service passed; coding-model quality failure isolated
+
+Real Ubuntu26 run `40835895873` at `1b6473b` passed canonical Compose
+authentication, systemd socket activation/GID mapping, all three actual OCI
+startup probes and an actual failed-JavaScript test/packaging denial. Thus the
+native startup blocker is fixed on this hosted configuration. The run failed
+later because the qwen2.5:0.5b repair still failed the reviewed arithmetic tests;
+no failing source package was accepted. This is not full acceptance.
+
+The integration now explicitly assigns the coding role to the free local
+qwen2.5-coder:1.5b, retaining small general-model sequential coordination. At
+most three model repair attempts receive actual sandbox failure feedback; each
+changed source needs a new immutable approval, and all generated modules/hashes
+are retained as fixture evidence. The registry license blob is identical to the
+already-reviewed Apache2 blob. Its actual runtime verification remains pending.
+No manual correct-source fallback. A related real defect was fixed: successful
+worker dispatch had cleared the agent's reported execution failure message.
+The new regression preserves the failure and confirms packaging stays blocked.
+
+The same host workflow will run representative actual resource, network,
+cancellation and crash/orphan suites on Ubuntu26 after integrated acceptance.
+No sandbox policy is weakened. The owner's PC and GPU remain untested here.
+
 ## Native Ubuntu26 service investigation
 
 Local backend suite: **211 passed (25.28s)**. Verify `40835894770` exposed a

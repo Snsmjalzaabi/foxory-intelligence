@@ -200,6 +200,28 @@ async def test_restart_marks_interrupted_oci_without_replaying(tmp_path,monkeypa
         assert manager.load(id,'tenant-a')['status']=='interrupted'
         assert engine.runs==0 and not engine.containers
 
+async def test_failed_computer_execution_keeps_diagnostic_and_blocks_packaging(client,oci,monkeypatch):
+    from foxory import inference,sandbox_client
+    from foxory.scope import workspace_id
+    from test_agents import agent,finish,prose
+    remote,engine=oci
+    monkeypatch.setattr(inference,'complete',prose)
+    def transport():
+        return httpx.AsyncClient(transport=httpx.ASGITransport(app=manager.app),base_url='http://manager',headers={
+            'Authorization':'Bearer '+manager.KEY,'X-Foxory-Workspace':workspace_id.get()})
+    monkeypatch.setattr(sandbox_client,'transport',transport)
+    coder=await agent(client,'Failed code',['sandbox.javascript','source.package'])
+    body={'agent_id':coder['id'],'objective':'Keep the failure visible','profile':'javascript',
+          'source':{'title':'Failure','files':{'app.js':'// FOXORY_FIXTURE_FAIL'},'entrypoint':'app.js'},
+          'idempotency_key':'failed-code-diagnostic'}
+    response=await client.post('/api/computer/tasks',json=body);assert response.status_code==201,response.text
+    id=response.json()['id'];pending=await finish(id)
+    assert (await client.post('/api/approvals/'+pending['approval_id']+'/approve')).status_code==200
+    result=await finish(id)
+    assert result['status']=='failed' and 'Sandbox execution failed' in result['error']
+    assert len(result['outputs'])==1 and result['outputs'][0]['result']['exit_code']==1
+    assert engine.runs==1 and not engine.containers
+
 async def test_manager_rejects_unsafe_browser_and_runtime_fields(oci):
     client,engine=oci
     for patch in [
