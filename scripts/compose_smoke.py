@@ -34,7 +34,7 @@ def main() -> None:
     with socket.socket() as reservation:
         reservation.bind(('127.0.0.1', 0)); port = reservation.getsockname()[1]
     env = {**os.environ, 'FOXORY_TOKEN':token, 'POSTGRES_PASSWORD':password,
-           'FOXORY_PORT':str(port), 'SEARXNG_URL':'', 'FOXORY_ENABLE_SANDBOX':'0',
+           'FOXORY_PORT':str(port), 'FOXORY_DATABASE_LAYOUT':'modern', 'SEARXNG_URL':'', 'FOXORY_ENABLE_SANDBOX':'0',
            'FOXORY_SANDBOX_URL':'', 'FOXORY_SANDBOX_KEY':''}
     evidence = {'canonical_build':args.build, 'project':project, 'checks':[], 'sandbox_enabled':False}
     with tempfile.TemporaryDirectory(prefix=project+'-') as directory:

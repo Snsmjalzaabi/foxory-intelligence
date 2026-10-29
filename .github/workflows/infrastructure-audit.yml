@@ -41,11 +41,12 @@ jobs:
           SERVICE: ${{ matrix.service }}
           MODE: ${{ inputs.mode }}
         run: |
-          image_ref="$(.venv/bin/python -c 'import os,yaml; print({"db":"postgres:17-alpine","ollama":"ollama/ollama:0.40.13"}[os.environ["SERVICE"]] if os.environ["MODE"]=="candidate" else yaml.safe_load(open("compose.yaml"))["services"][os.environ["SERVICE"]]["image"])')"
-          docker pull --platform linux/amd64 "$image_ref"
-          if [ "$MODE" = candidate ] && [ "$SERVICE" = db ]; then
-            docker build -f deployment/postgres/Dockerfile -t foxory-postgres:review .
+          if [ "$SERVICE" = db ]; then
+            docker build --target modern -f deployment/postgres/Dockerfile -t foxory-postgres:review .
             image_ref=foxory-postgres:review
+          else
+            image_ref="$(.venv/bin/python -c 'import os,json,yaml; print(json.load(open("deployment/reviewed-infrastructure.json"))["ollama"]["reference"] if os.environ["MODE"]=="candidate" else yaml.safe_load(open("compose.yaml"))["services"]["ollama"]["image"])')"
+            docker pull --platform linux/amd64 "$image_ref"
           fi
           image_id="$(docker image inspect "$image_ref" --format '{{.Id}}')"
           docker image inspect "$image_ref" --format '{{json .RepoDigests}}' > /tmp/repo-digests.json

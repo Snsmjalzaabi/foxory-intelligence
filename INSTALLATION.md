@@ -1,5 +1,10 @@
 # Installation and removal
 
+New installations use `python scripts/setup.py` to select the modern PostgreSQL17
+layout. Existing installations must follow [DATABASE_UPGRADE.md](docs/DATABASE_UPGRADE.md)
+before rebuilding services. Missing layout selection fails configuration without
+converting data. Existing .env files and volumes are never rewritten by setup.
+
 ## Linux Compose
 
 Install Docker Engine + Compose v2 from your OS/vendor documentation. Run `python scripts/setup.py`, then `docker compose up -d --build`. Check `docker compose ps` and `docker compose logs app`. Open <http://localhost:8000>; the token is stored in `.env`. No model is downloaded automatically. Download one explicitly in Settings. Review its upstream model license first.

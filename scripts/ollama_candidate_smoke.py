@@ -44,6 +44,7 @@ def main() -> None:
                '--tmpfs=/tmp:rw,nosuid,nodev,size=134217728,mode=1777',
                '--mount','type=bind,src='+storage.name+',dst=/models',
                '-e','HOME=/tmp','-e','OLLAMA_MODELS=/models','-e','OLLAMA_HOST=0.0.0.0:11434',
+               '-e','OLLAMA_NO_CLOUD=true',
                '-e','OLLAMA_MAX_LOADED_MODELS=1','-e','OLLAMA_NUM_PARALLEL=1','-e','OLLAMA_MAX_QUEUE=2',
                args.image,stdout=subprocess.DEVNULL)
         created=True;docker('start',name,stdout=subprocess.DEVNULL)
@@ -93,7 +94,12 @@ def main() -> None:
             assert len(embedding)==768 and all(isinstance(x,(int,float)) and math.isfinite(x) for x in embedding)
             report['checks'].append({'name':'actual-local-embedding','passed':True,'dimensions':len(embedding)})
             before={model['name']:model['digest'] for model in report['installed']}
-            docker('restart',name,stdout=subprocess.DEVNULL);ready()
+            docker('restart',name,stdout=subprocess.DEVNULL)
+            # An engine-selected ephemeral host port may change on restart.
+            restarted=json.loads(docker('inspect',name,capture_output=True,text=True).stdout)[0]
+            new_port=restarted['NetworkSettings']['Ports']['11434/tcp'][0]['HostPort']
+            client.base_url='http://127.0.0.1:'+new_port
+            ready()
             response=client.get('/api/tags');response.raise_for_status()
             assert {model['name']:model['digest'] for model in response.json()['models']}==before
             report['model_persistence_tested']=True

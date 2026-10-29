@@ -1,0 +1,11 @@
+# Explicit logical-migration target only. The original volume is external so
+# normal Compose lifecycle does not delete it. Never use down --volumes here.
+services:
+  db:
+    volumes:
+      - postgres_v2:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+    external: true
+    name: ${FOXORY_LEGACY_DB_VOLUME:?Set the inspected original database volume name}
+  postgres_v2:

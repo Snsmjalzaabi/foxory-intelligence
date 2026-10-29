@@ -1,5 +1,30 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Safe upgrade implementation and discovered integration failures
+
+Targeted workflow `40825766888` passed the separate-volume logical migration.
+Its model test completed actual CPU completion/streaming/embedding, then failed
+restart readiness because Docker reassigned its ephemeral host port. The harness
+now re-inspects the endpoint after restart. Core workflow `40825750920` exposed
+an existing pg_isready race (temporary initdb socket accepted before the foxory
+database existed); readiness now requires final TCP and SELECT1 in that DB.
+These failed runs are retained as failures, not compatibility clearance.
+
+Modern database startup now refuses unknown/legacy/partial/wrong-major physical
+directories BEFORE upstream chmod/chown/startup. Eleven trusted shell-fixture
+tests passed. Integration additionally snapshots all fictional legacy file bytes,
+ownership/modes before/after a refused modern mount, and verifies restored account
+hash/membership/session/consumed approval/tenant boundaries. Actual guard run is
+pending. Fresh setup selects modern; existing .env bytes are never edited, and
+missing layout selection stops Compose before any service changes. Legacy is
+explicit maintenance-only. New-volume override and owner migration guide added.
+
+Ollama's reviewed digest is selected for the next fresh Compose verification;
+cloud inference is explicitly disabled. Default execution remains off. Owner
+services/data have not been touched or deployed; all hosted data is disposable.
+Next required checks: corrected model persistence, guarded database migration,
+canonical fresh stack, real socket topology and combined-model workflows.
+
 ## Active blocker resolution — hosted verification resumed
 
 The owner's instruction to solve the blockers renews authorization for necessary
