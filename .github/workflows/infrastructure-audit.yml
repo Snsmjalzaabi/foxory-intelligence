@@ -19,6 +19,17 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m venv .venv && .venv/bin/pip install 'httpx==0.28.1' 'PyYAML==6.0.3'
+      - name: Reserve scanner space on the disposable hosted Ollama audit VM
+        if: matrix.service == 'ollama'
+        run: |
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          # Only unused SDK installations on this new ephemeral audit VM. Never
+          # run this on the owner/Cloud host; no home, volume or image pruning.
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          df -h /
+          available="$(df -B1 --output=avail / | tail -n 1)"
+          test "$available" -ge 25769803776
       - name: Inspect the exact default Compose dependency without executing it
         env:
           SERVICE: ${{ matrix.service }}

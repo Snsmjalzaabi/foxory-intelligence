@@ -1,5 +1,12 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+PostgreSQL audit summary (98 HIGH/CRITICAL, 461 total) is retained under
+`docs/evidence/postgres-image-audit-2026-10-29.json`. Ollama's first audit was
+incomplete due to scanner temporary storage exhaustion. Its next ephemeral
+hosted job removes unused SDK installations and requires 24 GiB free before
+pulling/scanning; no owner/Cloud data, volumes, images or tool installations are
+modified. The unsafe/unknown status remains until actual completed results.
+
 ## Current continuation: private manager connection and final Ubuntu commands
 
 Actual exported-rootless-image audit and all nine runtime checks passed again

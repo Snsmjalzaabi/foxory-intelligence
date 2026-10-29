@@ -37,6 +37,16 @@ its results are pending. Any infrastructure update must preserve model/data
 compatibility and pass disposable migration/restore and actual-model checks;
 never switch the owner's database image/volumes merely to obtain a green scan.
 
+First run `40813368693` actually found 98 vendor HIGH/CRITICAL PostgreSQL package
+findings (461 total), including the old gosu binary's Go standard library as well
+as Debian packages. The summary is committed; severity/actual exploit context
+still need review. Ollama analysis failed ENOSPC during Trivy layer export, so it
+has **unknown** vulnerability status, not zero findings. The next hosted Ollama
+audit reserves space by removing only unused Android/.NET/Haskell SDKs on that
+new ephemeral GitHub VM, then requires 24 GiB free. No owner or Cloud data/cache/
+image/volume cleanup is performed. If capacity is still insufficient the scan
+must fail; do not substitute a partial report for a completed audit.
+
 Production remains blocked on review of these findings, infrastructure coverage,
 compiled-browser/runtime advisories, license obligations and the remaining
 Phase 4 acceptance criteria. No blanket security clearance is asserted.
