@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 import re
@@ -15,6 +16,12 @@ from foxory.sandbox_protocol import OCIProject, validate_artifacts
 
 WALL_SECONDS=45
 MAX_OUTPUT=100000
+log=logging.getLogger('foxory.sandbox.oci')
+
+def diagnostic(event:str,detail:str):
+    key=os.getenv('FOXORY_SANDBOX_KEY','')
+    if key:detail=detail.replace(key,'[redacted]')
+    log.warning(json.dumps({'event':event,'detail':detail[-1500:]}))
 
 class Runtime:
     def __init__(self, root:Path):
@@ -73,8 +80,10 @@ class Runtime:
         if exists!=1:raise RuntimeError('Container cleanup was not established')
 
     async def recover(self,active_ids=frozenset()):
-        rc,out,_=await self.cli('ps','--all','--filter','label=io.foxory.manager='+self.owner,'--format','json')
-        if rc:raise RuntimeError('Cannot enumerate manager-owned containers')
+        rc,out,err=await self.cli('ps','--all','--filter','label=io.foxory.manager='+self.owner,'--format','json')
+        if rc:
+            diagnostic('oci.enumeration.failed',err)
+            raise RuntimeError('Cannot enumerate manager-owned containers')
         rows=json.loads(out)
         if not isinstance(rows,list) or len(rows)>500:raise RuntimeError('Orphan container enumeration budget')
         recovered=[]
@@ -102,7 +111,8 @@ class Runtime:
                 for stage in self.root.glob('foxory-oci-*'):
                     if stage.is_symlink() or not stage.is_dir() or stage.stat().st_uid!=os.getuid():raise RuntimeError('Unsafe orphan staging ownership')
                     shutil.rmtree(stage)
-            except Exception:
+            except Exception as error:
+                diagnostic('oci.recovery.failed',type(error).__name__+': '+str(error))
                 self.disable('OCI orphan cleanup failed; operator intervention required');return
         if not self.opt_in:return
         if not authorized or not re.fullmatch('sha256:[a-f0-9]{64}',self.image):

@@ -225,7 +225,10 @@ def main():
             owner=hashlib.sha256((str(manager_home/'fixture-state')+':'+str(user.pw_uid)).encode()).hexdigest()[:32]
             remaining=manager('podman','--remote=false','ps','--all','--filter','label=io.foxory.manager='+owner,'--format','json',capture_output=True,text=True)
             if json.loads(remaining.stdout):errors.append('Manager-owned worker remains')
-            manager('journalctl','--user','-u','foxory-sandbox-oci-uds.service','--no-pager','-n','60',check=False)
+            # Volatile hosted journals may not expose a per-user journal. Root
+            # provisioner reads only this fixture UID/unit; never its environment.
+            subprocess.run(['sudo','journalctl','_UID='+str(user.pw_uid),
+                '_SYSTEMD_USER_UNIT=foxory-sandbox-oci-uds.service','--no-pager','-n','80'],check=False,timeout=20)
         except Exception as error:errors.append('Manager cleanup: '+type(error).__name__)
         summary['cleanup_verified']=not errors
         if errors:summary.update(status='failed',cleanup_errors=errors)

@@ -1,0 +1,16 @@
+{
+  "postgresql": "17",
+  "image": "postgres:17-bookworm",
+  "migration": "0003",
+  "workspace_isolation": true,
+  "duplicate_constraint": true,
+  "restart_persistence": true,
+  "dump_restore": true,
+  "restore_image": "sha256:a8b31b053a3164d73b61b4af957b4899f3f45d7c723964b28dce5bf0fc42bae9",
+  "separate_restore_volume": true,
+  "legacy_physical_reuse_denied_unchanged": true,
+  "account_membership_session_approval_restored": true,
+  "owner_database_accessed": false,
+  "workflow_run": 40828075459,
+  "commit": "055a51204a0534ab685de1d80d5aa605a63eb6f0"
+}

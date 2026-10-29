@@ -26,6 +26,8 @@ jobs:
       - run: .venv/bin/pip install -r backend/requirements.lock && .venv/bin/pip install --no-deps -e backend && .venv/bin/pip install 'pytest>=8,<10' 'pytest-asyncio>=0.24,<2'
       - name: Core API, authorization, parser and persistence regressions
         run: .venv/bin/pytest -q backend/tests -m 'not sandbox_runtime'
+      - name: Locked source license inventory and notice coverage
+        run: .venv/bin/python scripts/review_source_licenses.py --output /tmp/source-license-inventory.json
       - run: .venv/bin/python scripts/verify_worker_supply_chain.py && node --check sandbox_manager/runtime/worker.mjs
       - run: npm ci && npm run build
         working-directory: frontend
@@ -48,6 +50,7 @@ jobs:
             frontend/test-results/
             /tmp/compose-evidence.json
             /tmp/core-image-audit/
+            /tmp/source-license-inventory.json
   sandbox:
     # Required, separate job: preflight must actually pass, without host-policy
     # weakening. Ubuntu 26.04 OCI acceptance is a distinct owner-host gate.

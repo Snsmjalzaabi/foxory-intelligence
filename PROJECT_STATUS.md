@@ -1,5 +1,25 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Native service fail-closed finding and source license coverage
+
+Full host run `40829733249` reached canonical app/model/database and authenticated
+socket transport, but the native service's Podman reconciliation failed and
+correctly quarantined OCI. No unsafe fallback. Native user units now select their
+own HOME/XDG/bus paths and discard inherited container connection/config selectors
+and GitHub tokens. Runtime enumeration/recovery logs add bounded, key-redacted
+operator diagnostics; web capability errors remain generic. Hosted diagnostics
+read only the fixture UID/unit journal. Actual corrected topology run is pending.
+
+Retained successful upgrade reports from `40828075459`: Ollama0.40.13 actual CPU
+completion/stream/768-dimensional embeddings and persisted digests after restart;
+separate-volume database migration with accounts/session/approval preservation
+and unchanged legacy physical data after guard rejection. Source notice inventory
+verifies all 44 locked Python and 114 frontend runtime packages have retained
+versioned notices. Tested model manifest/license-layer digests match the actual
+runtime manifests; Apache2 terms were compared and texts retained. New source
+coverage gate and distribution-scope/conditional LGPL/MPL obligations documented.
+This is not clearance for public binary/GPU/model redistribution or production.
+
 ## Corrected upgrade gates passed; full host topology next
 
 At `055a512`, Verify `40828063598` passed all jobs and targeted compatibility
