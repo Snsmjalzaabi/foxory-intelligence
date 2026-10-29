@@ -20,13 +20,26 @@ image_id="$(docker image inspect foxory-worker:ci --format '{{.Id}}')"
 ```
 
 Use a new output directory. The CLI currently supports Linux AMD64 and the local
-Docker daemon only; it clears alternate Docker endpoint/context/TLS selectors.
+Docker daemon by default; it clears alternate Docker endpoint/context/TLS selectors.
 Do not grant Docker access to the dedicated rootless sandbox account. CI reports
 describe their exact Docker image ID, not the owner's separately built Podman
-image. For that image, an administrator can export a private Docker-format archive
-with rootless `podman save --format docker-archive`, then use the same reviewed
-Syft/Trivy versions' archive-input options in a separate review environment.
-Record both the original image ID and archive hash. Do not execute the exported
+image. For that image the CLI now accepts a stationary private rootless export,
+without granting this account Docker access:
+
+```bash
+umask 077
+podman --remote=false save --format docker-archive --output "$HOME/worker-review.tar" "$image_id"
+.venv/bin/python scripts/image_audit.py --image "$image_id" \
+  --archive "$HOME/worker-review.tar" --output "$HOME/worker-audit-NEW"
+```
+
+The export must be an operator-owned regular file, not writable by others, at
+most 8 GiB; no compression/multiple images/symlink metadata. Config SHA-256 must
+match the given image ID and each layer must match the config's diff ID. The
+tool extracts no layer, passes a stable inherited descriptor to both scanners,
+records the archive hash and checks it again after scanning. This is a trusted
+operator verification CLI, not an arbitrary image-upload endpoint. Preserve the
+original image ID, report and archive hash. Do not execute the exported
 image under rootful/privileged settings as a compatibility workaround.
 
 Outputs:
@@ -88,3 +101,10 @@ and metadata remain intact for scanning; no vulnerable installed package is
 hidden from the scanner. Application source, Python dependency lock, non-root
 UID, migrations, authentication and sandbox policies remain unchanged. Fresh
 canonical installation/document/persistence and image gates are required.
+
+Run `40811943218` confirms the Ubuntu candidate passes the actual core gate:
+zero HIGH/CRITICAL, 26 lower findings and 3,831 SBOM components, after actual
+canonical Compose installation/restart checks. The worker also passed again.
+These are report-feed results, not universal vulnerability/license clearance.
+The added rootless-archive route has six deterministic identity/metadata/layer
+tampering tests; an actual exported-image scan remains pending its hosted run.

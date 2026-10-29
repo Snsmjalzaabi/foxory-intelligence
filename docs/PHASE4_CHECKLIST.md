@@ -14,7 +14,7 @@
   actual deterministic calculations, PDF parsing and source ZIP validation.
 - [x] Worker base digest, locked dependencies, input hashes and registry-byte checks.
 - [x] Ubuntu installation, image build and security/recovery validation checklist.
-- [x] Latest backend (156), browser journeys (13), frontend build, migration/security and Compose regressions; real core acceptance separately records 14 checks.
+- [x] Backend (174), browser journeys (14), frontend build, migration/security and Compose regressions; real core acceptance separately records 14 checks. Six new archive-boundary tests are separately pending the full regression run.
 - [x] Current-source application image health/persistence and separate PostgreSQL 17
   migrations, tenant/duplicate guards, restart and dump/restore smoke tests.
 - [x] Actual local qwen2.5:0.5b Python repair/test/package/restart regression.
@@ -26,10 +26,17 @@
 
 - [x] Actual Ubuntu immutable image build (operator supplied output).
 - [ ] Review image SBOM and vulnerability/license findings.
+- [x] Actual canonical application and worker scans have zero HIGH/CRITICAL
+  findings after remediation; lower findings/licenses/compiled binaries still
+  require review. Reports retained separately from fixture scanner tests.
 - [x] Actual rootless Node/TypeScript fixed execution with effective CPU/memory/PID quota checks.
 - [x] Actual sandboxed Chromium controlled-site navigation, interaction, screenshot and download.
-- [ ] Real hostile filesystem/network/resource tests and Chromium sandbox checks.
-- [ ] Actual whole-container cancellation, crash/orphan recovery and restart cleanup.
+- [x] Actual Ubuntu 24.04/Podman 4.9.3 CPU throttling, PID denial, cgroup OOM kill,
+  JS/TS filesystem/network denial, Chromium controlled-site/screenshot/download.
+- [x] Ubuntu 24.04 whole-container running/queued/repeat cancellation, bounded
+  timeout, actual manager kill/restart, owned orphan cleanup/foreign preservation.
+- [ ] Repeat relevant final-image/topology acceptance on the owner's Ubuntu
+  26.04; hostile-input coverage is representative, not escape certification.
 - [ ] Final application/manager topology and persistence/backup restore checks.
 - [ ] Combined local-model workflows produce real browser/code/report artifacts.
 - [ ] Final real-host critical tests pass before Phase 4 acceptance or Phase 5.

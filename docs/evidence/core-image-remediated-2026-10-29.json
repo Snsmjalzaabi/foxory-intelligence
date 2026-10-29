@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "image": "sha256:1b361ae367ccdb8512144c4cebf01b5a4e5fd6b994a1fc35ee4dd03b569dbb89",
+  "tools": {
+    "syft": {
+      "version": "1.55.0",
+      "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+      "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+    },
+    "trivy": {
+      "version": "0.76.1",
+      "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+      "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+    }
+  },
+  "coverage_reported": true,
+  "os": {
+    "Family": "ubuntu",
+    "Name": "24.04"
+  },
+  "blocking": [],
+  "total_findings": 26,
+  "unfixed_findings_ignored": false,
+  "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+  "sbom_components": 3831,
+  "workflow_run": 40811943218,
+  "job_id": 123244052336,
+  "commit": "7589a8bbb7efe09e4b12a0a4c667fd79df4f9afd"
+}

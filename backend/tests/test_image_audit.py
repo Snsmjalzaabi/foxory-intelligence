@@ -1,6 +1,8 @@
 """Verifier parsing/archive boundaries, not a real image scan."""
 import importlib.util
 import io
+import hashlib
+import json
 from pathlib import Path
 import tarfile
 
@@ -36,3 +38,29 @@ def test_tool_archive_extracts_only_expected_regular_binary(tmp_path,unsafe):
         audit.extract_binary(archive,'syft',tmp_path/'syft')
         assert (tmp_path/'syft').read_bytes()==b'tool'
     assert not (tmp_path.parent/'escape').exists()
+
+
+@pytest.mark.parametrize('variant',['valid','wrong-id','duplicate','symlink','multi-image','changed-layer'])
+def test_rootless_export_identity_and_ambiguous_metadata_denial(tmp_path,variant):
+    layer=b'reviewed fixture layer'
+    config=json.dumps({'architecture':'amd64','os':'linux','rootfs':{
+        'type':'layers','diff_ids':['sha256:'+hashlib.sha256(layer).hexdigest()]}}).encode()
+    image='sha256:'+hashlib.sha256(config).hexdigest()
+    manifest=[{'Config':'config.json','Layers':['layer.tar']}]
+    if variant=='multi-image':manifest*=2
+    path=tmp_path/'image.tar'
+    with tarfile.open(path,'w') as output:
+        for name,data in [('manifest.json',json.dumps(manifest).encode()),('config.json',config),
+                          ('layer.tar',b'changed' if variant=='changed-layer' else layer)]:
+            member=tarfile.TarInfo(name);member.size=len(data)
+            if variant=='symlink' and name=='config.json':
+                member.type=tarfile.SYMTYPE;member.linkname='/etc/passwd';member.size=0;output.addfile(member)
+            else:output.addfile(member,io.BytesIO(data))
+            if variant=='duplicate':output.addfile(member,io.BytesIO(data))
+    with path.open('rb') as source:
+        if variant=='valid':
+            result=audit.archive_identity(source,image)
+            assert result['sha256']==hashlib.sha256(path.read_bytes()).hexdigest()
+            assert result['config_digest']==image
+        else:
+            with pytest.raises(ValueError):audit.archive_identity(source,'sha256:'+'a'*64 if variant=='wrong-id' else image)

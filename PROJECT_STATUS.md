@@ -1,5 +1,36 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Real rootless acceptance and remediated image evidence
+
+Hosted `40812030339` at `f6190c6` passed **all nine real rootless checks** on
+Ubuntu 24.04, Podman 4.9.3, kernel 7.0.0-1017-azure. No mocked OCI boundary:
+actual JS/TS/Chromium startup and authenticated execution, workspace/key/duplicate
+guards, filesystem/network denial, screenshot/download, queued/running/repeat
+cancellation, 15.27-second bounded infinite task, real manager SIGKILL/restart,
+owned orphan cleanup, foreign-owner preservation and no replay. Quota evidence:
+15 CPU throttling periods, PID max event=1/current=128, memory oom_kill=1 with
+child SIGKILL. Cleanup established. Private run artifact includes logs/states/PNG;
+summary committed as `docs/evidence/rootless-ubuntu24-2026-10-29.json`.
+
+Core Ubuntu packaging at `7589a8b` passed its actual image gate in run
+`40811943218`: **zero HIGH/CRITICAL, 26 lower findings, 3,831 SBOM components**,
+after canonical Compose install/restart checks. Worker scan also passed; its
+first successful evidence has zero HIGH/CRITICAL, 633 lower findings. Reports
+retain findings without exceptions; license/compiled-browser review is pending.
+
+An added archive audit route verifies the actual rootless Podman image without
+Docker access: operator-owned stationary export, bounded metadata, image config
+and all layer digests, stable scanner descriptor and post-scan archive hash.
+Six identity/tampering cases passed; hosted exported-image scan pending. Existing
+174 backend tests passed again (27.80s), strict UI build passed (5.94s).
+
+This is not the owner's Ubuntu 26.04 topology, a backup/restore of both live
+services, or a combined real local-model/browser/JS workflow. Those gates, final
+artifact/license/lower-finding review and broader quality checks remain before
+Phase 4/production acceptance. Phase 5 not started, production profiles stay
+disabled, no public release/deployment. Earlier failure/pending notes below are
+historical evidence and superseded only within the specific scope above.
+
 ## Image remediation in progress — actual release blockers
 
 First opt-in hosted OCI run `40811732631` stopped before build/execution: the

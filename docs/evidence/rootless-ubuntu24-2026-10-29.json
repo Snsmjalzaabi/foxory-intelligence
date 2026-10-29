@@ -1,0 +1,111 @@
+{
+  "status": "passed",
+  "image": "sha256:26afd5d31daf52de3bf252df3e61a05eb31cff54177b02a8144615ff1923b1d7",
+  "os": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "checks": [
+    {
+      "name": "actual-startup-js-ts-chromium-probes",
+      "passed": true
+    },
+    {
+      "name": "authentication-idempotency-tenancy-fs-network-js-ts",
+      "passed": true
+    },
+    {
+      "name": "actual-cpu-throttling-pid-denial-memory-oom",
+      "passed": true,
+      "counters": {
+        "cpu": {
+          "before": {
+            "usage_usec": 88038,
+            "user_usec": 53801,
+            "system_usec": 34237,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 1,
+            "nr_throttled": 0,
+            "throttled_usec": 0,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          },
+          "after": {
+            "usage_usec": 1670164,
+            "user_usec": 1606990,
+            "system_usec": 63174,
+            "nice_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "nr_periods": 16,
+            "nr_throttled": 15,
+            "throttled_usec": 777098,
+            "nr_bursts": 0,
+            "burst_usec": 0
+          },
+          "elapsed_ms": 1554.4991830000001
+        },
+        "pids": {
+          "before": {
+            "max": 0
+          },
+          "after": {
+            "max": 1
+          },
+          "current": 128
+        },
+        "memory": {
+          "before": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "after": {
+            "low": 0,
+            "high": 0,
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 1,
+            "oom_group_kill": 0,
+            "sock_throttled": 0
+          },
+          "exit": {
+            "code": null,
+            "signal": "SIGKILL"
+          }
+        }
+      }
+    },
+    {
+      "name": "authenticated-browser-interaction-screenshot-download",
+      "passed": true
+    },
+    {
+      "name": "browser-external-navigation-rejected",
+      "passed": true
+    },
+    {
+      "name": "running-queued-repeat-cancellation-and-cleanup",
+      "passed": true
+    },
+    {
+      "name": "infinite-worker-bounded-timeout-and-cleanup",
+      "passed": true,
+      "elapsed_seconds": 15.271559704999987
+    },
+    {
+      "name": "actual-manager-kill-restart-no-replay-owned-orphan-cleanup",
+      "passed": true
+    },
+    {
+      "name": "foreign-owner-container-preserved",
+      "passed": true
+    }
+  ],
+  "application_execution_enabled": false,
+  "owned_container_cleanup": true,
+  "workflow_run": 40812030339,
+  "job_id": 123244334136,
+  "commit": "f6190c6c1e5e9b2cd6cfaf0936a5dcf667f7a1f6"
+}

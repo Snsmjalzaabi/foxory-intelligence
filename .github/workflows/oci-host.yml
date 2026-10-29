@@ -38,6 +38,7 @@ jobs:
               cd "$HOME/source"
               mkdir -m 0700 "$HOME/evidence"
               uname -a > "$HOME/evidence/host.txt"
+              cat /etc/os-release >> "$HOME/evidence/host.txt"
               podman --remote=false version >> "$HOME/evidence/host.txt"
               test "$(podman --remote=false info --format "{{.Host.Security.Rootless}}")" = true
               python3 -m venv .venv
@@ -47,6 +48,9 @@ jobs:
               podman --remote=false build -f sandbox_manager/runtime/Dockerfile -t localhost/foxory-worker:acceptance sandbox_manager/runtime 2>&1 | tee "$HOME/evidence/build.log"
               image_id="$(podman --remote=false image inspect localhost/foxory-worker:acceptance --format "{{.Id}}")"
               case "$image_id" in sha256:*) ;; *) image_id="sha256:$image_id" ;; esac
+              trap "rm -f \"$HOME/worker-review.tar\"" EXIT
+              podman --remote=false save --format docker-archive --output "$HOME/worker-review.tar" "$image_id"
+              .venv/bin/python scripts/image_audit.py --image "$image_id" --archive "$HOME/worker-review.tar" --output "$HOME/evidence/image-audit"
               .venv/bin/python scripts/oci_host_acceptance.py --image "$image_id" --evidence "$HOME/evidence/runtime" 2>&1 | tee "$HOME/evidence/acceptance.log"
             '
       - name: Collect fixed-fixture evidence only
