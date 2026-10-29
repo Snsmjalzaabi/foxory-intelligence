@@ -21,6 +21,8 @@ def pytest_collection_modifyitems(items):
 
 @pytest.fixture(autouse=True)
 def database():
+    from foxory.model_registry import clear
+    clear()
     cfg=Config(str(Path(__file__).resolve().parents[1]/'alembic.ini'))
     cfg.set_main_option('script_location', str(Path(__file__).resolve().parents[1]/'migrations'))
     command.upgrade(cfg,'head')

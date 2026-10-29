@@ -2,6 +2,15 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Hosted core and actual sandbox CI now pass independently, including a pristine
+canonical Compose installation and PostgreSQL migration/persistence/logical
+restore. Added reported model capability roles with server-side compatibility
+guards and bounded inspection, hardened SQLite backup boundaries/WAL handling,
+canonical license notices and nested build-secret exclusions. Added checksum-
+pinned static image SBOM/license/vulnerability gates; actual new scan findings
+remain pending the candidate run. Five-phase roadmap restored, with older plans
+archived. No production readiness or Phase 4 completion claim.
+
 Core product recovery: Search/document chat now share Deep Research’s checked
 reference/extractive fallback, missing document evidence skips inference, and a
 bounded optional chat output limit supports CPU verification. Recovered stale

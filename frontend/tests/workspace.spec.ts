@@ -107,6 +107,26 @@ test('model recovery and first-run guidance work independently of Computer Mode'
  await expect(page.getByText('Chat, research, documents and safe agents work without Computer Mode.',{exact:true})).toBeVisible();
 });
 
+test('reported model capabilities separate chat, council and document embeddings',async({page})=>{
+ await page.route('**/api/models',route=>route.fulfill({json:{available:true,models:[
+  {name:'embed-fixture',size:100,capabilities:['embedding'],capability_status:'reported',completion_supported:false,embedding_supported:true},
+  {name:'fixture-a',size:100,capabilities:['completion'],capability_status:'reported',completion_supported:true,embedding_supported:false},
+  {name:'legacy-model',size:100,capability_status:'unknown',completion_supported:null,embedding_supported:null}
+ ]}}));
+ await page.reload();
+ const choice=page.getByLabel('Select model',{exact:true});
+ await expect(choice).toHaveValue('fixture-a');
+ await expect(choice.locator('option')).not.toContainText(['embed-fixture']);
+ await page.locator('nav').getByRole('button',{name:'Model Council',exact:true}).click();
+ await expect(page.getByRole('checkbox',{name:'embed-fixture',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('checkbox',{name:'legacy-model',exact:true})).toBeVisible();
+ await page.locator('nav').getByRole('button',{name:'Documents',exact:true}).click();
+ await page.locator('input[type=file]').setInputFiles({name:'capabilities.txt',mimeType:'text/plain',buffer:Buffer.from('Fictional capability test evidence.')});
+ const model=page.getByLabel('Local embedding model').last();
+ await expect(model.locator('option')).toContainText(['embed-fixture']);
+ expect(await model.locator('option').allTextContents()).not.toContain('fixture-a');
+});
+
 
 test('account workspace switch isolates history and logout revokes access',async({page})=>{
  await page.getByLabel('Message FOXORY').fill('Private original workspace message');

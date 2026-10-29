@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import httpx
 from .config import OLLAMA_URL
+from . import model_registry
 
 async def models():
     async with httpx.AsyncClient(timeout=5, trust_env=False) as c:
@@ -26,6 +27,7 @@ async def stream(model, messages, temperature=0.7, context=4096, max_output=2048
             yield item
 
 async def _stream(model, messages, temperature=0.7, context=4096, max_output=2048, output_format=None):
+    await model_registry.require(model,'completion',endpoint=OLLAMA_URL)
     async with httpx.AsyncClient(timeout=httpx.Timeout(180, connect=5), trust_env=False) as c:
         async with c.stream("POST", f"{OLLAMA_URL}/api/chat", json={**({'format':output_format} if output_format is not None else {}),"model":model,"messages":messages,"stream":True,"keep_alive":"2m","options":{"temperature":temperature,"num_ctx":context,"num_predict":max_output,"num_thread":thread_budget()}}) as r:
             r.raise_for_status()

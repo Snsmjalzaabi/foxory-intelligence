@@ -273,6 +273,9 @@ async def chat(id: str, body: Chat, request: Request):
                 answer,verification,mode=grounded_answer(answer,metadata.get('sources',[]),body.content)
                 metadata.update(citation_verification=verification,evidence_mode=mode)
                 yield event("delta",answer)
+        except inference.model_registry.CapabilityError as error:
+            status="error"
+            yield event("error",str(error))
         except asyncio.CancelledError:
             status="stopped"
             raise
@@ -300,17 +303,15 @@ def export_chat(id: str):
 
 @app.get("/api/models")
 async def list_models():
-    try: return {"available":True,"models":await inference.models()}
+    from .model_registry import catalog
+    try: return {"available":True,"models":await catalog(await inference.models(),endpoint=inference.OLLAMA_URL)}
     except Exception: return {"available":False,"models":[],"error":"Ollama unavailable. Start Ollama and configure OLLAMA_URL."}
 
 @app.get("/api/models/capabilities")
 async def capabilities(model: str):
-    async with httpx.AsyncClient(timeout=15,trust_env=False) as c:
-        try:
-            r = await c.post(inference.OLLAMA_URL+"/api/show",json={"model":model}); r.raise_for_status()
-            d = r.json()
-            return {"model":model,"capabilities":d.get("capabilities",[]),"details":d.get("details",{}),"source":"Ollama /api/show; absence means unknown"}
-        except Exception: raise HTTPException(502,"Cannot inspect model")
+    from .model_registry import inspect
+    if not model or len(model)>100:raise HTTPException(422,'Invalid model name')
+    return {'model':model,**await inspect(model,endpoint=inference.OLLAMA_URL,refresh=True)}
 
 class ModelAction(BaseModel):
     model: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,99}$")

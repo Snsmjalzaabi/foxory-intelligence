@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-29",
+  "scope": "npm production dependency graph only; excludes dev tools, OS and browsers",
+  "provider": "npm audit",
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 115,
+      "dev": 114,
+      "optional": 53,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 228
+    }
+  },
+  "vulnerabilities": {}
+}

@@ -1,0 +1,7 @@
+{
+  "date": "2026-10-29",
+  "provider": "OSV querybatch",
+  "scope": "Pinned Python runtime lock only; excludes OS, browsers and scanner tools",
+  "packages": 44,
+  "findings": []
+}

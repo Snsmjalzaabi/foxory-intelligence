@@ -51,7 +51,7 @@ class OllamaFixture(BaseHTTPRequestHandler):
         self.send_response(200);self.send_header('Content-Type','application/x-ndjson');self.end_headers()
         if self.path=='/api/embed':
             self.wfile.write(json.dumps({'embeddings':[[1.0,0.0] for _ in request['input']]}).encode());return
-        if self.path=='/api/show':self.wfile.write(json.dumps({'capabilities':['completion'],'details':{'fixture':True}}).encode());return
+        if self.path=='/api/show':self.wfile.write(json.dumps({'capabilities':['completion','embedding'],'details':{'fixture':True}}).encode());return
         if request.get('format'):
             data=json.loads(request['messages'][-1]['content'])
             delegates=data.get('delegates',{})

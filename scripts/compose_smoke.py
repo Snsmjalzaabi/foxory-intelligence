@@ -7,6 +7,7 @@ an already reviewed --image. All test containers/volumes are removed afterward.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -49,6 +50,10 @@ def main() -> None:
         try:
             started = True  # Even a partially successful up needs owned cleanup.
             compose('up','-d','--wait','--wait-timeout','180','--build' if args.build else '--no-build')
+            image=subprocess.run(['docker','--host=unix:///var/run/docker.sock','image','inspect',
+                                  args.image or project+':test','--format','{{.Id}}'],
+                                 env=env,check=True,capture_output=True,text=True).stdout.strip()
+            evidence['application_image']=image
             with httpx.Client(base_url=f'http://127.0.0.1:{port}/api',trust_env=False,timeout=30) as client:
                 def call(method, path, **kwargs):
                     response = client.request(method,path,**kwargs);response.raise_for_status()
@@ -60,6 +65,11 @@ def main() -> None:
                 client.headers['X-CSRF-Token']=identity['csrf']
                 me = call('GET','/auth/me');client.headers['X-Workspace-ID']=me['workspace_id']
                 passed('pristine Compose startup, health, account and authentication')
+                for notice in ['LICENSE','NOTICE','THIRD_PARTY_NOTICES.txt']:
+                    actual=compose('exec','-T','app','sha256sum','/usr/share/doc/foxory/'+notice,
+                                   capture_output=True,text=True).stdout.split()[0]
+                    assert actual==hashlib.sha256((ROOT/notice).read_bytes()).hexdigest()
+                passed('canonical image contains readable source license and dependency notices')
                 models = call('GET','/models')
                 assert models['available'] and models['models']==[]
                 assert not call('GET','/computer/capabilities')['enabled']

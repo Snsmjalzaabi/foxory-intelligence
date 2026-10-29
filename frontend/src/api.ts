@@ -1,5 +1,5 @@
 export type Row = {id:string;kind:string;title:string;data:Record<string,any>;created_at:string;updated_at:string};
-export type Model = {name:string;size:number;details?:{parameter_size?:string;quantization_level?:string}};
+export type Model = {name:string;size:number;details?:{parameter_size?:string;quantization_level?:string};capabilities?:string[]|null;capability_status?:'reported'|'unknown';completion_supported?:boolean|null;embedding_supported?:boolean|null};
 let csrf='';
 let workspace=sessionStorage.getItem('foxory-workspace')||'';
 export function setSessionScope(id:string,value:string){workspace=id;csrf=value;if(id)sessionStorage.setItem('foxory-workspace',id);else sessionStorage.removeItem('foxory-workspace');}

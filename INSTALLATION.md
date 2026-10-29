@@ -92,6 +92,14 @@ for pinned image builds, lifecycle/ownership controls and remaining limitations.
 
 ## Core and optional execution
 
+For offline native SQLite backup/restore, stop the application first and use
+`scripts/backup.py`. It refuses existing destinations and symlinks/special files,
+preserves stationary committed WAL data and copies originals with private
+permissions. It requires POSIX no-follow directory support; run inside the Linux
+environment on unsupported native hosts. Restore only trusted backups, and do
+not infer online consistency while the application is running. Compose uses
+PostgreSQL: follow its separate database-and-uploads backup procedure instead.
+
 The normal Compose stack needs no Podman, dedicated execution OS account or
 sandbox manager. Leave `FOXORY_ENABLE_SANDBOX=0`. Chat, search, Deep Research,
 Council, document intelligence and safe agents operate independently. Missing

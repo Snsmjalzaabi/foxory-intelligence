@@ -1,5 +1,10 @@
 name: Verify
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore: ['*.md', 'docs/**', 'sandbox_manager/runtime/README.md']
+  pull_request:
+    paths-ignore: ['*.md', 'docs/**', 'sandbox_manager/runtime/README.md']
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -31,6 +36,10 @@ jobs:
         run: docker pull postgres:17-bookworm && .venv/bin/python scripts/phase4_postgres_smoke.py
       - name: Canonical pristine Compose install and restart
         run: .venv/bin/python scripts/compose_smoke.py --build --evidence /tmp/compose-evidence.json
+      - name: Core image SBOM, license inventory and vulnerability gate
+        run: |
+          image_id="$(.venv/bin/python -c 'import json; print(json.load(open("/tmp/compose-evidence.json"))["application_image"])')"
+          .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/core-image-audit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -38,6 +47,7 @@ jobs:
           path: |
             frontend/test-results/
             /tmp/compose-evidence.json
+            /tmp/core-image-audit/
   sandbox:
     # Required, separate job: preflight must actually pass, without host-policy
     # weakening. Ubuntu 26.04 OCI acceptance is a distinct owner-host gate.
@@ -68,3 +78,26 @@ jobs:
         with:
           name: sandbox-ui-evidence
           path: frontend/test-results/
+  worker-image:
+    # Static image inspection only; rootful CI does not establish OCI isolation.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m venv .venv && .venv/bin/pip install 'httpx==0.28.1'
+      - name: Verify immutable worker inputs and upstream bytes
+        run: .venv/bin/python scripts/verify_worker_supply_chain.py --online
+      - name: Build pinned worker image without running generated code
+        run: docker build -f sandbox_manager/runtime/Dockerfile -t foxory-worker:ci sandbox_manager/runtime
+      - name: SBOM, license inventory and vulnerability gate
+        run: |
+          image_id="$(docker image inspect foxory-worker:ci --format '{{.Id}}')"
+          .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/worker-audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: worker-image-audit
+          path: /tmp/worker-audit/

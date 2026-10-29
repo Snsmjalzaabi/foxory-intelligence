@@ -65,6 +65,11 @@ for pinned image builds, lifecycle/ownership controls and remaining limitations.
 
 ## Bounded core verification
 
+Installed-model listings include reported capabilities and role eligibility.
+Known incompatible chat/embedding choices are filtered and checked server-side;
+missing inspection metadata is explicitly unknown, never assumed verified.
+Inspection is bounded/cached and does not load model weights or grant tools.
+
 `POST /api/conversations/{id}/chat` accepts `max_output` (32–2048 tokens; existing
 default 2048). This bounds requested Ollama generation, not an exact runtime or
 quality guarantee. The disposable core acceptance harness uses 128 tokens for

@@ -15,6 +15,7 @@ RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then PIP_CE
 COPY --chown=10001:10001 backend/ ./
 RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then PIP_CERT=/run/secrets/proxy_ca pip install --no-cache-dir --no-deps .; else pip install --no-cache-dir --no-deps .; fi
 COPY --from=ui --chown=10001:10001 /build/dist /app/frontend/dist
+COPY --chmod=0444 LICENSE NOTICE THIRD_PARTY_NOTICES.txt /usr/share/doc/foxory/
 RUN groupadd --gid 10001 foxory && useradd --uid 10001 --gid 10001 --no-create-home foxory && mkdir /data && chown foxory:foxory /data
 USER 10001:10001
 EXPOSE 8000

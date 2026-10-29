@@ -1,0 +1,124 @@
+{
+  "real_ollama": true,
+  "real_web": true,
+  "fixtures": false,
+  "sandbox_enabled": false,
+  "checks": [
+    {
+      "name": "fresh account, model discovery and core startup without sandbox manager"
+    },
+    {
+      "name": "real streaming local chat, saved history and conversation export",
+      "model": "qwen2.5:0.5b"
+    },
+    {
+      "name": "isolated upload parsing, invalid-file rejection, real embeddings and document Q&A",
+      "embedding_model": "nomic-embed-text:latest",
+      "citation_verification": {
+        "citations": [
+          {
+            "id": 1,
+            "valid": true,
+            "url": "/api/documents/d423e776-d647-486d-9398-4250248bd6ca/download",
+            "meaning": "Saved source integrity and identifier only; claim correctness requires review"
+          }
+        ],
+        "valid": true,
+        "uncited": false
+      }
+    },
+    {
+      "name": "real default internet search and public-page retrieval",
+      "citation_verification": {
+        "citations": [
+          {
+            "id": 1,
+            "valid": true,
+            "url": "https://en.wikipedia.org/wiki/Retrieval-augmented_generation",
+            "meaning": "Saved source integrity and identifier only; claim correctness requires review"
+          },
+          {
+            "id": 2,
+            "valid": true,
+            "url": "https://en.wikipedia.org/wiki/Douwe_Kiela",
+            "meaning": "Saved source integrity and identifier only; claim correctness requires review"
+          },
+          {
+            "id": 3,
+            "valid": true,
+            "url": "https://en.wikipedia.org/wiki/Vector_database",
+            "meaning": "Saved source integrity and identifier only; claim correctness requires review"
+          },
+          {
+            "id": 4,
+            "valid": true,
+            "url": "https://en.wikipedia.org/wiki/Knowledge_cutoff",
+            "meaning": "Saved source integrity and identifier only; claim correctness requires review"
+          }
+        ],
+        "valid": true,
+        "uncited": false
+      }
+    },
+    {
+      "name": "real Deep Research, pause/resume, saved citation verification and PDF/Word/XLSX export",
+      "evidence_mode": "extractive_fallback",
+      "used": {
+        "searches": 2,
+        "pages": 2,
+        "model_calls": 3
+      }
+    },
+    {
+      "name": "real research duplicate prevention and durable cancellation"
+    },
+    {
+      "name": "real two-model sequential council, independent analyses, comparison and synthesis"
+    },
+    {
+      "name": "real local-model agent planning, safe tool execution and final result without computer tools"
+    },
+    {
+      "name": "safe research agent executes actual web search and local-model review",
+      "plan_basis": "explicit reviewed plan; autonomous planning checked separately with math"
+    },
+    {
+      "name": "workspace isolation for saved conversations and protected resources"
+    },
+    {
+      "name": "account/session, conversations and completed research survive process restart"
+    },
+    {
+      "name": "restore consistent disposable SQLite snapshot and reopen saved account/history"
+    },
+    {
+      "name": "server-side logout revocation"
+    },
+    {
+      "name": "existing account signs back in after restore and logout"
+    }
+  ],
+  "models": [
+    "qwen2.5:0.5b",
+    "smollm2:135m"
+  ],
+  "web_sources": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Retrieval-augmented_generation",
+      "content_hash": "caee427934344e53b72b5dfa3216542776463241cd019ea0fc70657647a71cfa"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Douwe_Kiela",
+      "content_hash": "478b18aa50c1a75a5416290fea79c26272eb836b679b873876f47b304c0cdff0"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Vector_database",
+      "content_hash": "1cfcf353525bb946480dbc63ea6f7f08b8a86e4f0b7ea881c177dcf09183a350"
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Knowledge_cutoff",
+      "content_hash": "3fdae25c853128972327e26a6a61411571c3b9d6ebe8d4f6cd85321896db0faf"
+    }
+  ],
+  "status": "passed"
+}

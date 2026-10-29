@@ -38,3 +38,14 @@ This expands the browser container's chroot privilege and is not proof of safe
 isolation. The owner supplied passing Ubuntu fixed startup probes; full host
 security/recovery acceptance remains pending. See
 [the security implications and host procedure](docs/CHROMIUM_SANDBOX_UBUNTU.md).
+
+Offline SQLite backups reject symlinks/special files with descriptor-based
+no-follow traversal. Stop the application first; no concurrent snapshot guarantee
+is made. Restore only trusted operator backups. The CLI fails closed without
+POSIX no-follow support and never overwrites an existing destination.
+
+CI image auditing uses reviewed tool versions/hashes in deployment/security-tools.json,
+produces SBOM/license inventories and blocks HIGH/CRITICAL or unknown coverage.
+No unfixed findings are silently excluded. Feed coverage, compiled browsers and
+license compatibility still require review; these checks do not certify production
+readiness or replace actual rootless sandbox acceptance.

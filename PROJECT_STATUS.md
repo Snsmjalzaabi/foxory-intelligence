@@ -1,6 +1,70 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Latest continuation: independent core and sandbox CI gates
+## Current continuation: model compatibility, backup boundaries and image gates
+
+Hosted workflow [40805258673](https://github.com/Snsmjalzaabi/foxory-intelligence/actions/runs/40805258673)
+at `422939e` passed **both jobs**. Core: 139 backend tests, 10 browser journeys,
+actual PostgreSQL revision0003/isolation/duplicate/restart/dump-restore, canonical
+fresh Compose build/startup with six acceptance checks and owned cleanup.
+Sandbox: actual Bubblewrap execution/attacks plus browser journeys. This resolves
+the previous hosted preflight/installation blockage without changing security
+policies or pretending the old failed runs passed. It does not certify Ubuntu
+26.04 OCI recovery/exhaustion or complete Phase 4.
+
+Current implementation adds bounded Ollama metadata inspection (32 models,
+four metadata requests concurrently, three-second catalog deadline, two-MB
+response cap, bounded short cache and digest invalidation). Known embedding-only
+models are excluded from chat/Council/agent choices, completion-only models from
+embedding choices. Generation/embedding adapters enforce reported capabilities
+server-side and return a clear compatibility error. Unknown metadata stays
+explicitly unknown and remains usable for older Ollama compatibility; reported
+tools/vision metadata is not proof of task quality or a tool permission grant.
+
+Offline SQLite backup/restore now refuses symlinks/special files and traverses
+uploads with directory descriptors and O_NOFOLLOW. Source DB/WAL are copied into
+a private snapshot before SQLite opens them, URI characters are handled, actual
+connections close, private permissions and no-overwrite/rollback stay enforced.
+Three pre-fix regressions demonstrated unrelated files/databases being copied via
+symlinks. Tests now pass, including a stationary committed WAL and FIFO denial.
+The application must still be stopped; this does not promise a concurrent online
+backup or support untrusted databases. Native Windows lacks the required POSIX
+boundary and fails closed; use the Linux container.
+
+CI now builds the pinned worker and generates application/worker CycloneDX SBOM,
+license inventory and vulnerability reports using checksum-pinned Syft 1.55.0 /
+Trivy 0.76.1. Tools execute only as explicit verification CLIs, not application or
+agent plugins. HIGH/CRITICAL findings (including unfixed ones), unsupported/empty
+coverage or tool failure block the image job. License compatibility and compiled
+Chromium coverage still need review; no scanner pass means universal safety.
+Actual scans remain pending this candidate's CI run. Documentation-only updates
+skip expensive builds; all runtime, dependency, policy and test changes still run
+the gates, with manual workflow dispatch available.
+
+Canonical images now include readable LICENSE/NOTICE/dependency notices; the
+Compose acceptance checks their bytes. Nested data, databases, secrets and test
+artifacts are excluded from the build context. The active roadmap now contains
+exactly the five approved phases; the superseded seven-part plan is archived.
+
+Local candidate validation: **174 backend tests passed (33.24s)**; **14 browser
+journeys passed (2.3m)** with fixture models, actual Python and mocked OCI.
+Core-only UI: **11 passed, 3 optional tests skipped**. Actual local-model/public
+web acceptance passed all **14 checks** again with qwen2.5:0.5b, smollm2:135m and
+nomic embeddings; [evidence](docs/evidence/core-acceptance-2026-10-29.json).
+Strict frontend build passed (300.54kB main JS); syntax/Compose/pip checks passed.
+The scanner parser/archive tests use fixtures, not a real local image scan.
+
+29 October dependency lookups found no advisories in the npm production graph
+or 44 pinned Python runtime packages via OSV. These limited lookups exclude OS,
+browser, development/scanner tools and are not security/compatibility clearance.
+
+Remaining production blockers: actual image-scan findings/review; final Ubuntu
+resource/hostile-input/cancel/crash/orphan/restore and combined execution tests;
+broader quality/accessibility/hardware evaluation. No approved Ubuntu execution
+connection is configured here; owner execution or a connected environment is
+needed for those gates. Optional execution remains disabled by default, Phase 4
+incomplete, Phase 5 not started. No production deployment or public publication.
+
+## Earlier continuation: independent core and sandbox CI gates
 
 Hosted follow-up for `3398ab2`: sandbox job `123219877303` passed actual runtime
 tests and browser journeys. Core job `123219877058` passed backend/browser work,
@@ -66,7 +130,7 @@ manager or delegated cgroups are needed for ordinary core installation.
 | Capability | Status and evidence | Remaining limit |
 | --- | --- | --- |
 | Account setup, login/logout, workspace isolation | Implemented and verified: real disposable HTTP workflow plus API/browser authorization tests. | Local single-process deployment; not independently security-reviewed public hosting. |
-| Ollama chat, model selection/history/export | Implemented and verified: actual qwen2.5:0.5b, persisted stream/history, Markdown download; stale-model/no-model UI repaired. | Selector still includes embedding-only models: inspect capabilities and select a completion model. Other runtime protocols not verified. |
+| Ollama chat, model selection/history/export | Implemented and verified: actual qwen2.5:0.5b, persisted stream/history, Markdown download; stale-model/no-model UI repaired. | Known role mismatches are filtered and rejected server-side; unknown metadata stays explicit. Other runtime protocols not verified. |
 | Web search and cited answers | Implemented and verified with actual Wikipedia API/public-page retrieval, saved source hashes and IDs. Uncited model prose now falls back to labeled source excerpts. | Default discovery is encyclopedia-scoped; citation validity is not claim truth. Live SearXNG is implemented but unverified in this increment. |
 | Deep Research/history/reports | Implemented and verified: actual model planning, two searches/two pages/three model calls, pause/resume, duplicates/cancel, checked citations and PDF/Word/XLSX. | Tiny-model synthesis used extractive fallback. General research usefulness needs broader evidence/model evaluation. |
 | Document intelligence | Implemented and verified: real isolated TXT parsing, JSON rejection, local nomic embeddings/Q&A; seven-format parsing/security regressions. | Linux sealed parser; OCR/macros/formula execution missing or intentionally unsupported. No unrestricted document execution. |
@@ -74,7 +138,7 @@ manager or delegated cgroups are needed for ordinary core installation.
 | Safe agents and workspace memory | Implemented and verified: actual model arithmetic plan/tool result; actual web-search tool and model review with an explicit research plan. | Complex autonomous task quality remains experimental; model errors are bounded and visible. |
 | Safe scheduling | Implemented: current unit/browser schedule controls and prior accepted real Phase 3 execution evidence. | Fixed intervals, one API process; real timed dispatch not rerun in this increment. |
 | Persistence/recovery | Implemented and verified: real session/history/research process restart and consistent disposable SQLite snapshot restore. | Full final Ubuntu application/manager backup/restore acceptance remains pending. |
-| Core Docker installation | Implemented, partially verified: Compose syntax and disposable source-overlay container health/persistence/hardening. | Fresh canonical Dockerfile + full new Ubuntu installation not rerun; overlay is not a canonical build. |
+| Core Docker installation | Implemented and hosted-verified: canonical fresh Compose and PostgreSQL smoke at 422939e, plus local overlay hardening. | Final current-candidate image scans and owner Ubuntu installation remain pending. |
 | Optional Computer Mode | Experimental and disabled by default. Real Ubuntu fixed JS/TS/browser probes supplied by owner; real Python + mocked OCI UI/lifecycle regressions in Cloud. | Live-manager tenant/approval, exhaustion, cancellation/orphans/recovery and combined model workflows still pending on Ubuntu. |
 | Business modules | Existing optional secondary records/drafts preserved; no business-specific expansion. | No email sending, purchases or publication implementation. |
 | Public browsing/submissions and production release | Disabled/unsupported; v1.0 and Phase 4 completion not claimed. | Security review, image SBOM/CVE/license review, broader compatibility and host acceptance remain outstanding. |

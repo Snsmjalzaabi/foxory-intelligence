@@ -1,0 +1,30 @@
+[
+  {
+    "model": "qwen2.5:0.5b",
+    "capabilities": [
+      "completion",
+      "tools"
+    ],
+    "capability_status": "reported",
+    "completion_supported": true,
+    "embedding_supported": false
+  },
+  {
+    "model": "smollm2:135m",
+    "capabilities": [
+      "completion"
+    ],
+    "capability_status": "reported",
+    "completion_supported": true,
+    "embedding_supported": false
+  },
+  {
+    "model": "nomic-embed-text:latest",
+    "capabilities": [
+      "embedding"
+    ],
+    "capability_status": "reported",
+    "completion_supported": false,
+    "embedding_supported": true
+  }
+]

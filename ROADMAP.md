@@ -1,74 +1,64 @@
-# Roadmap to v1.0
+# Roadmap to v1.0 — five phases
 
-The owner’s current five-phase delivery plan supersedes the original seven-phase grouping below. Phase 1 was accepted at `3452acd`; Phase 2 acceptance is tracked in [docs/PHASE2_CHECKLIST.md](docs/PHASE2_CHECKLIST.md). The older grouping is retained for traceability; unchecked original items are not silently claimed complete. The verified Phase 3 agent milestone is tracked in [docs/PHASE3_CHECKLIST.md](docs/PHASE3_CHECKLIST.md); original seven-phase numbering below remains historical.
+GitHub development is canonical. Checkboxes indicate only the stated acceptance
+slice; current results and limitations are in [PROJECT_STATUS.md](PROJECT_STATUS.md).
+The [historical roadmap](docs/LEGACY_ROADMAP.md) is preserved for traceability and
+does not introduce active Phases 6/7 or extra milestones.
 
-Current Phase 4 acceptance is tracked in [docs/PHASE4_CHECKLIST.md](docs/PHASE4_CHECKLIST.md); restricted opt-in Python manager/Computer Mode, CSV analysis and artifact workflows are verified; browser/JS/TS dispatch and UI are connected with mocked OCI verification; actual isolated execution remains pending Ubuntu acceptance.
+## Phase 1 — Core AI Foundation (accepted)
 
-Checked items identify implemented/tested slices, not completion of entire phases. PROJECT_STATUS.md contains exact evidence.
+- [x] Persistent local Ollama chat, streaming/history/exports and model selection.
+- [x] Local-only Docker/Compose, authentication foundation and automated tests.
+- [x] Preserve accepted milestone at `3452acd`.
+- [x] Subsequent core account, model and installation repairs retain prior data.
 
-## Phase 1 — foundation (partial)
-- [x] Modular source layout and original responsive React UI
-- [x] Persistent chat/history/model selection and exports
-- [x] Ollama HTTP adapter and SSE integration tests
-- [x] Alembic SQLite migration roundtrip
-- [x] Local-only Compose definition and persistent volumes
-- [x] Single-owner bearer authentication and host/origin/body/rate controls
-- [x] Password authentication, session lifecycle, RBAC and workspace authorization tests (OIDC remains optional/unimplemented)
-- [x] Linux cloud CPU Ollama/qwen2.5:0.5b streaming and persistence smoke recorded
-- [x] Local Compose startup and final-image restart/persistence smoke recorded
-- [ ] Fully automated pristine installation on a clean supported Linux host
-- [x] PostgreSQL revision 0002 and logical dump/restore verification (uploads separately tested with SQLite)
+## Phase 2 — Advanced Search and Research (accepted)
 
-## Phase 2 — research (experimental slice)
-- [x] Configured SearXNG search with deduplicated source metadata
-- [x] Bounded durable two-search job, history, cancellation and report export
-- [x] Citation IDs filtered against retrieved references
-- [x] SSRF-restricted full-page retrieval, robots directives and extraction; operator remains responsible for applicable source terms
-- [x] Adaptive subquestions, source-date/relevance heuristics, quoted conflict evidence and enforced research budgets
-- [ ] Independent factual claim verification and measured answer-quality benchmark
-- [x] Live search/page integration and saved-reference integrity checks
-- [ ] Human evaluation of claim-to-citation correctness across a research benchmark
+- [x] Accounts/sessions/RBAC and isolated workspace resources.
+- [x] Real search/page retrieval, durable research, cancellation/resume and references.
+- [x] Restricted documents, local semantic retrieval and report exports.
+- [x] Model Council independent analysis/comparison/synthesis, sequential default.
+- [x] Preserve accepted milestone at `7d1cd05` and [acceptance record](docs/PHASE2_CHECKLIST.md).
+- [x] Shared checked-reference/extractive fallback for grounded chat and research.
+- [ ] Broader search/model answer-quality evaluation; citation integrity is not factual verification.
 
-## Phase 3 — documents and memory (partial)
-- [x] Bounded parsers for seven formats, storage and originals download
-- [x] Keyword retrieval and evidence-context questions
-- [x] Editable memory records and workspace export
-- [x] Offline SQLite backup/restore utility with automated roundtrip test
-- [x] Isolated Linux parser processes and adversarial upload/resource tests
-- [ ] Optional malware scanner integration
-- [x] Optional local embeddings and workspace-isolated semantic search
-- [ ] pgvector scaling adapter (current bounded vectors are JSON-backed)
-- [x] DOCX/XLSX/PDF research/document exports
-- [ ] Structured calculation execution engine
+## Phase 3 — Autonomous Agents (accepted)
 
-## Phase 4 — agents (draft-only slice)
-- [x] Persistent agent definitions with explicit zero tool permissions
-- [x] Sequential council, independent results and synthesis
-- [x] Durable checkpoints, idempotent job submission, pause/resume/cancel and retry ceiling
-- [x] Immutable draft review snapshots, single decision and audit events
-- [ ] Typed task dependencies/delegation, resource budgets and worker leases
-- [x] Permission-scoped tools with approval-bound internal writes and deterministic effect IDs
-- [ ] Privileged/external side-effect executors (not part of Phase 3)
+- [x] Bounded plans, explicit tools/scopes, delegation, durable checkpoints and memory.
+- [x] Immutable approval gates, retries/cancellation and safe fixed-interval scheduling.
+- [x] Connected Workforce and actual local-model workflows.
+- [x] Preserve accepted milestone at `ca90bca` and [acceptance record](docs/PHASE3_CHECKLIST.md).
 
-## Phase 5 — business (partial)
-- [x] Nine reusable draft-only role templates
-- [x] Dashboard from real operational data, no demonstration records
-- [x] Basic leads with edit/status/follow-up date, duplicate checks and CSV export
-- [x] Communication drafts and explicit review
-- [ ] Normalized organizations/contacts/opportunities/campaigns and atomic CRM import
-- [ ] Independent timezone-aware scheduler, retries and notifications
-- [ ] Least-privilege encrypted IMAP/SMTP/OAuth connectors
+## Phase 4 — Computer and Advanced Tools (in progress)
 
-## Phase 6 — computer/development (unavailable)
-- [ ] Restricted sandboxes without Docker socket or privileged containers
-- [ ] Network allowlists, quotas, isolated sessions and explicit form submission approval
-- [ ] Approved Git worktrees, test runner, patches and PR preparation
-- [ ] Isolation escape, permission and destructive-action tests
+- [x] Core runs without advanced execution; all sandbox profiles default disabled.
+- [x] Restricted Python execution, data tools, charts, files and source packaging.
+- [x] Authenticated manager/OCI dispatch, scopes, approvals and artifact ownership.
+- [x] Computer Mode state/logs/screenshots/downloads; actual Python plus mocked OCI regressions.
+- [x] Owner-supplied actual Ubuntu JS/TS/Chromium fixed probes after browser-only SYS_CHROOT correction.
+- [x] Hosted core and sandbox CI separation without weakening or hiding runtime tests.
+- [x] Hosted canonical core Compose startup and PostgreSQL migration/restart/logical restore.
+- [ ] Final worker-image SBOM, vulnerability/license review and accepted findings.
+- [ ] Real Ubuntu hostile-input/network/resource-exhaustion tests with recorded results.
+- [ ] Real Ubuntu cancellation, process-crash/orphan recovery and restart cleanup.
+- [ ] Final app/manager topology, permissions/approvals and independent state backup/restore.
+- [ ] Actual combined local-model coding/browser/research/report workflows on the accepted host.
+- [ ] All remaining [Phase 4 acceptance checks](docs/PHASE4_CHECKLIST.md) pass.
 
-## Phase 7 — stabilization (in progress)
-- [x] Public-distribution documentation and Apache-2.0 source license
-- [ ] Dependency/SBOM/license and security review finalized
-- [ ] CI and release-preparation workflows verified in a hosted repository
-- [ ] Windows/macOS compatibility and NVIDIA reference-machine measurements
-- [ ] Independent security review, accessibility audit, load and recovery tests
-- [ ] All definition-of-done gates satisfied before proposing v1.0 release
+## Phase 5 — Optimization and Open-Source Release Preparation (not started)
+
+Start only after Phase 4 acceptance. No public publication/deployment is implied.
+
+- [ ] Resolve or explicitly accept security findings; provide precise threat/compatibility limits.
+- [ ] Final dependency/image SBOM and license attribution review.
+- [ ] Clean supported-host install/upgrade/uninstall and tested full backup/restore.
+- [ ] Performance/research-quality/accessibility evaluation with realistic local models.
+- [ ] Supported OS/hardware matrix; no unmeasured NVIDIA/Windows/macOS claims.
+- [ ] Final critical CI/integration/recovery tests and release artifacts verified.
+- [ ] v1.0 feature/security assessment and owner approval before publication/deployment.
+
+Optional business records remain secondary. Public browsing/submissions, email
+sending, financial actions, arbitrary privileged tools and broad enterprise/CRM
+integrations are not silently promoted into core release requirements or claimed
+available. Larger-scale pgvector/distributed workers and unsupported model runtimes
+remain explicitly disclosed future work.

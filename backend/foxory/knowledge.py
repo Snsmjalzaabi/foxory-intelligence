@@ -13,6 +13,8 @@ def chunks(text:str,size:int=1000):
 
 async def embed(model:str,texts:list[str]):
     from .inference import inference_lock
+    from .model_registry import require
+    await require(model,'embedding',endpoint=OLLAMA_URL)
     async with inference_lock, httpx.AsyncClient(timeout=90,trust_env=False) as client:
         response=await client.post(OLLAMA_URL+'/api/embed',json={'model':model,'input':texts,'truncate':True,'keep_alive':'0'})
         response.raise_for_status();vectors=response.json()['embeddings']

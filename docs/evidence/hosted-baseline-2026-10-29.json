@@ -1,0 +1,25 @@
+{
+  "workflow_id": 40805258673,
+  "commit": "422939e34f91581c839fb7d73a36905136ed3c5a",
+  "status": "passed",
+  "core_job": 123222553141,
+  "sandbox_job": 123222552811,
+  "source": "GitHub workflow job status and decoded logs",
+  "core_backend_passed": 139,
+  "core_browser_passed": 10,
+  "sandbox_backend_passed": 17,
+  "postgres": {
+    "revision": "0003",
+    "workspace_isolation": true,
+    "duplicate_constraint": true,
+    "restart": true,
+    "dump_restore": true
+  },
+  "canonical_compose": {
+    "build": true,
+    "checks": 6,
+    "passed": true,
+    "owned_resources_removed": true
+  },
+  "limits": "Baseline code commit only; does not verify later model/backup changes, image vulnerability gates or Ubuntu OCI security/recovery."
+}

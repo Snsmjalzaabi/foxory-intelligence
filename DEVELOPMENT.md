@@ -39,4 +39,3 @@ only its randomly named project/volumes. No owner .env, database or model weight
 are used. Real local-model acceptance remains `scripts/core_acceptance.py` with
 an explicitly supplied authorized local Ollama endpoint. Hosted CI does not
 replace the remaining Ubuntu 26.04 rootless OCI acceptance checks.
-
