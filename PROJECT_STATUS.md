@@ -1,5 +1,17 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+Latest full-host run `40832024253`: dedicated environment isolation fixed Podman
+reconciliation, but native active preflight still failed; profiles remained
+disabled. Added bounded/redacted preflight stdout/stderr diagnostics and a private
+operator diagnostic file. The test now checks socket activation before expensive
+Compose/model provisioning and always collects fixture diagnostics. No quotas,
+seccomp/AppArmor, rootless UID or capability restrictions are relaxed.
+
+GitHub's published Ubuntu26.04 runner is generally available (official runner
+image metadata checked). Full-host workflow now permits only standard Ubuntu24.04
+or26.04 labels, records actual OS/kernel and keeps GPU verification false. Actual
+26.04 result remains pending; this is not access to the owner's PC.
+
 ## Native service fail-closed finding and source license coverage
 
 Full host run `40829733249` reached canonical app/model/database and authenticated

@@ -120,18 +120,34 @@ class Runtime:
         # The reviewed fixed probes check controls for the exact configured image.
         script=Path(__file__).resolve().parents[1]/'scripts/verify_oci_runtime.py'
         process=await self.spawn(sys.executable,str(script),'--image',self.image,'--owner',self.owner,
-            stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.DEVNULL)
+            stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
+        errors=b'';output=b''
+        async def read_limited(pipe,limit):
+            content=bytearray()
+            while chunk:=await pipe.read(4096):
+                content.extend(chunk)
+                if len(content)>limit:raise ValueError('Preflight diagnostic budget')
+            return bytes(content)
         try:
             async with asyncio.timeout(160):
-                output=await process.stdout.read(64001)
-                if len(output)>64000:raise ValueError('Preflight output budget')
-                await process.wait()
+                async with asyncio.TaskGroup() as group:
+                    out=group.create_task(read_limited(process.stdout,64000))
+                    err=group.create_task(read_limited(process.stderr,16000))
+                    await process.wait()
+                output=out.result();errors=err.result()
             report=json.loads(output)
             if process.returncode or report.get('status')!='fixed_probes_passed':raise RuntimeError('Isolation probes did not pass')
             if {x['profile'] for x in report['evidence'] if x.get('fixture_passed')}!={'javascript','typescript','browser'}:
                 raise RuntimeError('Incomplete profile verification')
             self.quarantine.unlink(missing_ok=True);self.verified=True;self.blockers=[]
-        except Exception:
+        except Exception as error:
+            detail=type(error).__name__+': '+str(error)+'\n'+output.decode('utf8','replace')+'\n'+errors.decode('utf8','replace')
+            key=os.getenv('FOXORY_SANDBOX_KEY','')
+            if key:detail=detail.replace(key,'[redacted]')
+            diagnostic('oci.preflight.failed',detail)
+            self.root.mkdir(parents=True,exist_ok=True,mode=0o700)
+            path=self.root/'.preflight-diagnostic'
+            path.write_text(detail[-4000:]);path.chmod(0o600)
             self.blockers=['OCI active isolation preflight failed; consult Ubuntu validation checklist']
         finally:
             if process.returncode is None:process.kill()

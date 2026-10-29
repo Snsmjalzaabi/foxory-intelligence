@@ -1,11 +1,17 @@
 name: Real Compose and rootless manager integration
 on:
   workflow_dispatch:
+    inputs:
+      ubuntu:
+        type: choice
+        options: ['24.04', '26.04']
+        default: '24.04'
+        description: Standard hosted Ubuntu version; no self-hosted or paid runner
 permissions:
   contents: read
 jobs:
   integrated:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.ubuntu == '26.04' && 'ubuntu-26.04' || 'ubuntu-24.04' }}
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +67,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: real-compose-rootless-integration
+          name: real-compose-rootless-integration-${{ inputs.ubuntu }}
           path: /tmp/full-host-evidence/
 # Explicit ephemeral fixture only. Does not deploy the owner stack, expose a
 # public endpoint, grant the manager Docker access or execute generated code in

@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import pwd
+import platform
 import secrets
 import socket
 import subprocess
@@ -54,7 +55,8 @@ def main():
         'FOXORY_SANDBOX_KEY':key,'FOXORY_SANDBOX_OCI_IMAGE':args.worker_image,
         'FOXORY_SANDBOX_DATA':str(manager_home/'fixture-state')}
     summary={'status':'failed','project':project,'checks':[],'model':'qwen2.5:0.5b',
-             'worker_image':args.worker_image,'gpu_verified':False,'owner_data_accessed':False}
+             'worker_image':args.worker_image,'gpu_verified':False,'owner_data_accessed':False,
+             'host_kernel':platform.release(),'host_os':dict(line.split('=',1) for line in Path('/etc/os-release').read_text().splitlines() if '=' in line)}
     manager_prefix=['sudo','-u',account,'-H','env','-i','HOME='+user.pw_dir,'USER='+account,'LOGNAME='+account,
         'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
         'XDG_RUNTIME_DIR=/run/user/'+str(user.pw_uid),'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/'+str(user.pw_uid)+'/bus']
@@ -89,6 +91,14 @@ def main():
             str(manager_home/'.config/systemd/user/foxory-sandbox-oci-uds.socket.d/path.conf'),input=override,text=True)
         manager('systemctl','--user','daemon-reload')
         manager('systemctl','--user','start','foxory-sandbox-oci-uds.socket');socket_started=True
+        # Diagnose service startup BEFORE building/pulling the main Compose
+        # stack. This is a fixed trusted control-plane request, not task code.
+        probe=manager(str(manager_source/'.venv/bin/python'),'-c',
+            'import httpx,json,sys;v=json.load(sys.stdin);c=httpx.Client(base_url="http://manager",transport=httpx.HTTPTransport(uds=v["socket"],trust_env=False),trust_env=False,timeout=200,headers={"Authorization":"Bearer "+v["key"],"X-Foxory-Workspace":"local"});r=c.get("/v1/health");r.raise_for_status();print(json.dumps(r.json()));c.close()',
+            input=json.dumps({'key':key,'socket':str(args.ipc/'manager.sock')}),text=True,capture_output=True)
+        initial=json.loads(probe.stdout)
+        if not all(initial.get('profiles',{}).get(p,{}).get('enabled') for p in ['javascript','typescript','browser']):
+            raise RuntimeError('Native startup blocked before Compose: '+json.dumps(initial.get('profiles',{})))
         started=True;compose('up','-d','--build','--wait','--wait-timeout','240')
         deadline=time.monotonic()+90
         while time.monotonic()<deadline:
@@ -221,15 +231,19 @@ def main():
                 compose('down','--volumes','--remove-orphans',timeout=180)
             except Exception as error:errors.append('Compose cleanup: '+type(error).__name__)
         try:
+            manager('cat',str(manager_home/'fixture-state/.preflight-diagnostic'),check=False)
             if socket_started:manager('systemctl','--user','stop','foxory-sandbox-oci-uds.socket','foxory-sandbox-oci-uds.service')
+        except Exception as error:errors.append('Manager stop: '+type(error).__name__)
+        try:
             owner=hashlib.sha256((str(manager_home/'fixture-state')+':'+str(user.pw_uid)).encode()).hexdigest()[:32]
             remaining=manager('podman','--remote=false','ps','--all','--filter','label=io.foxory.manager='+owner,'--format','json',capture_output=True,text=True)
             if json.loads(remaining.stdout):errors.append('Manager-owned worker remains')
             # Volatile hosted journals may not expose a per-user journal. Root
             # provisioner reads only this fixture UID/unit; never its environment.
-            subprocess.run(['sudo','journalctl','_UID='+str(user.pw_uid),
-                '_SYSTEMD_USER_UNIT=foxory-sandbox-oci-uds.service','--no-pager','-n','80'],check=False,timeout=20)
-        except Exception as error:errors.append('Manager cleanup: '+type(error).__name__)
+        except Exception as error:
+            detail=getattr(error,'stderr','') or str(error)
+            errors.append('Manager cleanup: '+type(error).__name__+': '+detail.replace(key,'[redacted]')[-1000:])
+        subprocess.run(['sudo','journalctl','_UID='+str(user.pw_uid),'--no-pager','-n','80'],check=False,timeout=20)
         summary['cleanup_verified']=not errors
         if errors:summary.update(status='failed',cleanup_errors=errors)
         (args.evidence/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
