@@ -57,6 +57,8 @@ jobs:
           .venv/bin/pip install --no-deps -e backend
           image_id="$(.venv/bin/python -c 'import json; print(json.load(open("/tmp/image-audit/summary.json"))["image"])')"
           .venv/bin/python scripts/phase4_postgres_smoke.py --image "$image_id" > /tmp/database-runtime.json
+          docker pull postgres:17-bookworm
+          .venv/bin/python scripts/phase4_postgres_smoke.py --restore-image "$image_id" > /tmp/database-logical-migration.json
       - name: Candidate actual CPU completion and embedding with temporary free models
         if: inputs.mode == 'candidate' && matrix.service == 'ollama'
         run: |
@@ -70,6 +72,7 @@ jobs:
             /tmp/repo-digests.json
             /tmp/image-audit/
             /tmp/database-runtime.json
+            /tmp/database-logical-migration.json
             /tmp/model-runtime.json
 # Current mode is static only. Explicit candidate mode also uses disposable
 # services/models/fresh data after the image gate; no owner volume/deployment.

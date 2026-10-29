@@ -14,7 +14,7 @@
   actual deterministic calculations, PDF parsing and source ZIP validation.
 - [x] Worker base digest, locked dependencies, input hashes and registry-byte checks.
 - [x] Ubuntu installation, image build and security/recovery validation checklist.
-- [x] Backend (174), browser journeys (14), frontend build, migration/security and Compose regressions; real core acceptance separately records 14 checks. Six new archive-boundary tests are separately pending the full regression run.
+- [x] Backend (193), browser journeys (14), frontend build, migration/security and Compose regressions; real core acceptance separately records 14 checks. Counts refer to their stated individual run scopes; canceled CI is not a pass.
 - [x] Current-source application image health/persistence and separate PostgreSQL 17
   migrations, tenant/duplicate guards, restart and dump/restore smoke tests.
 - [x] Actual local qwen2.5:0.5b Python repair/test/package/restart regression.
@@ -38,6 +38,11 @@
 - [ ] Repeat relevant final-image/topology acceptance on the owner's Ubuntu
   26.04; hostile-input coverage is representative, not escape certification.
 - [ ] Final application/manager topology and persistence/backup restore checks.
+- [x] Actual native application adapter → private Unix manager → rootless JS
+  execution; TCP/Unix fixture recovery and quotas pass on Ubuntu 24.04.
+- [ ] Final systemd activation/Compose socket GID mapping and owner Ubuntu 26.04.
+- [ ] Safe default infrastructure upgrade with actual model compatibility and
+  separate-volume logical database migration; no automatic owner-volume change.
 - [ ] Combined local-model workflows produce real browser/code/report artifacts.
 - [ ] Final real-host critical tests pass before Phase 4 acceptance or Phase 5.
 

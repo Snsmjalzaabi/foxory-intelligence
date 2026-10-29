@@ -1,0 +1,13 @@
+{
+  "postgresql": "17",
+  "image": "sha256:aa062455dd5d8628514d4b5fdc448c49537d197e24eb627ba691fece48342f09",
+  "migration": "0003",
+  "workspace_isolation": true,
+  "duplicate_constraint": true,
+  "restart_persistence": true,
+  "dump_restore": true,
+  "owner_database_accessed": false,
+  "workflow_run": 40816168164,
+  "job_id": 123257626385,
+  "commit": "c33c009b9f60f67019c51323f9b06388a25957ae"
+}

@@ -75,3 +75,18 @@ checks actual CPU completion/embedding metadata. It runs non-root, read-only,
 cap-drop ALL/no-new-privileges with no GPU devices and loopback-only publication.
 It never executes generated code, uses owner weights or claims model persistence/
 GPU/quality compatibility from this narrow smoke. Candidate results are pending.
+
+Verified follow-up: official Ollama 0.40.13's first completed static scan has zero
+vendor HIGH/CRITICAL and 32 total findings (`40815264275`, job `123254727478`).
+The revised PostgreSQL derivative has **zero reported findings**, 868 components,
+and passed actual fresh revision0003 migration, tenant/duplicate guards, restart
+and same-image logical restore (`40816168164`, job `123257626385`). Exact image
+and test summaries are committed under `docs/evidence`. These successes do not
+validate an owner database transition or model API compatibility.
+
+Two repeat candidate Ollama runs, plus a core CI job, were canceled; check-run
+annotations explicitly attribute cancellation to `@Snsmjalzaabi`. Their skipped
+runtime tests are not passes. Additional hosted runs/pushes that restart CI are
+paused pending clarification of that cancellation intent. A separate-volume
+Bookworm-to-candidate logical restore harness is staged and syntax-checked, but
+has not executed. No default image or owner volume was changed.

@@ -12362,3 +12362,12 @@ Optional Phase 4 OCI worker (not distributed as a prebuilt binary image):
 - Rootless Podman (Apache-2.0) is an optional host prerequisite; it is not
   installed in or exposed through the main application image.
 Registry hash verification is not a full transitive license/vulnerability audit.
+
+Review-only PostgreSQL candidate image (not the default deployed database):
+- PostgreSQL 17 upstream image/software: PostgreSQL License and bundled package
+  licenses; preserve their source/copyright/attribution requirements.
+- su-exec 0.3-r0 from signed Alpine repositories: MIT, copyright (c) 2015 ncopa.
+  Full MIT text is in deployment/postgres/SU_EXEC_LICENSE and copied into the
+  candidate image. Source: https://github.com/ncopa/su-exec/tree/v0.3
+  This small C helper replaces the removed gosu binary in that review image.
+  No database binary or model weight is vendored in this repository.

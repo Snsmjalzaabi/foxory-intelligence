@@ -1,5 +1,45 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Current handoff — candidate evidence retained; hosted execution paused
+
+The revised PostgreSQL candidate at `c33c009` passed **zero reported image
+findings/868 SBOM components**, plus actual fresh PostgreSQL17 migration0003,
+workspace/duplicate guards, restart and same-image logical restore. Its image is
+`sha256:aa062455dd5d8628514d4b5fdc448c49537d197e24eb627ba691fece48342f09`.
+Official Ollama0.40.13's completed static scan also passed (zero vendor HIGH/
+CRITICAL, 32 total). Exact summaries are committed. Default images still carry
+the earlier 98/53 HIGH/CRITICAL findings; candidate compatibility is not assumed.
+
+GitHub check-run annotations for repeat candidate runs `40815744272` and
+`40816168164` and core job `123257379521` attribute cancellation to
+`@Snsmjalzaabi`. No later hosted run is launched after recognizing that signal.
+Clarification is pending; do not treat canceled/skipped candidate model tests as
+passed. Source changes can be committed locally, but a push would restart the
+automatic Verify workflow and is held while that intent is unresolved.
+
+Local continuation adds a separate-volume logical restore target to the safe
+PostgreSQL smoke and wires a Bookworm-to-candidate fixture migration after fresh
+candidate checks. Reviewed immutable image arguments/major17 guard, separate
+random containers/volumes, and source/target cleanup remain enforced. Syntax
+checked; actual cross-image execution is **pending**, not migration approval for
+owner data. Candidate actual CPU model smoke is staged but never completed.
+
+Latest full local backend: **193 passed (23.96s)**. Last fully successful Verify
+observed: `40815695914` at `82b70a2` (core/sandbox/worker-image); later canceled
+jobs are disclosed above. Actual rootless `40815268692` at `d1800a7` passed all
+nine TCP/ten Unix checks, including new read-only cgroup write-open denials,
+application adapter, quota exhaustion and crash/orphan recovery. UI/source and
+prior real core-model evidence remain as separately scoped below.
+
+Next continuation: clarify the GitHub cancellations before launching hosted CI;
+then run only missing actual candidate model/cross-image DB compatibility tests
+using exact reviewed images, avoiding duplicate static scans. Do not replace
+owner volumes or switch defaults before compatibility/upgrade evidence. Finish
+owner Ubuntu26.04/systemd/Compose mapping/independent restore and combined-model
+workflows using `docs/UBUNTU_FINAL_VALIDATION.md`; review CVEs/licenses. Phase4
+incomplete, Phase5 not started, production readiness not established, no external
+deployment/publication. Current source/history/data are preserved.
+
 First custom PostgreSQL candidate still reported gosu-path Go findings despite
 the replacement symlink; it is not accepted. The next build removes that path
 entirely and changes only the checked single upstream entrypoint invocation to
