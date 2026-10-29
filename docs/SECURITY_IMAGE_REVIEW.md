@@ -1,5 +1,30 @@
 # Image review and limits of severity gates
 
+## Current upgrade evidence (29 October 2026)
+
+The sections below retain the investigation history. The cancellation pause was
+superseded by the owner's instruction to resolve blockers. Targeted compatibility
+run `40828075459` passed both jobs: Ollama0.40.13 CPU completion, streaming,
+embeddings and model-directory persistence; separate-volume Bookworm-to-modern
+PostgreSQL logical restore with account/session/approval and tenant checks.
+Attempted physical reuse was rejected before changing source bytes/ownership.
+Reports are retained in `docs/evidence`. Fresh canonical Compose verification
+passed at `055a512`, `12ffa61`, `d78bc49` and `a8dbc95` with the reviewed defaults.
+
+New installs select the guarded modern database layout; existing installations
+must deliberately select a layout and follow [DATABASE_UPGRADE.md](DATABASE_UPGRADE.md).
+No owner installation was migrated. The earlier default-image/canceled-test
+paragraphs below describe their dated state, not the current default selection.
+The Ollama runtime fixture uses private temporary model storage with container
+CPU/memory/PID limits; it does not establish a host disk quota.
+
+Source license/notice coverage and tested model license-layer digests are now
+verified separately in [DISTRIBUTION_SCOPE.md](DISTRIBUTION_SCOPE.md). Lower image
+findings, compiled-browser components and binary source-delivery obligations
+remain open review items. Zero vendor HIGH/CRITICAL does not resolve them.
+
+## Review method and historical findings
+
 A passing Syft/Trivy job means no HIGH/CRITICAL findings **under the scanner's
 selected data-source severity**, not no vulnerabilities. Distribution priorities
 can differ from NVD CVSS, and a distribution change alone does not prove a CVE

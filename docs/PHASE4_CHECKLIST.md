@@ -41,7 +41,7 @@
 - [x] Actual native application adapter → private Unix manager → rootless JS
   execution; TCP/Unix fixture recovery and quotas pass on Ubuntu 24.04.
 - [ ] Final systemd activation/Compose socket GID mapping and owner Ubuntu 26.04.
-- [ ] Safe default infrastructure upgrade with actual model compatibility and
+- [x] Safe default infrastructure upgrade with actual model compatibility and
   separate-volume logical database migration; no automatic owner-volume change.
 - [ ] Combined local-model workflows produce real browser/code/report artifacts.
 - [ ] Final real-host critical tests pass before Phase 4 acceptance or Phase 5.

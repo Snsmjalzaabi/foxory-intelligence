@@ -189,19 +189,35 @@ async def test_page_budget_is_shared_across_subquestions(monkeypatch):
 
 async def test_wall_clock_budget_cancels_active_step(client,monkeypatch):
     from datetime import datetime,timedelta,timezone
-    cancelled=asyncio.Event()
+    started=asyncio.Event();cancelled=asyncio.Event()
     async def slow(*args):
+        started.set()
         try:await asyncio.Event().wait()
         finally:cancelled.set()
     monkeypatch.setattr(intelligence.inference,'complete',slow)
     response=await client.post('/api/jobs',json={'type':'research','prompt':'Bounded question','models':['fixture'],'idempotency_key':'hard-deadline-test'})
     id=response.json()['id']
     with Session() as s:
-        r=s.get(Record,id);data=json.loads(r.payload);data['deadline_at']=(datetime.now(timezone.utc)+timedelta(seconds=.2)).isoformat();r.payload=json.dumps(data);s.commit()
-    await asyncio.wait_for(jobs.run_one(),2)
-    assert cancelled.is_set()
+        # Give dispatch/SQLite commits scheduling headroom on shared CI. This
+        # tests cancellation of ACTIVE inference, not expiry before dispatch.
+        r=s.get(Record,id);data=json.loads(r.payload);data['deadline_at']=(datetime.now(timezone.utc)+timedelta(seconds=2)).isoformat();r.payload=json.dumps(data);s.commit()
+    await asyncio.wait_for(jobs.run_one(),4)
+    assert started.is_set() and cancelled.is_set()
     data=next(r['data'] for r in (await client.get('/api/records/job')).json() if r['id']==id)
     assert data['status']=='failed' and data['used']['model_calls']==1
+    assert (await client.post('/api/jobs/'+id+'/retry')).status_code==409
+
+async def test_expired_research_budget_never_dispatches_inference(client,monkeypatch):
+    from datetime import datetime,timedelta,timezone
+    async def forbidden(*args):raise AssertionError('Expired job dispatched inference')
+    monkeypatch.setattr(intelligence.inference,'complete',forbidden)
+    response=await client.post('/api/jobs',json={'type':'research','prompt':'Expired question','models':['fixture'],'idempotency_key':'expired-deadline-test'})
+    id=response.json()['id']
+    with Session() as s:
+        r=s.get(Record,id);data=json.loads(r.payload);data['deadline_at']=(datetime.now(timezone.utc)-timedelta(seconds=1)).isoformat();r.payload=json.dumps(data);s.commit()
+    await jobs.run_one()
+    data=next(r['data'] for r in (await client.get('/api/records/job')).json() if r['id']==id)
+    assert data['status']=='failed' and data.get('used',{}).get('model_calls',0)==0
     assert (await client.post('/api/jobs/'+id+'/retry')).status_code==409
 
 async def test_ipv6_translation_destinations_are_declined(monkeypatch):

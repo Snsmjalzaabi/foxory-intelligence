@@ -2,6 +2,12 @@
 
 ## Native Ubuntu26 service investigation
 
+Local backend suite: **211 passed (25.28s)**. Verify `40835894770` exposed a
+timing-sensitive existing active-cancellation fixture: its 200ms budget could
+expire before model dispatch. The fixture now gives dispatch 2s headroom and
+checks both entry and cancellation; a separate overdue-job test requires zero
+model calls. No production deadline was increased. Corrected CI is pending.
+
 Run `40833749540` failed closed: Podman info timed out inside native preflight,
 before task execution. The dedicated user manager inherited runner HOME/XDG
 paths (journal showed attempts to read `/home/runner` and another UID's runtime).

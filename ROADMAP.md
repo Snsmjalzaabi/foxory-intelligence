@@ -44,7 +44,9 @@ does not introduce active Phases 6/7 or extra milestones.
 - [ ] Final owner Ubuntu 26.04 image/topology acceptance; no universal escape certification.
 - [ ] Final app/manager topology, permissions/approvals and independent state backup/restore.
 - [x] Optional private Unix manager API adapter with actual authenticated rootless execution.
-- [ ] Resolve/review actual default PostgreSQL/Ollama image findings before production.
+- [x] Replace vulnerable fresh defaults after actual model/database compatibility
+  and guarded separate-volume migration; never change owner volumes automatically.
+- [ ] Review remaining lower image findings/compiled binaries and license obligations.
 - [ ] Actual combined local-model coding/browser/research/report workflows on the accepted host.
 - [ ] All remaining [Phase 4 acceptance checks](docs/PHASE4_CHECKLIST.md) pass.
 
