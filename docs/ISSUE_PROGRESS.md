@@ -4,7 +4,7 @@ The owner requested one issue at a time, with an email only after each issue is
 fixed and verified. Preserve accepted functionality and full Git history; do not
 restart the repository, discard useful failure evidence or weaken isolation.
 
-## Preliminary cleanup — cloud done, owner PC not connected
+## Preliminary cleanup — cloud done; owner checkout checked locally
 
 Git fsck passed. All46 tracked JSON,9 PNG and1 PDF files checked were valid;
 both Git bundles were valid and preserved. No corrupted source was identified.
@@ -18,7 +18,13 @@ There is no configured VPN/SSH connection to the owner's Ubuntu PC. Nothing was
 deleted there, and chat attachments themselves cannot be removed by these tools.
 The owner chose reviewed local commands; those are now provided in
 [LOCAL_CACHE_CLEANUP.md](LOCAL_CACHE_CLEANUP.md), backed by the guarded stdlib-only
-cache utility and five filesystem/Git boundary tests. PC execution remains pending.
+cache utility and five filesystem/Git boundary tests. The owner has now supplied
+successful execution: pre-pull fsck passed, source fast-forwarded4b57d90→3a59e19,
+both cache commands found zero candidates/removed zero bytes, final Git status
+was clean. This verifies that checkout's cache check, not a whole-PC scan or a
+new application/sandbox runtime test. The SSH/Tailscale session was the owner's
+phone connection and does not configure cloud access. See
+[owner-pc-cache-check-2026-10-29.json](evidence/owner-pc-cache-check-2026-10-29.json).
 Do not describe cloud cleanup as PC cleanup or delete valid files merely because
 their test run failed.
 
@@ -67,11 +73,26 @@ wide production clearance or owner-PC cleanup.
 All runtime permissions, rootless identity, network/resource restrictions and
 disabled application defaults remain unchanged.
 
-## Next, not started
+## Issue 2 — Ubuntu worker zlib security update
+
+**In progress; no completion email yet.** The exact Issue1 image reports
+CVE-2026-85091 in zlib1g1:1.3.dfsg-3.1ubuntu2.2. Canonical's CVE page and
+USN-8954-1 confirm the Noble fix1:1.3.dfsg-3.1ubuntu2.3. The worker now pins
+that signed Ubuntu package. This scope is the OS library, not a claim about all
+bundled copies in Node/Chromium or all633 findings.
+
+The scanner now blocks this specifically reviewed remediation even though its
+vendor severity is MEDIUM, without relabeling severity or suppressing other
+findings. Exact-image runtime verification additionally requires the current
+required-fixes policy hash, so an older-policy report cannot be reused.
+Targeted synthetic/archive tests passed31. Fresh actual image build/scan and
+Ubuntu26 runtime verification are required before closing Issue2.
+
+## Remaining, not started
 
 - Review the remaining image/compiled-browser findings and binary distribution
   license/source-delivery obligations using the exact accepted image evidence.
-- Owner-PC cleanup/activation/reboot acceptance requires access to that machine
+- Owner-PC application/manager activation/reboot acceptance requires access to that machine
   or reviewed commands executed by its owner. No access or completion is assumed.
 
 Phase4 remains open. No production readiness, Phase5, GPU verification or public

@@ -1,0 +1,30 @@
+{
+  "source": "Owner-supplied terminal transcript; not independently executed by Codex",
+  "host": {
+    "os": "Ubuntu 26.04.1 LTS",
+    "kernel": "7.0.0-38-generic",
+    "architecture": "x86_64"
+  },
+  "checkout": "~/Projects/foxory-intelligence",
+  "git_fsck": {
+    "passed": true,
+    "objects_checked": 489,
+    "timing": "before source pull"
+  },
+  "source_update": {
+    "mode": "fast-forward",
+    "from": "4b57d90",
+    "to": "3a59e19",
+    "branch": "development"
+  },
+  "cache_preview": {
+    "candidates": 0,
+    "bytes_removed": 0
+  },
+  "cache_apply": {
+    "candidates": 0,
+    "bytes_removed": 0
+  },
+  "final_working_tree": "clean (git status --short produced no output)",
+  "limits": "Only the existing checkout/cache check. No whole-PC corruption claim, remote cloud connection, application/manager activation, reboot or GPU verification. Tailscale authentication URL and credentials are not retained."
+}

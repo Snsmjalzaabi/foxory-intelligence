@@ -18,6 +18,7 @@ def reports():
         return [{'name': 'synthetic-' + str(i), 'passed': True} for i in range(n)]
     return {
         'audit': {'status': 'passed', 'image': IMAGE, 'coverage_reported': True,
+                  'required_security_fixes_sha256': review.required_policy_digest(),
                   'blocking': [], 'unfixed_findings_ignored': False, 'sbom_components': 50,
                   'archive': {'config_digest': IMAGE, 'sha256': 'b' * 64, 'bytes': 4096}},
         'integration': {'status': 'passed', 'worker_image': IMAGE, 'checks': checks(7),
@@ -73,3 +74,11 @@ def test_previously_separate_real_scan_and_runtime_evidence_is_rejected():
     assert audit['image'] != integration['worker_image']
     with pytest.raises(ValueError, match='audit worker image mismatch'):
         review.verify_reports(integration['worker_image'], audit, integration, data['tcp'], data['unix'])
+
+
+@pytest.mark.parametrize('digest',[None,'c'*64])
+def test_old_or_changed_required_fix_policy_cannot_attest(digest):
+    data=reports()
+    data['audit']['required_security_fixes_sha256']=digest
+    with pytest.raises(ValueError,match='policy mismatch'):
+        review.verify_reports(IMAGE,**data)

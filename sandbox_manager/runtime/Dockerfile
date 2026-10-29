@@ -1,11 +1,12 @@
 # syntax=docker/dockerfile:1
 # Reviewed upstream index: Chromium/OS/Node pinned together. Apply the reviewed
-# Brotli security update; remove unused WebKit media packages and build-only npm.
+# Brotli/zlib security updates; remove unused WebKit media packages and build-only npm.
 FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
 USER root
 WORKDIR /opt/foxory
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libbrotli1=1.1.0-2ubuntu0.1 \
+    && apt-get install -y --no-install-recommends \
+       libbrotli1=1.1.0-2ubuntu0.1 zlib1g=1:1.3.dfsg-3.1ubuntu2.3 \
     && apt-get purge -y gstreamer1.0-plugins-bad libgstreamer-plugins-bad1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./

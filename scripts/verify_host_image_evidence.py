@@ -7,12 +7,19 @@ It never activates profiles, runs task code or accepts application uploads.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import stat
 from typing import Any
+
+ROOT=Path(__file__).resolve().parents[1]
+
+
+def required_policy_digest() -> str:
+    return hashlib.sha256((ROOT/'deployment/required-security-fixes.json').read_bytes()).hexdigest()
 
 
 def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any],
@@ -37,6 +44,8 @@ def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any
             or audit.get('unfixed_findings_ignored') is not False
             or type(audit.get('sbom_components')) is not int or audit['sbom_components'] <= 0):
         raise ValueError('Incomplete or blocking image audit')
+    if audit.get('required_security_fixes_sha256') != required_policy_digest():
+        raise ValueError('Audit security-remediation policy mismatch')
     if integration.get('owner_data_accessed') is not False:
         raise ValueError('Disposable fixture boundary was not established')
     groups: dict[str, int] = {}
@@ -60,6 +69,7 @@ def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any
         'archive_config_digest': archive['config_digest'],
         'runtime_check_groups': groups,
         'sbom_components': audit['sbom_components'],
+        'required_security_fixes_sha256': audit['required_security_fixes_sha256'],
         'total_findings': audit.get('total_findings'),
         'limits': 'Trusted fixture consistency only. Lower findings, compiled-browser '
                   'coverage and binary license/source-delivery review remain separate. '

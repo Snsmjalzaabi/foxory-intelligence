@@ -24,6 +24,28 @@ def test_unfixed_high_findings_and_unknown_coverage_are_blockers():
     assert audit.findings(report)['status']=='blocked'
 
 
+def test_required_zlib_remediation_blocks_medium_severity_without_relabeling():
+    vulnerability={'VulnerabilityID':'CVE-2026-85091','PkgName':'zlib1g',
+                   'InstalledVersion':'1:1.3.dfsg-3.1ubuntu2.2',
+                   'FixedVersion':'1:1.3.dfsg-3.1ubuntu2.3','Severity':'MEDIUM'}
+    report={'SchemaVersion':2,'Metadata':{'OS':{'Family':'ubuntu','Name':'24.04'}},
+            'Results':[{'Vulnerabilities':[vulnerability]}]}
+    result=audit.findings(report)
+    assert result['status']=='blocked' and result['blocking'][0]['severity']=='MEDIUM'
+    assert result['blocking'][0]['gate_reason']=='required_remediation'
+    assert result['required_security_fixes_sha256']==hashlib.sha256(audit.FIXES.read_bytes()).hexdigest()
+    report['Results'][0]['Vulnerabilities']=[]
+    assert audit.findings(report)['status']=='passed'
+
+
+@pytest.mark.parametrize('rules',[[],[{'id':'invalid','package':'zlib1g'}]])
+def test_invalid_or_missing_remediation_policy_does_not_silently_pass(tmp_path,monkeypatch,rules):
+    policy=tmp_path/'policy.json'
+    policy.write_text(json.dumps({'schema_version':1,'required_remediations':rules}))
+    monkeypatch.setattr(audit,'FIXES',policy)
+    with pytest.raises(ValueError):audit.findings({})
+
+
 @pytest.mark.parametrize('unsafe',[True,False])
 def test_tool_archive_extracts_only_expected_regular_binary(tmp_path,unsafe):
     archive=tmp_path/'tool.tar.gz'

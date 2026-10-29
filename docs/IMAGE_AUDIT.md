@@ -108,3 +108,14 @@ canonical Compose installation/restart checks. The worker also passed again.
 These are report-feed results, not universal vulnerability/license clearance.
 The added rootless-archive route has six deterministic identity/metadata/layer
 tampering tests; an actual exported-image scan remains pending its hosted run.
+# Required reviewed fixes
+
+`deployment/required-security-fixes.json` identifies specific remediations that
+block acceptance regardless of their vendor severity. It currently covers the
+Ubuntu zlib1g CVE-2026-85091 update documented by USN-8954-1. Existing severity,
+coverage, EOSL, archive-integrity and no-ignore-unfixed checks remain active.
+Reports record the policy SHA-256; same-image runtime provenance requires the
+current digest. Missing/empty/invalid policies fail, rather than silently dropping
+the remediation gate. This is an added requirement, not an advisory exception.
+Vendor fixed-version text is reference metadata; the gate checks reported
+vulnerabilities, and the worker Dockerfile pins the reviewed Ubuntu package.

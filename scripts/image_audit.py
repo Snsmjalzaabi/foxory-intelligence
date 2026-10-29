@@ -23,6 +23,24 @@ import tempfile
 import httpx
 
 ROOT=Path(__file__).resolve().parents[1]
+FIXES=ROOT/'deployment/required-security-fixes.json'
+
+
+def required_security_fixes() -> tuple[str, list[dict]]:
+    raw=FIXES.read_bytes();policy=json.loads(raw)
+    rules=policy.get('required_remediations')
+    if policy.get('schema_version')!=1 or not isinstance(rules,list) or not rules:
+        raise ValueError('Missing required security-remediation policy')
+    pairs=set()
+    for rule in rules:
+        if (not isinstance(rule,dict) or not isinstance(rule.get('id'),str)
+                or not re.fullmatch(r'CVE-[0-9]{4}-[0-9]{4,}',rule['id'])
+                or not isinstance(rule.get('package'),str)
+                or not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*',rule['package'])
+                or (rule['id'],rule['package']) in pairs):
+            raise ValueError('Invalid or duplicate required remediation')
+        pairs.add((rule['id'],rule['package']))
+    return hashlib.sha256(raw).hexdigest(),rules
 
 
 def archive_identity(source, image: str) -> dict:
@@ -84,15 +102,21 @@ def extract_binary(archive: Path, name: str, destination: Path) -> None:
 
 
 def findings(report: dict) -> dict:
+    policy_hash,rules=required_security_fixes()
+    required={(r['id'],r['package']) for r in rules}
     entries=[v for result in report.get('Results',[]) for v in (result.get('Vulnerabilities') or [])]
     blocking=[{'id':v.get('VulnerabilityID'),'package':v.get('PkgName'),
                'installed':v.get('InstalledVersion'),'fixed':v.get('FixedVersion'),
-               'severity':v.get('Severity')} for v in entries if v.get('Severity') in {'HIGH','CRITICAL'}]
+               'severity':v.get('Severity'),
+               'gate_reason':'required_remediation' if (v.get('VulnerabilityID'),v.get('PkgName')) in required else 'severity'}
+              for v in entries if v.get('Severity') in {'HIGH','CRITICAL'}
+              or (v.get('VulnerabilityID'),v.get('PkgName')) in required]
     os_info=report.get('Metadata',{}).get('OS',{})
     # Refuse an empty/unsupported scanner envelope instead of reporting zero CVEs.
     complete=bool(report.get('SchemaVersion') and os_info.get('Family') and report.get('Results'))
     return {'status':'passed' if complete and not blocking and not os_info.get('EOSL') else 'blocked',
             'coverage_reported':complete,'os':os_info,'blocking':blocking,
+            'required_security_fixes_sha256':policy_hash,'required_remediations':rules,
             'total_findings':len(entries),'unfixed_findings_ignored':False,
             'limits':'Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.'}
 

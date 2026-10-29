@@ -51,3 +51,13 @@ Docker socket, disable the Chromium sandbox, allow arbitrary runtime flags or
 remove cgroup limits. See [Ubuntu checklist](../../docs/SANDBOX_HOST_VERIFICATION.md)
 for activation and real-host tests. Package licenses, vulnerabilities, image
 provenance and upstream changes require review before release/distribution.
+# Reviewed OS-library remediation
+
+The Noble worker pins zlib1g `1:1.3.dfsg-3.1ubuntu2.3` for CVE-2026-85091
+([USN-8954-1](https://ubuntu.com/security/notices/USN-8954-1)). This changes the
+container library, not the owner's host OS. Rebuilds require a fresh exact-image
+audit/runtime run. `deployment/required-security-fixes.json` adds reviewed
+remediations to the existing HIGH/CRITICAL gate; MEDIUM findings are not relabeled.
+The current policy digest is bound to accepted runtime provenance. An old report
+cannot clear a new policy. Other lower findings, compiled copies and binary
+license review remain separate; no production clearance follows from this patch.

@@ -1,5 +1,20 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Issue 2 in progress; owner checkout cache check received
+
+The owner's terminal output confirms Ubuntu26.04.1/kernel7.0.0-38-generic,
+successful pre-pull Git fsck, fast-forward4b57d90→3a59e19 and clean final working
+tree. Both guarded cache passes found zero candidates and deleted zero bytes.
+This is owner-supplied checkout evidence, not remote access or new runtime/GPU
+acceptance. No authentication-check URL/credentials are retained in evidence.
+
+Issue2 is the specific OS zlib1g CVE-2026-85091 remediation. Canonical confirms
+Ubuntu24.04 fixed version1:1.3.dfsg-3.1ubuntu2.3; the old worker hasubuntu2.2.
+Package pin and reviewed-fix regression/policy-identity gates are implemented;
+targeted synthetic/archive tests passed31. Fresh same-image audit and actual
+Ubuntu26 runtime results are pending. No Issue2 completion email has been sent.
+Other image/compiled-browser and license findings are not claimed resolved.
+
 ## Sequential work — Issue 1 fixed and verified
 
 The requested **Issue 1 Fixed** email was sent and delivery confirmed after its
@@ -7,8 +22,9 @@ passing evidence was committed/pushed (`c2ab061`). The owner selected local PC
 cleanup commands. A stdlib-only, preview-first utility now limits deletion to
 recognized ignored caches and refuses symlinks/tracked files/unexpected contents;
 five temporary-filesystem/Git guard tests passed. Commands are in
-[LOCAL_CACHE_CLEANUP.md](docs/LOCAL_CACHE_CLEANUP.md). PC cleanup remains pending
-execution/output; no remote access or PC deletion is claimed.
+[LOCAL_CACHE_CLEANUP.md](docs/LOCAL_CACHE_CLEANUP.md). The owner subsequently
+supplied the successful zero-candidate check recorded above; no remote PC access
+or broad file deletion is claimed.
 
 Owner requested cleanup followed by one verified issue at a time and a completion
 email per issue. See [ISSUE_PROGRESS.md](docs/ISSUE_PROGRESS.md). Cloud integrity
