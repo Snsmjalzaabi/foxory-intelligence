@@ -1,0 +1,39 @@
+name: Review default infrastructure images
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [db, ollama]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m venv .venv && .venv/bin/pip install 'httpx==0.28.1' 'PyYAML==6.0.3'
+      - name: Inspect the exact default Compose dependency without executing it
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          image_ref="$(.venv/bin/python -c 'import os,yaml; print(yaml.safe_load(open("compose.yaml"))["services"][os.environ["SERVICE"]]["image"])')"
+          docker pull --platform linux/amd64 "$image_ref"
+          image_id="$(docker image inspect "$image_ref" --format '{{.Id}}')"
+          docker image inspect "$image_ref" --format '{{json .RepoDigests}}' > /tmp/repo-digests.json
+          .venv/bin/python scripts/image_audit.py --image "$image_id" --output /tmp/image-audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: infrastructure-${{ matrix.service }}-audit
+          path: |
+            /tmp/repo-digests.json
+            /tmp/image-audit/
+# Static inspection only. No model download, server startup, deployment or
+# database migration; owner volumes and running infrastructure are untouched.

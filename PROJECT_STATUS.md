@@ -1,5 +1,24 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Current security review scope
+
+Full local regression now passed **180 tests (26.01s)**, including six export
+identity/layer-tampering cases. The added actual rootless export scan/runtime
+workflow is running; no result is inferred from the deterministic archive tests.
+
+Follow-up of Canonical's public CVE tracker confirms a zero-HIGH/CRITICAL vendor
+severity scan is not proof all earlier CVEs were patched. Several util-linux
+issues are vendor Medium/needs-evaluation despite CVSS 7.0–7.9; ACL CVE-2026-54369
+is vendor Medium/ignored. Privilege/capability/mount restrictions mitigate their
+preconditions, but this is not a cleared exception. Details and actual official
+links are in `docs/SECURITY_IMAGE_REVIEW.md`. Production acceptance still needs
+the contextual review, not just a green scanner job.
+
+Added a manual static audit for the exact default PostgreSQL/Ollama Compose
+images. Core/worker scans do not cover those components. It records immutable
+IDs/digests and reports without starting services, downloading models or touching
+owner volumes. Results pending; no automatic infrastructure/data migration.
+
 ## Real rootless acceptance and remediated image evidence
 
 Hosted `40812030339` at `f6190c6` passed **all nine real rootless checks** on
