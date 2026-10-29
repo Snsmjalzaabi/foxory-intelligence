@@ -65,10 +65,12 @@ license review remain separate; no production clearance follows from this patch.
 ## Chromium-only system package policy
 
 `worker-packages.json` retains the21 packages in the pinned Playwright1.64.1
-Ubuntu24 Chromium dependency list and excludes seven system FFmpeg libraries.
+Ubuntu24 Chromium dependency list and excludes seven system FFmpeg libraries
+and both libsoup3 HTTP packages used by unsupported WebKit workflows.
 `prune-media.mjs` is trusted image-build code, not an agent tool: it requires
 explicit build opt-in/root inside the build, checks the simulated removal plan,
-refuses Chromium removals/installs and verifies actual packages/shared files.
+refuses Chromium removals/installs and verifies actual packages/shared files
+(including libsoup SONAMEs even if package metadata were missing).
 It is deleted from the final runtime. Never run it on the host; unit tests import
 only its pure validation functions. Actual apt removal runs only during image
 build. No autoremove or package metadata hiding is used.

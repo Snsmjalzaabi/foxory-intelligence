@@ -16,8 +16,9 @@ def test_sbom_keeps_chromium_and_rejects_removed_or_missing_packages():
     components=[{'name':name,'purl':'pkg:deb/ubuntu/'+name+'@fixture'} for name in POLICY['required_packages']]
     assert audit.worker_packages(components)['status']=='passed'
     assert audit.worker_packages(components[1:])['required_missing']==[POLICY['required_packages'][0]]
-    result=audit.worker_packages(components+[{'name':'libavcodec60','purl':'pkg:deb/ubuntu/libavcodec60@fixture'}])
-    assert result['status']=='blocked' and result['forbidden_present']==['libavcodec60']
+    for name in POLICY['forbidden_packages']:
+        result=audit.worker_packages(components+[{'name':name,'purl':'pkg:deb/ubuntu/'+name+'@fixture'}])
+        assert result['status']=='blocked' and result['forbidden_present']==[name]
 
 
 @pytest.mark.parametrize('variant',['allowed','chromium','incomplete','conflict','install'])
@@ -42,3 +43,16 @@ console.log(JSON.stringify([...validatePlan(data.policy,data.plan)]));'''
 def test_build_helper_refuses_direct_host_invocation():
     result=subprocess.run(['node',str(ROOT/'sandbox_manager/runtime/prune-media.mjs')],text=True,capture_output=True,timeout=10)
     assert result.returncode!=0 and 'Build-only helper' in result.stderr
+
+
+@pytest.mark.parametrize('filename',['libsoup-3.0.so','libsoup-3.0.so.0','libsoup-3.0.so.0.7.3','libavcodec.so.60'])
+def test_removed_library_files_rejected_even_without_package_metadata(filename):
+    driver='''import {validateSharedLibraryNames} from %s;
+import fs from 'node:fs';
+validateSharedLibraryNames(JSON.parse(fs.readFileSync(0,'utf8')));'''
+    driver=driver%json.dumps((ROOT/'sandbox_manager/runtime/prune-media.mjs').as_uri())
+    result=subprocess.run(['node','--input-type=module','-e',driver],input=json.dumps([filename]),text=True,capture_output=True,timeout=10)
+    assert result.returncode!=0 and 'Excluded media/HTTP library' in result.stderr
+    # Reviewed Chromium dependencies/bundled codec names are not this policy's targets.
+    result=subprocess.run(['node','--input-type=module','-e',driver],input=json.dumps(['libnss3.so','libffmpeg.so','libsoup-fixture.txt']),text=True,capture_output=True,timeout=10)
+    assert result.returncode==0

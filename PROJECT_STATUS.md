@@ -1,5 +1,15 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Issue 4 in progress — unused WebKit HTTP libraries
+
+Issue3 was committed/pushed and its requested email was delivered. The next
+sequential review targets libsoup-3.0-0/common, which account for44 of the177
+remaining package findings. Neither is a Chromium requirement in the pinned
+Playwright list. The existing trusted removal and SBOM guards now exclude both;
+merged shared-library checks also reject leftover libsoup files. Prior fixes and
+all sandbox controls remain. Build, scan and actual runtime results are pending.
+No Issue4 notification or production clearance yet.
+
 ## Issue 3 fixed and verified — unused system FFmpeg libraries
 
 Source `e4e112f28570cd4e7eb522b3fe71f9261702c1c9` removes seven unused system

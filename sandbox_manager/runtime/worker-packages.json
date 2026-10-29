@@ -36,7 +36,9 @@
     "libavutil58",
     "libpostproc57",
     "libswresample4",
-    "libswscale7"
+    "libswscale7",
+    "libsoup-3.0-0",
+    "libsoup-3.0-common"
   ],
-  "scope": "Merged worker runtime only. Chromium supported; system FFmpeg/video processing and Firefox/WebKit profiles are not exposed. Lower-layer distribution obligations remain."
+  "scope": "Merged worker runtime only. Chromium supported; system FFmpeg/video processing, WebKit HTTP libraries and Firefox/WebKit profiles are not exposed. Lower-layer distribution obligations remain."
 }

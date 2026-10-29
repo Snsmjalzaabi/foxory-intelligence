@@ -126,8 +126,20 @@ are absent. Findings decrease632→177 (455 package findings,65 unique CVEs).
 Verify `40863816928` passed all three jobs. Local backend250 and targeted42 tests
 passed; OCI UI fixtures are separate from actual runtime checks. See
 [issue3-media-removal-verified-2026-10-29.json](evidence/issue3-media-removal-verified-2026-10-29.json).
-Requested subject: **Issue 3 Fixed**; send only after this evidence is committed.
+The requested **Issue 3 Fixed** email was sent after the evidence commit; the mail
+service confirmed delivery.
 Existing owner-PC images remain unchanged until rebuilt. No production clearance.
+
+## Issue 4 — unused WebKit HTTP libraries
+
+**In progress; no completion email yet.** The Issue3 exact-image scan has44
+package findings across libsoup-3.0-0/common. These libraries are not in the pinned
+Playwright Chromium dependency list and the worker does not expose WebKit.
+Extend the existing guarded removal/SBOM policy to exclude both packages and
+check their shared-library files independently of package metadata. The21 required
+Chromium packages, earlier patches, sandbox restrictions and disabled defaults
+remain unchanged. Actual image build, scan and rootless runtime verification are
+pending; no completion or finding-count reduction is claimed before those pass.
 
 ## Remaining, not started
 
