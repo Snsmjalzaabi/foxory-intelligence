@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Bind a trusted fixture's actual runtime reports to its audited worker image.
+
+This is consistency verification, not signed attestation or license clearance.
+It never activates profiles, runs task code or accepts application uploads.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import stat
+from typing import Any
+
+
+def verify_reports(image: str, audit: dict[str, Any], integration: dict[str, Any],
+                   tcp: dict[str, Any], unix: dict[str, Any]) -> dict[str, Any]:
+    if not re.fullmatch(r'sha256:[a-f0-9]{64}', image):
+        raise ValueError('An immutable image ID is required')
+    reports = {'audit': audit, 'integration': integration, 'tcp': tcp, 'unix': unix}
+    for name, report in reports.items():
+        identity = report.get('worker_image') if name == 'integration' else report.get('image')
+        if identity != image:
+            raise ValueError(name + ' worker image mismatch')
+        if report.get('status') != 'passed':
+            raise ValueError(name + ' did not pass')
+    archive = audit.get('archive', {})
+    if (archive.get('config_digest') != image
+            or not isinstance(archive.get('sha256'), str)
+            or not re.fullmatch(r'[a-f0-9]{64}', archive['sha256'])
+            or type(archive.get('bytes')) is not int
+            or not 0 < archive['bytes'] <= 8 * 1024**3):
+        raise ValueError('Missing verified source archive identity')
+    if (audit.get('coverage_reported') is not True or audit.get('blocking') != []
+            or audit.get('unfixed_findings_ignored') is not False
+            or type(audit.get('sbom_components')) is not int or audit['sbom_components'] <= 0):
+        raise ValueError('Incomplete or blocking image audit')
+    if integration.get('owner_data_accessed') is not False:
+        raise ValueError('Disposable fixture boundary was not established')
+    groups: dict[str, int] = {}
+    for name, report, minimum, cleanup in [
+        ('integration', integration, 7, 'cleanup_verified'),
+        ('tcp', tcp, 9, 'owned_container_cleanup'),
+        ('unix', unix, 10, 'owned_container_cleanup'),
+    ]:
+        checks = report.get('checks')
+        if (report.get(cleanup) is not True or not isinstance(checks, list)
+                or len(checks) < minimum or not all(
+                    isinstance(check, dict) and check.get('passed') is True
+                    and isinstance(check.get('name'), str) and check['name'] for check in checks)):
+            raise ValueError(name + ' acceptance/cleanup is incomplete')
+        if len({check['name'] for check in checks}) != len(checks):
+            raise ValueError(name + ' has duplicate check groups')
+        groups[name] = len(checks)
+    return {
+        'status': 'passed', 'image': image,
+        'archive_sha256': archive['sha256'], 'archive_bytes': archive['bytes'],
+        'archive_config_digest': archive['config_digest'],
+        'runtime_check_groups': groups,
+        'sbom_components': audit['sbom_components'],
+        'total_findings': audit.get('total_findings'),
+        'limits': 'Trusted fixture consistency only. Lower findings, compiled-browser '
+                  'coverage and binary license/source-delivery review remain separate. '
+                  'No owner-PC, GPU, production or universal sandbox assurance.',
+    }
+
+
+def load_report(path: Path) -> dict[str, Any]:
+    with path.open('rb') as source:
+        value = source.read(1_000_001)
+    if len(value) > 1_000_000:
+        raise ValueError('Summary byte budget exceeded')
+    report = json.loads(value)
+    if not isinstance(report, dict):
+        raise ValueError('Expected a summary object')
+    return report
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--image', required=True)
+    parser.add_argument('--evidence', type=Path, required=True)
+    args = parser.parse_args()
+    root = args.evidence
+    info = root.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
+        raise ValueError('A private operator-owned fixture directory is required')
+    report = verify_reports(args.image,
+        load_report(root / 'image-audit/summary.json'), load_report(root / 'summary.json'),
+        load_report(root / 'security/tcp/summary.json'), load_report(root / 'security/unix/summary.json'))
+    report['source_commit'] = os.getenv('GITHUB_SHA', '')
+    descriptor = os.open(root / 'verified-image-provenance.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, 'w') as output:
+        json.dump(report, output, indent=2)
+        output.write('\n')
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__':
+    main()

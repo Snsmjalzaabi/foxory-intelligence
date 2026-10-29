@@ -1,0 +1,73 @@
+{
+  "scope": "Cloud workspace only; Ubuntu owner PC and chat attachments not remotely accessible",
+  "corruption_audit": {
+    "git_fsck": "passed",
+    "tracked_json": 46,
+    "tracked_png": 9,
+    "tracked_pdf": 1,
+    "corrupt_files_found": 0,
+    "git_bundles_valid_and_preserved": 2
+  },
+  "removed": [
+    {
+      "path": "backend/.pytest_cache",
+      "bytes": 19601,
+      "reason": "reproducible ignored Python/test cache"
+    },
+    {
+      "path": "backend/foxory/__pycache__",
+      "bytes": 354391,
+      "reason": "reproducible ignored Python/test cache"
+    },
+    {
+      "path": "backend/tests/__pycache__",
+      "bytes": 601732,
+      "reason": "reproducible ignored Python/test cache"
+    },
+    {
+      "path": "scripts/__pycache__",
+      "bytes": 236510,
+      "reason": "reproducible ignored Python/test cache"
+    },
+    {
+      "path": "sandbox_manager/__pycache__",
+      "bytes": 74035,
+      "reason": "reproducible ignored Python/test cache"
+    },
+    {
+      "path": "/workspace/attachments/5dfde0eb-ccea-4618-bb25-9b475adaace8/native-ubuntu26-partial.zip",
+      "bytes": 796,
+      "reason": "downloaded JSON duplicate; every original field retained in docs/evidence/native-systemd-ubuntu26-partial-2026-10-29.json"
+    },
+    {
+      "path": "/workspace/attachments/60c9d8bf-fdbd-48a6-aaaf-df935d12ea39/compatibility-12877423172.zip",
+      "bytes": 986,
+      "reason": "downloaded JSON duplicate; every original field retained in docs/evidence/ollama-runtime-compatibility-2026-10-29.json"
+    },
+    {
+      "path": "/tmp/foxory-bandit-report.json",
+      "bytes": 20545,
+      "reason": "temporary JSON duplicate of retained version-controlled evidence"
+    },
+    {
+      "path": "/tmp/foxory-source-license-current.json",
+      "bytes": 17716,
+      "reason": "temporary JSON duplicate of retained version-controlled evidence"
+    },
+    {
+      "path": "/tmp/foxory-coder-license.txt",
+      "bytes": 11343,
+      "reason": "byte-identical temporary copy of retained license"
+    }
+  ],
+  "bytes_removed": 1337655,
+  "retained_when_not_proven_duplicate": [],
+  "preserved": [
+    "all tracked source/docs/evidence",
+    "complete Git history and bundles",
+    "credentials and environment files",
+    "persistent application/database/model/manager data",
+    "full scanner archives needed for remaining review",
+    "user uploads"
+  ]
+}

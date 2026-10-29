@@ -57,6 +57,13 @@ jobs:
               image_id="$(podman --remote=false image inspect localhost/foxory-worker:integration --format "{{.Id}}")"
               case "$image_id" in sha256:*) ;; *) image_id="sha256:$image_id" ;; esac
               printf "%s\n" "$image_id" > "$HOME/worker-image-id.txt"
+              # Audit this exact rootless image BEFORE any task execution.
+              # The verifier checks config and EVERY layer hash in the export.
+              archive_dir="$(mktemp -d "$HOME/foxory-worker-audit.XXXXXX")"
+              trap "rm -f -- \"$archive_dir/worker.tar\"; rmdir -- \"$archive_dir\"" EXIT
+              podman --remote=false save --format docker-archive --output "$archive_dir/worker.tar" "$image_id"
+              .venv/bin/python scripts/image_audit.py --image "$image_id" \
+                --archive "$archive_dir/worker.tar" --output "$HOME/worker-image-audit"
             '
       - name: Real systemd socket, Compose bridge, local model and delegated workflows
         run: |
@@ -83,10 +90,19 @@ jobs:
       - name: Retain only disposable fixture security evidence
         if: always()
         run: |
+          install -d -m 0700 /tmp/full-host-evidence
           if sudo test -d /home/foxory-ci-sandbox/acceptance; then
             sudo cp -r /home/foxory-ci-sandbox/acceptance /tmp/full-host-evidence/security
             sudo chown -R "$(id -u):$(id -g)" /tmp/full-host-evidence/security
           fi
+          if sudo test -d /home/foxory-ci-sandbox/worker-image-audit; then
+            sudo cp -r /home/foxory-ci-sandbox/worker-image-audit /tmp/full-host-evidence/image-audit
+            sudo chown -R "$(id -u):$(id -g)" /tmp/full-host-evidence/image-audit
+          fi
+      - name: Require the audited and executed immutable worker to match
+        run: |
+          image_id="$(sudo -u foxory-ci-sandbox cat /home/foxory-ci-sandbox/worker-image-id.txt)"
+          .venv/bin/python scripts/verify_host_image_evidence.py --image "$image_id" --evidence /tmp/full-host-evidence
       - uses: actions/upload-artifact@v4
         if: always()
         with:

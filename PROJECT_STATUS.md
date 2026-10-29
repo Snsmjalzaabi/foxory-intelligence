@@ -1,5 +1,20 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Sequential work requested — Issue 1 in progress
+
+Owner requested cleanup followed by one verified issue at a time and a completion
+email per issue. See [ISSUE_PROGRESS.md](docs/ISSUE_PROGRESS.md). Cloud integrity
+audit found no corrupt tracked JSON/PNG/PDF or Git bundles. Only ignored caches
+and proven temporary duplicates (1,337,655 bytes) were removed. Source, history,
+backups, credentials, persistent data and useful raw review evidence are retained.
+The owner's PC is not connected and has not been cleaned remotely.
+
+Issue1 addresses the remaining provenance gap: scan and execute the **same**
+immutable rootless worker image, then fail closed on any identity, coverage,
+check-completeness or cleanup mismatch. Targeted synthetic/archive tests passed26;
+actual same-image Ubuntu26 audit and runtime integration are pending. No Issue1
+completion email has been sent yet. No other issue is being implemented in parallel.
+
 ## Current verified result — technical host blockers fixed
 
 **Actual Ubuntu26 integration `40838680397` passed** at `1466e67`: seven
