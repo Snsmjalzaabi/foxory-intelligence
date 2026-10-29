@@ -1,5 +1,22 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Image remediation in progress — actual release blockers
+
+Hosted run `40809535648` at `f927a6b` passed backend/core browser, real Python
+sandbox/browser, PostgreSQL and canonical Compose acceptance. The new image gate
+correctly blocked release: **61 core HIGH/CRITICAL package findings** and **nine
+worker HIGH findings**. Summaries are committed under `docs/evidence`; full SBOM,
+license and vulnerability reports are private run artifacts. These are actual
+scan results, not fixture findings. No HIGH/CRITICAL exceptions were added.
+
+Remediation candidate: digest-pinned Python 3.12 Trixie runtime with OS updates;
+worker pinned Brotli fix and removal of unused WebKit media/global npm runtime
+components. Worker policy, quotas and default-disabled execution are unchanged.
+Reviewed-input hashes updated; three image-audit parser/archive tests passed.
+Rebuilt image scans/integration checks are pending. Rootless host probes must be
+rerun for the new worker ID; prior Ubuntu image evidence remains historical.
+Phase 4 incomplete, Phase 5 not started; production readiness is not established.
+
 ## Current continuation: model compatibility, backup boundaries and image gates
 
 Hosted workflow [40805258673](https://github.com/Snsmjalzaabi/foxory-intelligence/actions/runs/40805258673)

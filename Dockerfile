@@ -6,10 +6,12 @@ RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then NODE_E
 COPY frontend/ ./
 RUN npm run build
 
-FROM python:3.12-slim-bookworm
+# Bookworm's scanned runtime has unfixed HIGH/CRITICAL OS findings. Keep Python
+# 3.12, use the reviewed supported Trixie index, then apply repository updates.
+FROM python:3.12-slim-trixie@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 FOXORY_DATA_DIR=/data
 WORKDIR /app/backend
-RUN apt-get update && apt-get install -y --no-install-recommends libseccomp2 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends libseccomp2 && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.lock ./
 RUN --mount=type=secret,id=proxy_ca if [ -f /run/secrets/proxy_ca ]; then PIP_CERT=/run/secrets/proxy_ca pip install --no-cache-dir -r requirements.lock; else pip install --no-cache-dir -r requirements.lock; fi
 COPY --chown=10001:10001 backend/ ./

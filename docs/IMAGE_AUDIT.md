@@ -48,3 +48,29 @@ not prove that bundled Chromium/Node binaries have no vulnerabilities, fulfill
 copyleft/source-offer obligations, certify isolation, or complete Phase 4. Review
 browser/runtime versions, all license terms and findings before accepting an image.
 Changing worker inputs/image ID requires the actual startup probes again.
+
+## First actual findings and remediation candidate (29 October 2026)
+
+Hosted run `40809535648` completed both static scans. The gate correctly failed:
+core had 61 HIGH/CRITICAL package findings (276 total), worker nine HIGH (655
+total). Full SBOM/license/vulnerability reports are private run artifacts; blocking
+summaries are retained in `docs/evidence/*-image-audit-2026-10-29.json`. Backend,
+browser, real Python sandbox, PostgreSQL and pristine Compose checks passed first.
+
+The remediation candidate keeps Python 3.12 but replaces the Bookworm runtime
+with a digest-pinned Trixie base and applies available OS repository upgrades.
+Repository packages can change between rebuilds; each resulting image must pass
+the audit and its exact versions/ID are recorded. This is not a bit-reproducible
+OS package snapshot. No advisory is suppressed to accommodate an old distribution.
+
+The worker retains the pinned Playwright/Chromium/Node base and application lock.
+It installs the pinned Brotli security update `1.1.0-2ubuntu0.1`, removes unused
+WebKit GStreamer bad-plugin packages, and deletes build-only global npm/npx after
+the locked Playwright installation. The npm-owned vulnerable `brace-expansion`
+and `undici` paths were confirmed in the actual Trivy report. Worker execution
+uses Node directly; installing arbitrary dependencies inside a task remains
+unsupported. No caps, sandbox flags, quotas or network policies change.
+
+These changes require new image scans and actual rootless Chromium/JS/TS probes;
+the owner's earlier image/probe result does not certify a rebuilt image. Image
+audit success alone will not complete Phase 4 or authorize execution.
