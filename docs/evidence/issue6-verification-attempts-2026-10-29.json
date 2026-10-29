@@ -1,0 +1,34 @@
+{
+  "scope": "Issue6 verification history. Failed/cancelled runs are not passes. No timeout, quota or sandbox permission was relaxed.",
+  "attempts": [
+    {
+      "source_commit": "2e89742eb0e0b098954ef54707223e42c5c273c2",
+      "ci_run": 40926127838,
+      "ci_status": "failure",
+      "core_job": 123631992539,
+      "reason": "New pre-venv source builder invoked python3 without installing its launcher; worker and sandbox jobs passed. Corrected by explicit builder-only python3 dependency in c562829.",
+      "host_run": 40926128514,
+      "host_status": "cancelled_as_stale_after_known_core_build_error"
+    },
+    {
+      "source_commit": "c5628296bbb87bacae614064040a7ae30b7255ad",
+      "ci_run": 40927051264,
+      "ci_status": "failure",
+      "core_job": 123635236129,
+      "reason": "Actual application/model native checks and app scan passed; subsequent model Syft scan exhausted disposable runner disk (66MB free). Corrected by guarded removal of unused SDKs on a fresh github-hosted VM, preserving Docker volumes/images and all evidence.",
+      "host_run": 40927051919,
+      "host_job": 123635243290,
+      "host_status": "failure",
+      "host_reason": "Fixed OCI probe exceeded its unchanged45-second client deadline; acceptance stayed disabled and owned cleanup ran. Exact cause was not established from the original diagnostics. Bounded state/output diagnostics were added; no budget/capability was increased."
+    },
+    {
+      "source_commit": "40603a043c3b0485951d72f67114be1ec0ece6b7",
+      "ci_run": 40928966386,
+      "ci_status": "success",
+      "host_run": 40928967215,
+      "host_status": "success",
+      "host_job": 123641995031,
+      "result": "All CI jobs, exact-image native probes and7/9/10 real runtime/recovery groups passed with existing quotas/deadlines. Earlier transient failure is retained, not reclassified as success."
+    }
+  ]
+}

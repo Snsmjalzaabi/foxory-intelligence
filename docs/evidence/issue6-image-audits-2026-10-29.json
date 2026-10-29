@@ -1,0 +1,152 @@
+{
+  "worker": {
+    "status": "passed",
+    "image": "sha256:e7bbda1f513f0eeffd5e1ad1bd1394f33dbfa1f862c1303b67fccd26764c1872",
+    "tools": {
+      "syft": {
+        "version": "1.55.0",
+        "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+        "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+      },
+      "trivy": {
+        "version": "0.76.1",
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+        "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+      }
+    },
+    "archive": {
+      "sha256": "d4cdb01dc110d188352907f7b37d41103115901040f69ac6ebdff92e4342eae0",
+      "bytes": 2567142400,
+      "config_digest": "sha256:e7bbda1f513f0eeffd5e1ad1bd1394f33dbfa1f862c1303b67fccd26764c1872"
+    },
+    "coverage_reported": true,
+    "os": {
+      "Family": "ubuntu",
+      "Name": "24.04"
+    },
+    "blocking": [],
+    "required_security_fixes_sha256": "04cf1d64b557390aa84900af8ee3935db184db29ba34efaeb0fee0daa8dcf348",
+    "required_remediations": [
+      {
+        "id": "CVE-2026-85091",
+        "package": "zlib1g",
+        "vendor_fixed_version": "Ubuntu 24.04: 1:1.3.dfsg-3.1ubuntu2.3",
+        "reference": "https://ubuntu.com/security/notices/USN-8954-1"
+      }
+    ],
+    "total_findings": 71,
+    "unfixed_findings_ignored": false,
+    "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+    "sbom_components": 18137,
+    "worker_package_policy": {
+      "status": "passed",
+      "sha256": "d821a2f10e04e2402d727097b92d8002e3528d089986daef851da04fdba9f326",
+      "required_missing": [],
+      "version_mismatches": [],
+      "required_versions": {
+        "libpcre2-8-0": "10.49-0foxory1"
+      },
+      "forbidden_present": [],
+      "required_count": 21,
+      "forbidden_count": 26,
+      "scope": "Merged runtime filesystem only; lower-layer binary licensing obligations are not removed."
+    },
+    "pcre2_version": {
+      "status": "passed",
+      "expected": "10.49-0foxory1",
+      "observed": [
+        "10.49-0foxory1"
+      ],
+      "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+      "scope": "Actual upstream source rebuild; raw distribution scanner entries remain unchanged."
+    }
+  },
+  "application": {
+    "status": "passed",
+    "image": "sha256:133e4a01edecbb30ad69673d1d4a1d7ed271cdb18ae5207607f2a1c2df615e78",
+    "tools": {
+      "syft": {
+        "version": "1.55.0",
+        "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+        "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+      },
+      "trivy": {
+        "version": "0.76.1",
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+        "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+      }
+    },
+    "coverage_reported": true,
+    "os": {
+      "Family": "ubuntu",
+      "Name": "24.04"
+    },
+    "blocking": [],
+    "required_security_fixes_sha256": "04cf1d64b557390aa84900af8ee3935db184db29ba34efaeb0fee0daa8dcf348",
+    "required_remediations": [
+      {
+        "id": "CVE-2026-85091",
+        "package": "zlib1g",
+        "vendor_fixed_version": "Ubuntu 24.04: 1:1.3.dfsg-3.1ubuntu2.3",
+        "reference": "https://ubuntu.com/security/notices/USN-8954-1"
+      }
+    ],
+    "total_findings": 26,
+    "unfixed_findings_ignored": false,
+    "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+    "sbom_components": 3834,
+    "pcre2_version": {
+      "status": "passed",
+      "expected": "10.49-0foxory1",
+      "observed": [
+        "10.49-0foxory1"
+      ],
+      "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+      "scope": "Actual upstream source rebuild; raw distribution scanner entries remain unchanged."
+    }
+  },
+  "model": {
+    "status": "passed",
+    "image": "sha256:57df555dde9a9c138a30e38ce4e5ba5577a8bc73fe419dd39e711dba560575a4",
+    "tools": {
+      "syft": {
+        "version": "1.55.0",
+        "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+        "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+      },
+      "trivy": {
+        "version": "0.76.1",
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+        "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+      }
+    },
+    "coverage_reported": true,
+    "os": {
+      "Family": "ubuntu",
+      "Name": "24.04"
+    },
+    "blocking": [],
+    "required_security_fixes_sha256": "04cf1d64b557390aa84900af8ee3935db184db29ba34efaeb0fee0daa8dcf348",
+    "required_remediations": [
+      {
+        "id": "CVE-2026-85091",
+        "package": "zlib1g",
+        "vendor_fixed_version": "Ubuntu 24.04: 1:1.3.dfsg-3.1ubuntu2.3",
+        "reference": "https://ubuntu.com/security/notices/USN-8954-1"
+      }
+    ],
+    "total_findings": 32,
+    "unfixed_findings_ignored": false,
+    "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+    "sbom_components": 2928,
+    "pcre2_version": {
+      "status": "passed",
+      "expected": "10.49-0foxory1",
+      "observed": [
+        "10.49-0foxory1"
+      ],
+      "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+      "scope": "Actual upstream source rebuild; raw distribution scanner entries remain unchanged."
+    }
+  }
+}

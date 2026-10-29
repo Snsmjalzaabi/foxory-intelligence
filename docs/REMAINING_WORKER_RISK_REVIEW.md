@@ -1,4 +1,11 @@
-# Remaining worker dependency risk — unresolved
+# Remaining worker dependency risk — PCRE2 remediated in revised images
+
+Update: Issue6 now installs signed upstream10.49 and verifies its actual loaded
+library in worker/application/model images. See
+[PCRE2_REMEDIATION.md](PCRE2_REMEDIATION.md). The raw distro entries remain; their
+source/native remediation is recorded separately. Other findings remain open.
+The following is the retained **pre-Issue6** upstream review, not the installed
+version in the revised images.
 
 The exact Issue5 image has71 package findings across43 unique CVEs. Trivy uses
 Ubuntu's package-specific severities:41 MEDIUM/30 LOW. This does **not** mean all

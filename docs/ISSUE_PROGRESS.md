@@ -173,16 +173,25 @@ The requested **Issue 5 Fixed** email was sent after the evidence commit; the ma
 service confirmed sending.
 Lower layers/bundled codecs/licenses and the owner's installation are not cleared.
 
-## Issue 6 — PCRE2 dependency remediation, implementation pending verification
+## Issue 6 — PCRE2 fixed and verified
 
-Only this issue is active. Upstream10.49 is the signed security release containing
-all seven fixes; the GPG archive signature and fix-commit ancestry were verified.
-Baseline scans show10.42 in worker, application and Ollama images. A shared
-non-root source recipe now produces a correctly versioned replacement DEB for
-all three without changing host packages, model versions/data or sandbox controls.
-It must pass full upstream and sanitizer tests, ABI/SONAME checks, installed-native
-regressions, exact-image audits and real workflows. Fresh actual builds/tests are
-pending; no fix email is warranted yet. Other blockers are not being implemented.
+Verified runtime source `40603a043c3b0485951d72f67114be1ec0ece6b7`. The shared
+signed upstream10.49 recipe replaces the actually loaded library in worker, app
+and model images, as package10.49-0foxory1. All share the same measured library
+hash, preserve73 public symbols, and pass normal/sanitized upstream suites and
+native Unicode/DFA/JIT regressions. Raw scanner PCRE2 entries are retained;
+image-specific source/native remediation evidence establishes the fix.
+
+Actual Ubuntu26 `40928967215` passed7/9/10 real canonical/TCP/Unix workflow and
+security/recovery groups; all cleanup passed. Verify `40928966386` passed all jobs
+(292 backend;11/14 overlapping browser suites, builds, migrations, Compose/scans).
+Earlier failed/cancelled attempts remain documented and are not passes. No quota,
+capability, filesystem/network or execution-deadline weakening was introduced.
+
+See [remediation evidence](evidence/issue6-pcre2-remediation-2026-10-29.json) and
+[owner rebuild/maintenance instructions](PCRE2_REMEDIATION.md). Owner host/images
+are unchanged until locally rebuilt. No other blocker or Phase5 work was started.
+Requested subject: **Issue 6 Fixed**; send only after this evidence is committed.
 
 ## Remaining, not started
 

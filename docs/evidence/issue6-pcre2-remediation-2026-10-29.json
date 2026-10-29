@@ -1,0 +1,364 @@
+{
+  "status": "verified_upstream_source_fix",
+  "issue": 6,
+  "source_commit": "40603a043c3b0485951d72f67114be1ec0ece6b7",
+  "images": {
+    "application": {
+      "image": "sha256:133e4a01edecbb30ad69673d1d4a1d7ed271cdb18ae5207607f2a1c2df615e78",
+      "scan_total_findings": 26,
+      "raw_pcre2_entries": 7,
+      "runtime": {
+        "version": "10.49 2026-09-28",
+        "package_version": "10.49-0foxory1",
+        "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+        "library_path": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.16.1",
+        "library_sha256": "5796a0bec1e16edc2212b2f6ac50e24a63b24e9f47be372e0cc30668661070ef",
+        "signing_subkey": "BACF71F10404D5761C09D392021DE40BFB63B406",
+        "normal_upstream_tests": "passed",
+        "asan_ubsan_upstream_tests": "passed",
+        "public_abi_symbols_preserved": 73,
+        "fixes": [
+          {
+            "cve": "CVE-2026-86145",
+            "fix_commit": "c932e70451eafef922ebef364ac25042f0031135",
+            "behind_by": 0,
+            "merge_base": "c932e70451eafef922ebef364ac25042f0031135",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-103111",
+            "fix_commit": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+            "behind_by": 0,
+            "merge_base": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89156",
+            "fix_commit": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+            "behind_by": 0,
+            "merge_base": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89157",
+            "fix_commit": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+            "behind_by": 0,
+            "merge_base": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89158",
+            "fix_commit": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+            "behind_by": 0,
+            "merge_base": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89160",
+            "fix_commit": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+            "behind_by": 0,
+            "merge_base": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89161",
+            "fix_commit": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+            "behind_by": 0,
+            "merge_base": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+            "status": "ahead"
+          }
+        ],
+        "unicode": true,
+        "jit": true,
+        "dfa_error": -63,
+        "jit_stack_error": -46
+      },
+      "sbom_version": {
+        "status": "passed",
+        "expected": "10.49-0foxory1",
+        "observed": [
+          "10.49-0foxory1"
+        ],
+        "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+        "scope": "Actual upstream source rebuild; raw distribution scanner entries remain unchanged."
+      },
+      "source_commit": "40603a043c3b0485951d72f67114be1ec0ece6b7"
+    },
+    "model": {
+      "image": "sha256:57df555dde9a9c138a30e38ce4e5ba5577a8bc73fe419dd39e711dba560575a4",
+      "scan_total_findings": 32,
+      "raw_pcre2_entries": 7,
+      "runtime": {
+        "version": "10.49 2026-09-28",
+        "package_version": "10.49-0foxory1",
+        "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+        "library_path": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.16.1",
+        "library_sha256": "5796a0bec1e16edc2212b2f6ac50e24a63b24e9f47be372e0cc30668661070ef",
+        "signing_subkey": "BACF71F10404D5761C09D392021DE40BFB63B406",
+        "normal_upstream_tests": "passed",
+        "asan_ubsan_upstream_tests": "passed",
+        "public_abi_symbols_preserved": 73,
+        "fixes": [
+          {
+            "cve": "CVE-2026-86145",
+            "fix_commit": "c932e70451eafef922ebef364ac25042f0031135",
+            "behind_by": 0,
+            "merge_base": "c932e70451eafef922ebef364ac25042f0031135",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-103111",
+            "fix_commit": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+            "behind_by": 0,
+            "merge_base": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89156",
+            "fix_commit": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+            "behind_by": 0,
+            "merge_base": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89157",
+            "fix_commit": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+            "behind_by": 0,
+            "merge_base": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89158",
+            "fix_commit": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+            "behind_by": 0,
+            "merge_base": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89160",
+            "fix_commit": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+            "behind_by": 0,
+            "merge_base": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89161",
+            "fix_commit": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+            "behind_by": 0,
+            "merge_base": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+            "status": "ahead"
+          }
+        ],
+        "unicode": true,
+        "jit": true,
+        "dfa_error": -63,
+        "jit_stack_error": -46
+      },
+      "sbom_version": {
+        "status": "passed",
+        "expected": "10.49-0foxory1",
+        "observed": [
+          "10.49-0foxory1"
+        ],
+        "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+        "scope": "Actual upstream source rebuild; raw distribution scanner entries remain unchanged."
+      },
+      "source_commit": "40603a043c3b0485951d72f67114be1ec0ece6b7"
+    },
+    "worker": {
+      "image": "sha256:e7bbda1f513f0eeffd5e1ad1bd1394f33dbfa1f862c1303b67fccd26764c1872",
+      "scan_total_findings": 71,
+      "raw_pcre2_entries": 7,
+      "runtime": {
+        "version": "10.49 2026-09-28",
+        "package_version": "10.49-0foxory1",
+        "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+        "library_path": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.16.1",
+        "library_sha256": "5796a0bec1e16edc2212b2f6ac50e24a63b24e9f47be372e0cc30668661070ef",
+        "signing_subkey": "BACF71F10404D5761C09D392021DE40BFB63B406",
+        "normal_upstream_tests": "passed",
+        "asan_ubsan_upstream_tests": "passed",
+        "public_abi_symbols_preserved": 73,
+        "fixes": [
+          {
+            "cve": "CVE-2026-86145",
+            "fix_commit": "c932e70451eafef922ebef364ac25042f0031135",
+            "behind_by": 0,
+            "merge_base": "c932e70451eafef922ebef364ac25042f0031135",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-103111",
+            "fix_commit": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+            "behind_by": 0,
+            "merge_base": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89156",
+            "fix_commit": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+            "behind_by": 0,
+            "merge_base": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89157",
+            "fix_commit": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+            "behind_by": 0,
+            "merge_base": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89158",
+            "fix_commit": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+            "behind_by": 0,
+            "merge_base": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89160",
+            "fix_commit": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+            "behind_by": 0,
+            "merge_base": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+            "status": "ahead"
+          },
+          {
+            "cve": "CVE-2026-89161",
+            "fix_commit": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+            "behind_by": 0,
+            "merge_base": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+            "status": "ahead"
+          }
+        ],
+        "unicode": true,
+        "jit": true,
+        "dfa_error": -63,
+        "jit_stack_error": -46
+      },
+      "sbom_version": {
+        "status": "passed",
+        "expected": "10.49-0foxory1",
+        "observed": [
+          "10.49-0foxory1"
+        ],
+        "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+        "scope": "Actual upstream source rebuild; raw distribution scanner entries remain unchanged."
+      },
+      "source_commit": "40603a043c3b0485951d72f67114be1ec0ece6b7"
+    }
+  },
+  "source": {
+    "schema_version": 1,
+    "version": "10.49",
+    "package_version": "10.49-0foxory1",
+    "release_url": "https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.49",
+    "archive_url": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.bz2",
+    "archive_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+    "signature_sha256": "195ed167511ccb6b34f9676d5e37f7cc71490ca6ec00fc65851bacb3fb43bdcb",
+    "public_key_sha256": "24867285b8603cee390f195d321aeca11e6c835d31bc3b2c342fe8830d6826e9",
+    "signing_subkey_fingerprint": "BACF71F10404D5761C09D392021DE40BFB63B406",
+    "primary_key_fingerprint": "A95536204A3BB489715231282A98E77EB6F24CA8",
+    "tag_object": "388ef3c412ab5269b8f76101a6bef2d416974a15",
+    "tag_commit": "6f9d7c1373262c541324a16a358785b33ef116cf",
+    "source_date_epoch": 1790599717,
+    "fixes": [
+      {
+        "cve": "CVE-2026-86145",
+        "fix_commit": "c932e70451eafef922ebef364ac25042f0031135",
+        "behind_by": 0,
+        "merge_base": "c932e70451eafef922ebef364ac25042f0031135",
+        "status": "ahead"
+      },
+      {
+        "cve": "CVE-2026-103111",
+        "fix_commit": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+        "behind_by": 0,
+        "merge_base": "2b4038298072684b0fae29b15bedfb1a75bda46d",
+        "status": "ahead"
+      },
+      {
+        "cve": "CVE-2026-89156",
+        "fix_commit": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+        "behind_by": 0,
+        "merge_base": "f67db227af31bba7cdf2a7a00b97af91b588c2f5",
+        "status": "ahead"
+      },
+      {
+        "cve": "CVE-2026-89157",
+        "fix_commit": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+        "behind_by": 0,
+        "merge_base": "8156b3989a82f2ddf9504d8248496e9b124be7f3",
+        "status": "ahead"
+      },
+      {
+        "cve": "CVE-2026-89158",
+        "fix_commit": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+        "behind_by": 0,
+        "merge_base": "ec9c286d5c10cf1c388b58a442ccefded42254fd",
+        "status": "ahead"
+      },
+      {
+        "cve": "CVE-2026-89160",
+        "fix_commit": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+        "behind_by": 0,
+        "merge_base": "4889caf31a4c5a6b3c051f0031bf2dbd78f2c287",
+        "status": "ahead"
+      },
+      {
+        "cve": "CVE-2026-89161",
+        "fix_commit": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+        "behind_by": 0,
+        "merge_base": "1dcd0cf42a6a7cb62cc9a7c024196733abcfda95",
+        "status": "ahead"
+      }
+    ],
+    "license": "BSD-3-Clause WITH PCRE2-exception; JIT/SLJIT BSD-2-Clause"
+  },
+  "tests": {
+    "local_backend_passed": 292,
+    "targeted_passed": 87,
+    "upstream_harnesses_per_build": 4,
+    "upstream_build_modes": [
+      "normal",
+      "ASan+UBSan"
+    ],
+    "configured_widths": [
+      8
+    ],
+    "runtime_groups": {
+      "integration": 7,
+      "tcp": 9,
+      "unix": 10
+    },
+    "worker_cleanup_verified": true,
+    "application_model_cleanup_verified": true,
+    "core_browser_journeys": 11,
+    "full_browser_journeys_overlapping": 14,
+    "oci_ui_mocked": true,
+    "real_rootless_and_local_model_execution": true
+  },
+  "verification": {
+    "ci_run": 40928966386,
+    "host_run": 40928967215,
+    "host_job": 123641995031,
+    "core_artifact": 12922632283,
+    "core_artifact_sha256": "e99cb89bf3c5a3f4c24e56524e9a7b34099cc4b612d50a672d2021da98827c28",
+    "host_artifact": 12923146186,
+    "host_artifact_sha256": "adbcfe139c65a5ed1c549c452b981086f5b4e7e7839cedb523eef87bd0703550"
+  },
+  "remediation": {
+    "cves_fixed_in_built_source": [
+      "CVE-2026-86145",
+      "CVE-2026-103111",
+      "CVE-2026-89156",
+      "CVE-2026-89157",
+      "CVE-2026-89158",
+      "CVE-2026-89160",
+      "CVE-2026-89161"
+    ],
+    "raw_distribution_findings_retained": true,
+    "raw_findings_globally_suppressed": false,
+    "statement": "Signed upstream 10.49 library is actually installed and loaded in these three exact images. Ubuntu mapping still reports seven PCRE2 entries per image; no unchanged library was relabeled and no entries were deleted."
+  },
+  "limits": "Linux AMD64 CPU verification; no owner-PC rollout, GPU, ARM64, 32-bit, Windows/macOS, global binary-license, production or sandbox-escape certification. Lower base layers and unrelated findings remain separate."
+}

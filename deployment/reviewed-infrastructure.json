@@ -9,7 +9,10 @@
       "dockerfile": "Dockerfile",
       "target": "ollama",
       "pcre2_version": "10.49-0foxory1",
-      "review_status": "New source build and exact-image audit/runtime verification pending; previous evidence covers upstream base only."
+      "review_status": "Verified Linux AMD64 CPU native PCRE2, Compose and real local-model workflows; no owner rollout or GPU claim.",
+      "linux_amd64_config": "sha256:57df555dde9a9c138a30e38ce4e5ba5577a8bc73fe419dd39e711dba560575a4",
+      "scan_evidence": "docs/evidence/issue6-image-audits-2026-10-29.json",
+      "source_commit": "40603a043c3b0485951d72f67114be1ec0ece6b7"
     }
   },
   "postgres": {

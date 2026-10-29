@@ -1,24 +1,51 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Issue6 implementation in progress — PCRE2 only
+## Issue6 fixed and verified — PCRE2 only
 
-Signed upstream10.49 contains the seven reviewed PCRE2 fixes; all fix commits
-were verified ancestors of the pinned release. Source archive SHA256 and detached
-GPG signature were checked against the pinned primary/signing fingerprints.
-The worker, application and Ollama baseline scans all contain the same seven
-10.42 findings, so this one dependency fix covers all three managed images.
+The seven PCRE2 findings in the application, model-service and optional worker
+images are remediated by an actual signed upstream10.49 source build, packaged
+truthfully as10.49-0foxory1. Source implementation `2e89742`, builder dependency
+correction `c562829`, final verified runtime source
+`40603a043c3b0485951d72f67114be1ec0ece6b7`.
 
-A non-root source builder now packages10.49 with truthful Debian version/source
-metadata, retained licenses, upstream normal/ASan+UBSan checks, ABI/SONAME
-preservation and fixed native DFA/growable-JIT regressions. Final images get no
-compiler/source/test suite. Image gates require the exact package version;
-startup probes verify the actual installed library bytes and native version/
-regressions under existing rootless controls. All scanner entries remain intact.
-Actual image compilation, sanitizer success, scan and full runtime verification
-are pending. No Issue6 completion or email is claimed. No other blocker, owner
-host package, data volume, GPU setting or sandbox permission has been changed.
+All three exact images contain/load the same library SHA256:
+`5796a0bec1e16edc2212b2f6ac50e24a63b24e9f47be372e0cc30668661070ef`.
+The signed source includes all seven fix commits. Normal and ASan+UBSan builds
+each passed all four configured8-bit/JIT upstream harnesses, native Unicode/
+DFA/growable-JIT regressions and preservation of73 existing public ABI symbols.
+Licenses, source/signature/key hashes and accurate package metadata are retained.
+No compiler/source/sanitizer build tools were added to runtime images.
 
-## Current checkpoint — Issues3/4/5 verified; next dependency issue unresolved
+Verify `40928966386` passed all jobs:275 core+17 sandbox backend tests (292),
+strict frontend builds,11 core/14 full overlapping browser journeys, PostgreSQL
+migrations/restore, Compose health/auth/document/persistence and all image scans.
+Full local backend292 and targeted87 passed. OCI UI is explicitly mocked.
+Actual Ubuntu26 `40928967215` passed7 canonical/9 TCP/10 Unix runtime check groups,
+including rootless native PCRE2/Node/TS/Chromium probes, real qwen2.5:0.5b and
+qwen2.5-coder:1.5b workflows, approvals/tenancy, quotas, cancellation, restart,
+coordinated restore and all owned cleanup. OCI capability/engine policies and
+execution budgets are unchanged; source `oci.py`/`oci_runtime.py` are unchanged.
+
+The raw distro scans remain26(application),32(model) and71(worker), each retaining
+seven PCRE2 entries for the custom upstream package. Those entries are separately
+proven fixed in the installed source/binary; they were not deleted or globally
+suppressed. Other findings remain unresolved. Source/native fix evidence does
+not clear lower image layers, bundled browser coverage or other binary licenses.
+
+Evidence: [Issue6 remediation](docs/evidence/issue6-pcre2-remediation-2026-10-29.json),
+[exact-image proof](docs/evidence/issue6-verified-image-provenance-2026-10-29.json),
+[failed and accepted attempts](docs/evidence/issue6-verification-attempts-2026-10-29.json).
+Initial missing-launcher, scanner-disk and strict-preflight timeout failures are
+retained; the timeout's exact original cause was not established and no controls
+were relaxed. The final complete run passed unchanged deadlines and limits.
+
+Owner-PC images/OS were not modified remotely. Rebuild instructions and custom-
+package maintenance obligations: [PCRE2_REMEDIATION.md](docs/PCRE2_REMEDIATION.md).
+Requested **Issue 6 Fixed** email follows this evidence commit; sending is recorded
+separately. Other blockers have not been implemented. Phase4 remains open; no
+production/distribution, GPU, ARM64,32-bit, Windows/macOS or Phase5 claim.
+
+## Earlier checkpoint — before Issue6 remediation
 
 Requested **Issue 3 Fixed**, **Issue 4 Fixed** and **Issue 5 Fixed** emails were
 sent only after their verified evidence commits were pushed; the mail service

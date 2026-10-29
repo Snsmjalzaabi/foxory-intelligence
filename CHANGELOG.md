@@ -2,6 +2,13 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Issue6: replace affected PCRE2 in application/model/worker images with signed
+upstream10.49, accurately packaged and licensed. Preserve ABI; require upstream
+normal/sanitizer and installed native regressions, exact version/hash evidence
+and unchanged rootless controls. CI and actual Ubuntu26 runtime/recovery passed.
+Raw distro findings are retained, with image-specific source remediation proof;
+other findings and production/distribution acceptance remain open.
+
 Remove inherited optional codec/parser dependencies with guarded package changes,
 Chromium preservation and literal shared-library checks. Exact-image Ubuntu26
 runtime/recovery/cleanup and all regression jobs passed; findings133→71. The
