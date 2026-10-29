@@ -2,6 +2,12 @@
 
 ## Phase 4 — incomplete, unreleased
 
+Remove unused system FFmpeg libraries with guarded build-time dependency checks,
+merged-filesystem validation and current-policy SBOM/provenance enforcement.
+Actual exact-image Ubuntu26 runtime and regression checks passed. This removes455
+package findings;177 remain. Chromium dependencies and the zlib fix are retained.
+Lower-layer bytes, bundled codecs and binary licensing remain separate reviews.
+
 Sequential verified fixes: bind actual rootless image audits and runtime reports
 to one immutable image/config and the current remediation policy. Update worker
 OS zlib1g to1:1.3.dfsg-3.1ubuntu2.3 for CVE-2026-85091 (USN-8954-1), with a

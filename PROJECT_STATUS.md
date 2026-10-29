@@ -1,16 +1,29 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
-## Issue 3 in progress — unused system FFmpeg libraries
+## Issue 3 fixed and verified — unused system FFmpeg libraries
 
-Issue2's requested email was actually delivered after verification. Now proceeding
-sequentially to seven unused FFmpeg libraries with455 package findings. Pinned
-Playwright1.64.1 nativeDeps confirms they are not Chromium requirements. The build
-helper protects21 Chromium packages, validates the dry-run dependency plan, denies
-unexpected installs, then checks actual removals and filesystem absence; it is
-removed before runtime. Worker SBOM and current-policy provenance add independent
-guards. Input hashes include both helper and policy. Actual new build/scan and
-Ubuntu26 runtime verification are pending; no Issue3 completion is claimed.
-This changes only the optional worker image, not the owner host or its data.
+Source `e4e112f28570cd4e7eb522b3fe71f9261702c1c9` removes seven unused system
+FFmpeg libraries and their gstreamer1.0-libav reverse dependency from the merged
+worker runtime. A build-only helper checks the simulated and actual package
+changes, preserves all21 reviewed Chromium dependencies and refuses unexpected
+installs/removals. Independent SBOM and provenance gates enforce the reviewed
+package-policy hash. No sandbox permissions or default enablement changed.
+
+Actual Ubuntu26 run `40863818827` passed the exact-image audit,7 canonical,
+9 TCP and10 Unix runtime check groups, provenance and all owned cleanup. Image:
+`sha256:472c9b4c7a277acdc5cbeb425b44a2c1b23cc4fce32d24961b5fad1436f0c5e2`.
+The scan decreased632→177 package findings:455 findings across65 unique CVEs
+were associated with the removed packages. All21 Chromium dependencies remain,
+and the previous zlib fix is retained. Verify `40863816928` passed all three
+jobs; full local backend250 passed, targeted42 passed. Browser UI regressions
+use mocked OCI; the separate Ubuntu26 runtime checks use real rootless execution.
+See [Issue3 evidence](docs/evidence/issue3-media-removal-verified-2026-10-29.json).
+
+This is merged-filesystem remediation, not erasure of lower image layers,
+Chromium bundled codecs or binary license/source-delivery obligations. Remaining
+177 findings need review. The owner's existing image was not rebuilt remotely;
+no GPU or production clearance is claimed. Requested notification follows the
+evidence commit; delivery is reported separately. Phase4 remains open.
 
 ## Issue 2 fixed and verified; owner checkout cache check received
 

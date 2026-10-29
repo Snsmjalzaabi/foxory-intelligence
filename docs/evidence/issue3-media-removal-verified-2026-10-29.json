@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "issue": 3,
+  "source_commit": "e4e112f28570cd4e7eb522b3fe71f9261702c1c9",
+  "workflow_run": 40863818827,
+  "job_id": 123413412008,
+  "artifact_id": 12893935771,
+  "image": "sha256:472c9b4c7a277acdc5cbeb425b44a2c1b23cc4fce32d24961b5fad1436f0c5e2",
+  "removed_system_library_packages": [
+    "libavcodec60",
+    "libavfilter9",
+    "libavformat60",
+    "libavutil58",
+    "libpostproc57",
+    "libswresample4",
+    "libswscale7"
+  ],
+  "reverse_dependency_removed": "gstreamer1.0-libav",
+  "required_chromium_packages_present": 21,
+  "before_findings": 632,
+  "removed_package_findings": 455,
+  "removed_package_unique_cves": 65,
+  "remaining_findings": 177,
+  "worker_package_policy": {
+    "status": "passed",
+    "sha256": "78d8e6eba8d60697b98fc55319d3cdf76c3d57da16720c29b0667d6039408811",
+    "required_missing": [],
+    "forbidden_present": [],
+    "required_count": 21,
+    "forbidden_count": 7,
+    "scope": "Merged runtime filesystem only; lower-layer binary licensing obligations are not removed."
+  },
+  "runtime_check_groups": {
+    "integration": 7,
+    "tcp": 9,
+    "unix": 10
+  },
+  "all_owned_cleanup": true,
+  "zlib_fix_retained": true,
+  "scope": "Merged runtime media code removed with apt purge and filesystem checks; no metadata suppression. Chromium bundled codecs, old image layer bytes and binary licensing obligations are not cleared. No PC rebuild, GPU or production verification."
+}

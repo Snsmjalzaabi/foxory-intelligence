@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "image": "sha256:472c9b4c7a277acdc5cbeb425b44a2c1b23cc4fce32d24961b5fad1436f0c5e2",
+  "archive_sha256": "34a4aae068f8163048b1316dc7fb8f1ef4eb1d9e74a12b18f805cfe04952c56a",
+  "archive_bytes": 2564402688,
+  "archive_config_digest": "sha256:472c9b4c7a277acdc5cbeb425b44a2c1b23cc4fce32d24961b5fad1436f0c5e2",
+  "runtime_check_groups": {
+    "integration": 7,
+    "tcp": 9,
+    "unix": 10
+  },
+  "sbom_components": 18410,
+  "required_security_fixes_sha256": "04cf1d64b557390aa84900af8ee3935db184db29ba34efaeb0fee0daa8dcf348",
+  "worker_package_policy_sha256": "78d8e6eba8d60697b98fc55319d3cdf76c3d57da16720c29b0667d6039408811",
+  "total_findings": 177,
+  "limits": "Trusted fixture consistency only. Lower findings, compiled-browser coverage and binary license/source-delivery review remain separate. No owner-PC, GPU, production or universal sandbox assurance.",
+  "source_commit": "e4e112f28570cd4e7eb522b3fe71f9261702c1c9",
+  "workflow_run": 40863818827,
+  "job_id": 123413412008
+}

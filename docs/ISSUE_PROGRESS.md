@@ -99,7 +99,7 @@ service confirmed delivery. Existing owner-PC images are unchanged until rebuilt
 
 ## Issue 3 — remove unused system FFmpeg libraries
 
-**In progress; no completion email yet.** The Issue2 scan has455 package findings
+**Fixed and verified** in `e4e112f28570cd4e7eb522b3fe71f9261702c1c9`. The Issue2 scan had455 package findings
 across seven system FFmpeg libraries. The pinned Playwright1.64.1 Ubuntu24
 dependency table lists libavcodec60 under Firefox, not Chromium. The worker only
 exposes Chromium; video/FFmpeg and Firefox/WebKit profiles are not supported.
@@ -109,13 +109,25 @@ of the21 reviewed Chromium packages, incomplete plans or unexpected installation
 It then checks actual package changes and absence of the shared libraries on the
 merged filesystem. It is removed from the final runtime. No autoremove, metadata
 stripping, source rewrite or isolation relaxation. Build helper and package policy
-are included in reviewed input hashes. Actual build and runtime testing remain
-pending; the host helper is never used for package management in unit tests.
+are included in reviewed input hashes. The helper is never used for host package
+management in unit tests.
 
 Worker audits now require all21 Chromium packages present and all seven excluded
 packages absent in the SBOM. Runtime provenance must carry the current package-
 policy hash. Bundled browser codecs, lower image layers and binary distribution
 obligations are separate; removing merged files does not erase these obligations.
+
+Actual Ubuntu26 run `40863818827` passed7 canonical,9 TCP and10 Unix check
+groups with real rootless execution, current-policy provenance and owned cleanup.
+The exact image is
+`sha256:472c9b4c7a277acdc5cbeb425b44a2c1b23cc4fce32d24961b5fad1436f0c5e2`.
+SBOM retains all21 Chromium dependencies and the fixed zlib; seven FFmpeg packages
+are absent. Findings decrease632→177 (455 package findings,65 unique CVEs).
+Verify `40863816928` passed all three jobs. Local backend250 and targeted42 tests
+passed; OCI UI fixtures are separate from actual runtime checks. See
+[issue3-media-removal-verified-2026-10-29.json](evidence/issue3-media-removal-verified-2026-10-29.json).
+Requested subject: **Issue 3 Fixed**; send only after this evidence is committed.
+Existing owner-PC images remain unchanged until rebuilt. No production clearance.
 
 ## Remaining, not started
 
