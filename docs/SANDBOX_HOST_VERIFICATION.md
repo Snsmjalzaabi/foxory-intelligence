@@ -1,5 +1,38 @@
 # Phase 4 Ubuntu host validation — fixed probes passed, full acceptance pending
 
+## Repeatable active acceptance (new, opt-in)
+
+After reviewing/building the current worker, run in the existing dedicated
+non-root account's delegated systemd user scope. Use its project venv, actual
+immutable image ID and a **new** private evidence directory:
+
+```bash
+.venv/bin/python scripts/oci_host_acceptance.py \
+  --image sha256:REPLACE_WITH_REVIEWED_LOCAL_IMAGE_ID \
+  --evidence "$HOME/foxory-verification/active-$(date -u +%Y%m%dT%H%M%SZ)"
+```
+
+This starts a disposable authenticated loopback manager with separate private
+state, never the owner's application. Actual startup probes must pass before
+fixed JS/TS/network/filesystem, browser, quota, cancellation and crash fixtures
+run. It deliberately tests aggregate CPU throttling, denied PID creation and a
+**1-GiB container OOM kill**, retaining effective counters; only reviewed fixture
+code runs inside restricted workers. It also cancels queued/running work, checks
+container/staging absence, kills/restarts its manager, creates owned/foreign
+stopped fixtures and proves orphan ownership/no replay. Foreign fixture cleanup
+is restricted to the exact container this invocation successfully created.
+
+Review `summary.json`, `manager.log` and `controlled-site.png`; a failure remains
+a blocker. A new `.github/workflows/oci-host.yml` manual workflow provisions an
+ephemeral dedicated account and normal systemd delegation on Ubuntu 24.04 with
+no policy weakening. Its real results must be recorded separately from the
+owner's Ubuntu 26.04 machine and mocked regressions. This automation is not a
+sandbox-escape certification, a combined local-model workflow, a full backup
+test or permission to enable production execution. Retained fixed-fixture state
+may be removed manually only after reviewing evidence and confirmed cleanup.
+
+## Existing full host checklist
+
 Application dispatch, lifecycle, artifact validation and Computer Mode are
 implemented and tested with a mocked OCI boundary. **Actual rootless Node,
 TypeScript and Chromium isolation is not verified in Codex Cloud.** Keep OCI

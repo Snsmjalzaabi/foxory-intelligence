@@ -1,0 +1,64 @@
+name: Opt-in real rootless Ubuntu acceptance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rootless:
+    # Separate ephemeral host, NOT the owner's Ubuntu 26.04 PC. A failed
+    # AppArmor/cgroup/startup check remains a failure, never a policy workaround.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Provision dedicated account and systemd delegation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman uidmap fuse-overlayfs dbus-user-session python3-venv
+          sudo useradd --create-home --shell /bin/bash foxory-ci-sandbox
+          sandbox_uid="$(id -u foxory-ci-sandbox)"
+          sudo install -d -m 0755 "/etc/systemd/system/user@$sandbox_uid.service.d"
+          printf '[Service]\nDelegate=cpu memory pids\n' | sudo tee "/etc/systemd/system/user@$sandbox_uid.service.d/delegate.conf" >/dev/null
+          sudo systemctl daemon-reload
+          sudo loginctl enable-linger foxory-ci-sandbox
+          sudo systemctl start "user@$sandbox_uid.service"
+          sudo -u foxory-ci-sandbox -H mkdir -m 0700 /home/foxory-ci-sandbox/source
+          git archive HEAD | sudo -u foxory-ci-sandbox -H tar -x -C /home/foxory-ci-sandbox/source
+      - name: Build and verify under rootless dedicated scope
+        run: |
+          sandbox_uid="$(id -u foxory-ci-sandbox)"
+          sudo -u foxory-ci-sandbox -H env XDG_RUNTIME_DIR="/run/user/$sandbox_uid" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$sandbox_uid/bus" \
+            systemd-run --user --scope --property=Delegate=yes bash -c '
+              set -euo pipefail
+              umask 077
+              cd "$HOME/source"
+              mkdir -m 0700 "$HOME/evidence"
+              uname -a > "$HOME/evidence/host.txt"
+              podman --remote=false version >> "$HOME/evidence/host.txt"
+              test "$(podman --remote=false info --format "{{.Host.Security.Rootless}}")" = true
+              python3 -m venv .venv
+              .venv/bin/pip install -r backend/requirements.lock
+              .venv/bin/pip install --no-deps -e backend
+              .venv/bin/python scripts/verify_worker_supply_chain.py --online > "$HOME/evidence/supply-chain.json"
+              podman --remote=false build -f sandbox_manager/runtime/Dockerfile -t localhost/foxory-worker:acceptance sandbox_manager/runtime 2>&1 | tee "$HOME/evidence/build.log"
+              image_id="$(podman --remote=false image inspect localhost/foxory-worker:acceptance --format "{{.Id}}")"
+              case "$image_id" in sha256:*) ;; *) image_id="sha256:$image_id" ;; esac
+              .venv/bin/python scripts/oci_host_acceptance.py --image "$image_id" --evidence "$HOME/evidence/runtime" 2>&1 | tee "$HOME/evidence/acceptance.log"
+            '
+      - name: Collect fixed-fixture evidence only
+        if: always()
+        run: |
+          if sudo test -d /home/foxory-ci-sandbox/evidence; then
+            sudo cp -r /home/foxory-ci-sandbox/evidence /tmp/foxory-rootless-evidence
+            sudo chown -R "$(id -u):$(id -g)" /tmp/foxory-rootless-evidence
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actual-rootless-ubuntu-24-evidence
+          path: /tmp/foxory-rootless-evidence/
+          retention-days: 30
+# No publication, deployment, Docker socket, owner data, credentials in the
+# dedicated account, cgroup chmod, rootful fallback or AppArmor/seccomp weakening.

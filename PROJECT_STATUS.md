@@ -2,6 +2,22 @@
 
 ## Image remediation in progress — actual release blockers
 
+The worker remediation at `94f4185` passed its actual hosted image gate
+(`40811156834`, job `123241518956`): zero HIGH/CRITICAL findings, 633 total
+remaining lower-severity findings, 18,450 SBOM components. This does not clear
+license obligations or compiled-browser coverage. The core scan is still
+running; no claim is made about its pending outcome.
+
+Added opt-in `scripts/oci_host_acceptance.py` and a manual rootless Ubuntu 24.04
+workflow. They use a dedicated account, ordinary systemd delegation, exact image,
+private disposable manager, actual startup probes and fixed in-container fixtures
+for CPU throttling/PID denial/OOM counters, JS/TS denial, browser artifacts,
+queued/running cancellation, timeout and real kill/restart/owned-vs-foreign
+orphan handling. They never execute task code in the host or change security
+policies. Syntax/schema checks passed; runtime results are pending. This is a
+separate host from the owner's Ubuntu 26.04, not a replacement for final topology,
+combined-model and restore acceptance. Optional production profiles stay off.
+
 Hosted run `40809535648` at `f927a6b` passed backend/core browser, real Python
 sandbox/browser, PostgreSQL and canonical Compose acceptance. The new image gate
 correctly blocked release: **61 core HIGH/CRITICAL package findings** and **nine
