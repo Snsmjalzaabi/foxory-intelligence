@@ -194,7 +194,8 @@ def test_probe_reports_partial_success_without_activating_application(monkeypatc
         assert project.files[project.entrypoint].startswith(verifier.PROBE)
         return {'stdout':'FOXORY_OCI_CONTROLS_OK','artifacts':{
             'result.json':artifact(json.dumps({'pcre2':{'version':'10.49 fixture',
-                'dfa_error':-63,'jit_stack_error':-46}}).encode())}}
+                'dfa_error':-63,'jit_stack_error':-46},'xrender':{'version':'0.9.13',
+                'baseline_asan_overflow_reproduced':True}}).encode())}}
     monkeypatch.setattr(verifier, 'inspect_host', lambda: {'static_requirements_met':True})
     monkeypatch.setattr(verifier.subprocess, 'run', lambda *args, **kwargs: SimpleNamespace(stdout='true'))
     monkeypatch.setattr(verifier, 'run_probe', run_probe)

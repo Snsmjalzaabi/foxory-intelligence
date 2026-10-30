@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "version": "0.9.13",
+  "archive_url": "https://xorg.freedesktop.org/archive/individual/lib/libXrender-0.9.13.tar.xz",
+  "archive_sha256": "3fe88c609df6782e1e7af2e4de36b2563d70cd70ff7dcb1cda561ad64912bb64",
+  "signature_sha256": "2cb12768fb1a22d4becac1935e4619ad87b2c2810b58a6c0ee44e82cc9abc65c",
+  "public_key_sha256": "cf5fa064bc5110a56315efed72a97552cf8989c9d177228982466526d4503027",
+  "signing_subkey_fingerprint": "3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2",
+  "primary_key_fingerprint": "3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2",
+  "package_version": "1:0.9.13-0foxory1",
+  "cve": "CVE-2026-88807",
+  "fix_commit": "0564bce5446550c1b1681f3d8a933c20ea1455f7",
+  "release_commit": "f30d654658ebf17d41141ed3ec2abf607d8a512e",
+  "source_date_epoch": 1792182503,
+  "license": "MIT",
+  "upstream_review": "https://gitlab.freedesktop.org/xorg/lib/libxrender/-/merge_requests/19",
+  "upstream_review_state": "merged"
+}

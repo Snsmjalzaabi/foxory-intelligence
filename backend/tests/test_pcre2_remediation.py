@@ -26,6 +26,8 @@ IMAGE='sha256:'+'a'*64
 @pytest.mark.parametrize('version',[None,'10.42-4ubuntu2.1','10.48-0foxory1','10.49-0foxory1'])
 def test_missing_old_or_unfixed_package_cannot_pass_worker_gate(version):
     components=[{'name':n,'purl':'pkg:deb/ubuntu/'+n+'@fixture'} for n in POLICY['required_packages']]
+    components += [{'name':n,'version':v,'purl':'pkg:deb/ubuntu/'+n+'@'+v}
+                   for n,v in POLICY['required_versions'].items() if n!='libpcre2-8-0']
     if version:
         components.append({'name':'libpcre2-8-0','version':version,'purl':'pkg:deb/ubuntu/libpcre2-8-0@'+version})
     result=audit.worker_packages(components)

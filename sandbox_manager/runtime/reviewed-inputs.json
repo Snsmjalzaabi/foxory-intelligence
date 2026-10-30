@@ -1,21 +1,32 @@
 {
   "base": "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea",
   "sha256": {
-    "Dockerfile": "82484f6b5ca11a311c0b0acd41d905b04ed6d9724eb14c25d1e525605012bf40",
+    "Dockerfile": "6b46d67c8f31580769554534090bb9857053ecfc7fe14d23d9a6c0013e686bab",
     ".dockerignore": "aa189ac5635ee4feb6bbc4cbc2a0b9b5ff9b9a6b0e07262136e05f03861670aa",
     "worker.mjs": "1bac7b6d314b968fbefde5cf6c906214ed59f5b26db7ae1c44065acab585a885",
     "package.json": "4750ee8ee283f0a3b591fc19a9fdd1cd1d2d5e2ecd7a7d2938134ac63b9b215b",
     "package-lock.json": "a6af4ba6da6f890fa9e99b36ba5be5dfec22d9a953da92a2a599256890c5d6d8",
     "prune-media.mjs": "7cd6ad5a9a31b8b420cfece51911d3d488b745a88a48d4a5be053c47d2bf23f9",
-    "worker-packages.json": "d821a2f10e04e2402d727097b92d8002e3528d089986daef851da04fdba9f326",
+    "worker-packages.json": "ed1e4eabaf0da99e43251a9e27751240e41e4233e3d7d49f98a77ecd17a5a278",
     "pcre2/source.json": "b1639717ca3bb0660f29972f33c3429514c03bbb51c17676ce93f3862168f3fc",
     "pcre2/release-key.asc": "24867285b8603cee390f195d321aeca11e6c835d31bc3b2c342fe8830d6826e9",
-    "pcre2/prepare.py": "8cf05453f748eeed7b82b51c3f9b4956fb917a51844978c918ac460a4986fd5c",
+    "pcre2/prepare.py": "1b426a29aa558bc117db20fada27495b029b29d200ddf25309a70a7635b23d10",
     "pcre2/build.sh": "82ee4bde7a33f4862514c3aa435858dd7933ddb29abeb6a71da28d468b78cecb",
     "pcre2/package.py": "e17cee633cac283077371779ba22138b9581ad1d91db338f24ce9206be449bcf",
     "pcre2/probe.c": "0aebbad684357bf6f83b05e392f5aa2a1064ed98e6183af7d8f7f4791b4df1f2",
     "pcre2/LICENCE.md": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
-    "pcre2/SLJIT-LICENSE": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb"
+    "pcre2/SLJIT-LICENSE": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb",
+    "xrender/source.json": "5d4d48e840a7402c545d54a1f0e278ff36b60e4d9065bbcc45c8438a643cba24",
+    "xrender/release-key.asc": "cf5fa064bc5110a56315efed72a97552cf8989c9d177228982466526d4503027",
+    "xrender/baseline/source.json": "c053d8506d511eee02c7c1969fe13f2b81f8ad2bd31bcc38e213b1bd606a5326",
+    "xrender/baseline/release-key.asc": "cac9ff620d3c3b984b5f72d674adb8cfd728cc796c0bae96ccc77c346d220c74",
+    "xrender/prepare.py": "a1d084c80b102eda9a47e7dd556a46882dc85f3cd39af7c30c22dc629479beaa",
+    "xrender/build.sh": "bc77db2debf3809bb3e1b18f824cd3d7c8dce9ccca5621766d6a63e3a04d4ba8",
+    "xrender/regression.py": "723d804f04a8de47d75ffddff667118a5dbf4ae27be74007e7ed4fcaed5ee165",
+    "xrender/package.py": "9dd83b183b757ab118aec633991765065fd44327ce26a7ce3126cc762b22d370",
+    "xrender/client.c": "dd12825427d9434342299be63c90938c880a8f6b671e87c06e562f7d78e44cba",
+    "xrender/probe.c": "0ccfea520fdb26fbaa15c56ea836289db79bfac061d4d8497e9e0b9df7d1886c",
+    "xrender/COPYING": "bbe1db89c48816c48248796adac91defd8fbde1141b145f01511781ab87f29a1"
   },
-  "review_scope": "Existing source graph, fixes and sandbox policy retained. Signed upstream PCRE2 10.49 source replaces the vulnerable library as a correctly versioned custom DEB; full normal and ASan/UBSan upstream tests, public ABI/SONAME and installed-native regressions required. Actual exact-image execution verification pending."
+  "review_scope": "Prior fixes preserved. Signed libXrender 0.9.13 replaces the affected library. Test-only signed 0.9.12 must reproduce the exact ASan overflow through a controlled X11 relay; fixed normal and sanitizer builds must accept healthy and reject excess-subpixel replies, preserve ABI/SONAME and pass loaded-file/runtime checks. Fresh actual image/runtime proof required."
 }

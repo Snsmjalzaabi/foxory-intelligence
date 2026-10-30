@@ -59,6 +59,7 @@
   ],
   "scope": "Merged worker runtime only. Chromium supported; unsupported system media/codec/parser and WebKit HTTP dependencies excluded. Lower-layer and bundled-browser distribution obligations remain.",
   "required_versions": {
-    "libpcre2-8-0": "10.49-0foxory1"
+    "libpcre2-8-0": "10.49-0foxory1",
+    "libxrender1": "1:0.9.13-0foxory1"
   }
 }

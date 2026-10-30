@@ -68,7 +68,22 @@ const actual=JSON.parse(native.stdout.toString());
 assert.ok(actual.version.startsWith('10.49 '));
 assert.equal(actual.dfa_error,-63);assert.equal(actual.jit_stack_error,-46);
 assert.equal(actual.unicode,true);assert.equal(actual.jit,true);
-fs.writeFileSync('/out/result.json',JSON.stringify({isolation_probe:'passed',pcre2:{...pcre,...actual}}));
+// XRender's API reports server protocol versions, not client library versions.
+// Bind the loaded client library to the signed-source build and protocol tests.
+const xr=JSON.parse(fs.readFileSync('/opt/foxory/xrender-runtime.json','utf8'));
+assert.equal(xr.version,'0.9.13');
+assert.equal(xr.source_sha256,'3fe88c609df6782e1e7af2e4de36b2563d70cd70ff7dcb1cda561ad64912bb64');
+assert.equal(xr.baseline_asan_overflow_reproduced,true);
+assert.equal(xr.normal_protocol_regressions,'passed');
+assert.equal(xr.asan_ubsan_protocol_regressions,'passed');
+assert.match(xr.library_path,new RegExp('^/usr/lib/(x86_64|aarch64)-linux-gnu/libXrender[.]so[.]1[.][0-9.]+$'));
+assert.equal(crypto.createHash('sha256').update(fs.readFileSync(xr.library_path)).digest('hex'),xr.library_sha256);
+const loaded=spawnSync('/opt/foxory/xrender-verify',[],{timeout:5000,maxBuffer:4096,env:{LANG:'C.UTF-8'}});
+assert.equal(loaded.status,0,loaded.stderr?.toString());
+const actualxr=JSON.parse(loaded.stdout.toString());
+assert.equal(actualxr.symbol,'XRenderQueryFormats');
+assert.equal(fs.realpathSync(actualxr.loaded_path),xr.library_path);
+fs.writeFileSync('/out/result.json',JSON.stringify({isolation_probe:'passed',pcre2:{...pcre,...actual},xrender:{...xr,...actualxr,loaded_path:fs.realpathSync(actualxr.loaded_path)}}));
 console.log('FOXORY_OCI_CONTROLS_OK');
 '''
 SITE = '''<!doctype html><html><body><input id="name"><button id="show"
@@ -160,10 +175,13 @@ def main() -> int:
         result = run_probe(args.image, OCIProject(profile=profile, files={filename:code}, entrypoint=filename), args.owner)
         if 'FOXORY_OCI_CONTROLS_OK' not in result['stdout']:
             raise RuntimeError('Missing controls attestation from fixed fixture')
-        proof=json.loads(base64.b64decode(result['artifacts']['result.json']['base64'],validate=True))['pcre2']
+        native=json.loads(base64.b64decode(result['artifacts']['result.json']['base64'],validate=True))
+        proof=native['pcre2']; xrender=native['xrender']
         if not proof.get('version','').startswith('10.49 ') or proof.get('dfa_error')!=-63 or proof.get('jit_stack_error')!=-46:
             raise RuntimeError('Missing installed PCRE2 security regression evidence')
-        evidence.append({'profile':profile,'fixture_passed':True,'pcre2':proof})
+        if xrender.get('version')!='0.9.13' or xrender.get('baseline_asan_overflow_reproduced') is not True:
+            raise RuntimeError('Missing installed Xrender security regression evidence')
+        evidence.append({'profile':profile,'fixture_passed':True,'pcre2':proof,'xrender':xrender})
         print('FOXORY_PROBE_PASSED '+profile, file=sys.stderr, flush=True)
     browser = OCIProject(profile='browser', files={'index.html':SITE,'report.txt':'Controlled fixture download'}, actions=[
         {'action':'navigate','target':'/'}, {'action':'type','target':'#name','text':'FOXORY_BROWSER_OK'},

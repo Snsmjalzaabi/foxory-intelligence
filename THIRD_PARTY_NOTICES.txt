@@ -12379,3 +12379,9 @@ Retained full terms: sandbox_manager/runtime/pcre2/LICENCE.md and SLJIT-LICENSE.
 Runtime package retains these notices under /usr/share/doc/libpcre2-8-0/.
 This is an upstream-source build, not a Canonical-issued Ubuntu security update.
 Other bundled binary licenses and distribution review remain separate.
+
+libXrender 0.9.13 (worker-only custom upstream-source libxrender1 package):
+MIT/X11 terms retained in sandbox_manager/runtime/xrender/COPYING and
+/usr/share/doc/libxrender1/copyright in the built worker. Signed source/key hashes
+and the test-only 0.9.12 baseline are pinned in runtime/xrender source manifests.
+This is not a Canonical-issued package. Other image license review remains open.

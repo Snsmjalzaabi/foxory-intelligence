@@ -12,11 +12,22 @@ RUN --mount=type=secret,id=proxy_ca FOXORY_WORKER_IMAGE_BUILD=1 python3 /opt/fox
 # Reviewed upstream tests run without network; no agent-generated code or host mounts.
 RUN --network=none FOXORY_WORKER_IMAGE_BUILD=1 sh /opt/foxory-pcre2/build.sh
 
+FROM upstream AS xrender-build
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential binutils python3 gnupg ca-certificates xz-utils pkg-config libx11-dev libxext-dev x11proto-dev xvfb \
+    && install -d -o 1000 -g 1000 /build /out
+COPY pcre2/prepare.py /opt/foxory-pcre2/prepare.py
+COPY xrender /opt/foxory-xrender
+USER 1000:1000
+RUN --mount=type=secret,id=proxy_ca FOXORY_WORKER_IMAGE_BUILD=1 python3 /opt/foxory-xrender/prepare.py
+RUN --network=none FOXORY_WORKER_IMAGE_BUILD=1 sh /opt/foxory-xrender/build.sh
+
 FROM upstream
 USER root
 WORKDIR /opt/foxory
 COPY --from=pcre2-build /out/libpcre2-8-0.deb /tmp/foxory-pcre2.deb
-RUN dpkg -i /tmp/foxory-pcre2.deb && rm /tmp/foxory-pcre2.deb \
+COPY --from=xrender-build /out/libxrender1.deb /tmp/foxory-xrender.deb
+RUN dpkg -i /tmp/foxory-pcre2.deb /tmp/foxory-xrender.deb && rm /tmp/foxory-pcre2.deb /tmp/foxory-xrender.deb \
     && test -z "$(dpkg --audit)"
 COPY worker-packages.json prune-media.mjs /opt/foxory-build/
 RUN apt-get update \

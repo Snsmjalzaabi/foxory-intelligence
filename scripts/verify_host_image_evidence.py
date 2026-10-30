@@ -118,6 +118,25 @@ def verify_pcre2_probe(image: str, probe: dict[str, Any]) -> dict[str, Any]:
     return p
 
 
+def verify_xrender_probe(image: str, probe: dict[str, Any]) -> dict[str, Any]:
+    policy=json.loads((ROOT/'sandbox_manager/runtime/xrender/source.json').read_text())
+    rows=probe.get('evidence',[])
+    if (probe.get('image')!=image or probe.get('status')!='fixed_probes_passed'
+            or len(rows)!=3 or {r.get('profile') for r in rows}!={'javascript','typescript','browser'}
+            or not all(r.get('fixture_passed') is True for r in rows)):
+        raise ValueError('Missing exact-image Xrender probe')
+    native=[r.get('xrender',{}) for r in rows if r['profile']!='browser']
+    if native[0]!=native[1]:raise ValueError('Xrender JS/TS evidence mismatch')
+    p=native[0]
+    if (p.get('version')!=policy['version'] or p.get('source_sha256')!=policy['archive_sha256']
+            or not re.fullmatch('[a-f0-9]{64}',str(p.get('library_sha256','')))
+            or p.get('loaded_path')!=p.get('library_path') or not str(p.get('loaded_path','')).startswith('/usr/lib/')
+            or p.get('symbol')!='XRenderQueryFormats' or p.get('baseline_asan_overflow_reproduced') is not True
+            or p.get('normal_protocol_regressions')!='passed' or p.get('asan_ubsan_protocol_regressions')!='passed'):
+        raise ValueError('Invalid installed Xrender security evidence')
+    return p
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--image', required=True)
@@ -131,6 +150,7 @@ def main() -> None:
         load_report(root / 'image-audit/summary.json'), load_report(root / 'summary.json'),
         load_report(root / 'security/tcp/summary.json'), load_report(root / 'security/unix/summary.json'))
     report['pcre2_runtime']=verify_pcre2_probe(args.image,load_report(root/'pcre2-runtime-probe.json'))
+    report['xrender_runtime']=verify_xrender_probe(args.image,load_report(root/'pcre2-runtime-probe.json'))
     report['source_commit'] = os.getenv('GITHUB_SHA', '')
     descriptor = os.open(root / 'verified-image-provenance.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(descriptor, 'w') as output:

@@ -1,5 +1,23 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Issue7 in progress — libXrender CVE-2026-88807
+
+Only Issue7 is active. The exact worker scan still haslibxrender1
+1:0.9.10-1.1build1; Ubuntu marks Noble vulnerable/deferred. Signed upstream0.9.13
+contains merged fix0564bce5446550c1b1681f3d8a933c20ea1455f7. It will replace the
+required library rather than remove Cairo/Chromium dependencies. Two publisher
+signatures (fixed0.9.13 and test-only vulnerable0.9.12) were verified using pinned
+public keys. A controlled local Xvfb/X11 relay must reproduce the old overflow
+under ASan, then require healthy/hostile-reply behavior in fixed normal and
+sanitized builds. No native overflow fixture runs on the main host/application.
+Actual compilation, protocol regressions, image audit and rootless workflow tests
+remain pending. Previous PCRE2 recipe/defaults are preserved; its signed-fetch
+helper only gains a validated optional archive filename. No sandbox permissions,
+quotas, defaults, owner data or unrelated blocker was changed.
+
+Issue6's requested email was sent after the verified evidence commit and the mail
+service confirmed sending. See docs/BLOCKER_REGISTER.md for the remaining gates.
+
 ## Issue6 fixed and verified — PCRE2 only
 
 The seven PCRE2 findings in the application, model-service and optional worker

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "version": "0.9.12",
+  "archive_url": "https://xorg.freedesktop.org/archive/individual/lib/libXrender-0.9.12.tar.xz",
+  "archive_sha256": "b832128da48b39c8d608224481743403ad1691bf4e554e4be9c174df171d1b97",
+  "signature_sha256": "521f04b27c6ef32435bcf6ddfd582dff5930a15e7afcdc41ecbd2e3cd57362ca",
+  "public_key_sha256": "cac9ff620d3c3b984b5f72d674adb8cfd728cc796c0bae96ccc77c346d220c74",
+  "signing_subkey_fingerprint": "2F7DBCAD5B30E668BBD516C1CFDF148828C642A7",
+  "primary_key_fingerprint": "4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E"
+}

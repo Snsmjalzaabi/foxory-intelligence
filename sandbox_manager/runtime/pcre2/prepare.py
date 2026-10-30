@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import ssl
 import subprocess
@@ -17,7 +18,9 @@ def verify_bytes(data: bytes, expected: str) -> None:
         raise ValueError('PCRE2 input checksum mismatch')
 
 
-def fetch_verified(root: Path, output: Path) -> dict:
+def fetch_verified(root: Path, output: Path, archive_name: str = 'source.tar.bz2') -> dict:
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,79}', archive_name):
+        raise ValueError('Unsafe signed-source archive filename')
     policy = json.loads((root / 'source.json').read_text())
     key = (root / 'release-key.asc').read_bytes()
     verify_bytes(key, policy['public_key_sha256'])
@@ -31,12 +34,12 @@ def fetch_verified(root: Path, output: Path) -> dict:
         if len(data) > 10_000_000:
             raise ValueError('PCRE2 archive byte budget')
         verify_bytes(data, digest)
-        (output / ('source.tar.bz2' + suffix)).write_bytes(data)
+        (output / (archive_name + suffix)).write_bytes(data)
     with tempfile.TemporaryDirectory() as home:
         subprocess.run(['gpg', '--homedir', home, '--batch', '--import', str(root / 'release-key.asc')],
                        check=True, capture_output=True, timeout=20)
         result = subprocess.run(['gpg', '--homedir', home, '--batch', '--status-fd=1', '--verify',
-                                 str(output / 'source.tar.bz2.sig'), str(output / 'source.tar.bz2')],
+                                 str(output / (archive_name + '.sig')), str(output / archive_name)],
                                 check=True, capture_output=True, text=True, timeout=20)
         valid = [line.split() for line in result.stdout.splitlines() if line.startswith('[GNUPG:] VALIDSIG ')]
         if len(valid) != 1 or valid[0][2] != policy['signing_subkey_fingerprint'] or valid[0][-1] != policy['primary_key_fingerprint']:

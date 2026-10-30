@@ -191,7 +191,20 @@ capability, filesystem/network or execution-deadline weakening was introduced.
 See [remediation evidence](evidence/issue6-pcre2-remediation-2026-10-29.json) and
 [owner rebuild/maintenance instructions](PCRE2_REMEDIATION.md). Owner host/images
 are unchanged until locally rebuilt. No other blocker or Phase5 work was started.
-Requested subject: **Issue 6 Fixed**; send only after this evidence is committed.
+The requested **Issue 6 Fixed** email was sent after verification/commit; the mail
+service confirmed sending.
+
+## Issue 7 — libXrender overflow, in progress
+
+The exact worker image has the affected Ubuntu1:0.9.10 library. Upstream0.9.13
+contains merged CVE-2026-88807 fix0564bce5. Both fixed and test-only old releases
+are authenticated with their pinned publisher keys. The required Chromium/Cairo
+library is retained and replaced, with full old-ABI/SONAME checks and a real
+controlled X11 proxy regression. The vulnerable control must reproduce ASan heap
+overflow; fixed normal/sanitized builds must reject excess subpixel entries and
+handle healthy Xvfb replies. Source and installed-byte gates preserve PCRE2 and
+all existing isolation controls. Actual builds/runtime verification are pending;
+no completion email has been sent. Other blockers remain queued, not in parallel.
 
 ## Remaining, not started
 

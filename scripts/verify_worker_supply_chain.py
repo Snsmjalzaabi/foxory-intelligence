@@ -16,7 +16,9 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]/'sandbox_manager/runtime'
 FILES=('Dockerfile','.dockerignore','worker.mjs','package.json','package-lock.json','prune-media.mjs','worker-packages.json',
        'pcre2/source.json','pcre2/release-key.asc','pcre2/prepare.py','pcre2/build.sh',
-       'pcre2/package.py','pcre2/probe.c','pcre2/LICENCE.md','pcre2/SLJIT-LICENSE')
+       'pcre2/package.py','pcre2/probe.c','pcre2/LICENCE.md','pcre2/SLJIT-LICENSE',
+       'xrender/source.json','xrender/release-key.asc','xrender/baseline/source.json','xrender/baseline/release-key.asc',
+       'xrender/prepare.py','xrender/build.sh','xrender/regression.py','xrender/package.py','xrender/client.c','xrender/probe.c','xrender/COPYING')
 BASE='mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea'
 
 def verify(online:bool=False)->dict:
@@ -37,6 +39,9 @@ def verify(online:bool=False)->dict:
         verifier=importlib.util.module_from_spec(spec);spec.loader.exec_module(verifier)
         with tempfile.TemporaryDirectory(prefix='foxory-pcre-source-') as temporary:
             verifier.fetch_verified(ROOT/'pcre2',Path(temporary)/'verified')
+        with tempfile.TemporaryDirectory(prefix='foxory-xrender-source-') as temporary:
+            for label,inputs in [('fixed',ROOT/'xrender'),('baseline',ROOT/'xrender/baseline')]:
+                verifier.fetch_verified(inputs,Path(temporary)/label,'source.tar.xz')
         import httpx
         with httpx.Client(timeout=45,follow_redirects=False) as client:
             response=client.get('https://mcr.microsoft.com/v2/playwright/manifests/'+BASE.split('@')[1],headers={
