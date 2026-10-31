@@ -1,5 +1,20 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Core image audit dependency correction — 2026-10-31
+
+Job `124470252296` (run `41178278530`, source `91f45b0`) passed the core
+application/browser/database/Compose checks, then blocked on seven HIGH pypdf
+findings (`CVE-2026-119203` through `CVE-2026-119209`) in version 6.21.2.
+PCRE2 version verification passed; the model-image audit was not reached.
+The runtime lock and native-install minimum now select pypdf 6.21.4, satisfying
+all seven fixed-version requirements reported by that scan. License notices and
+inventory were refreshed from the installed distribution. Core tests: 303 passed,
+17 actual sandbox-runtime tests deselected; source license review and dependency
+consistency passed. No audit policy or severity threshold was weakened.
+Fresh CI image scans are required before claiming final-image remediation;
+other release gates remain open. The original failed audit is retained in
+[the pypdf failure record](docs/evidence/core-pypdf-audit-failure-2026-10-31.json).
+
 ## Deployment operations preparation — 2026-10-31
 
 Core deployment configuration now passes exact allowed hosts, trusted proxy peers

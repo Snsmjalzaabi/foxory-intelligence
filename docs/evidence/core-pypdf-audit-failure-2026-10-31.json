@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "Snsmjalzaabi/foxory-intelligence",
+    "run_id": 41178278530,
+    "job_id": 124470252296,
+    "commit": "91f45b0b6246c041adbd8ca16086beb4cf5d55db",
+    "url": "https://github.com/Snsmjalzaabi/foxory-intelligence/actions/runs/41178278530/job/124470252296",
+    "method": "Application image audit summary transcribed from the job log; this is failed pre-upgrade evidence."
+  },
+  "summary": {
+    "status": "blocked",
+    "image": "sha256:fa63f34919293a366707712b7173382068139774b98dbded1f86b311444efe22",
+    "tools": {
+      "syft": {
+        "version": "1.55.0",
+        "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz",
+        "sha256": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+      },
+      "trivy": {
+        "version": "0.76.1",
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+        "sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+      }
+    },
+    "coverage_reported": true,
+    "os": {
+      "Family": "ubuntu",
+      "Name": "24.04"
+    },
+    "blocking": [
+      {
+        "id": "CVE-2026-119203",
+        "package": "pypdf",
+        "installed": "6.21.2",
+        "fixed": "6.21.4",
+        "severity": "HIGH",
+        "gate_reason": "severity"
+      },
+      {
+        "id": "CVE-2026-119204",
+        "package": "pypdf",
+        "installed": "6.21.2",
+        "fixed": "6.21.4",
+        "severity": "HIGH",
+        "gate_reason": "severity"
+      },
+      {
+        "id": "CVE-2026-119205",
+        "package": "pypdf",
+        "installed": "6.21.2",
+        "fixed": "6.21.4",
+        "severity": "HIGH",
+        "gate_reason": "severity"
+      },
+      {
+        "id": "CVE-2026-119206",
+        "package": "pypdf",
+        "installed": "6.21.2",
+        "fixed": "6.21.3",
+        "severity": "HIGH",
+        "gate_reason": "severity"
+      },
+      {
+        "id": "CVE-2026-119207",
+        "package": "pypdf",
+        "installed": "6.21.2",
+        "fixed": "6.21.3",
+        "severity": "HIGH",
+        "gate_reason": "severity"
+      },
+      {
+        "id": "CVE-2026-119208",
+        "package": "pypdf",
+        "installed": "6.21.2",
+        "fixed": "6.21.3",
+        "severity": "HIGH",
+        "gate_reason": "severity"
+      },
+      {
+        "id": "CVE-2026-119209",
+        "package": "pypdf",
+        "installed": "6.21.2",
+        "fixed": "6.21.3",
+        "severity": "HIGH",
+        "gate_reason": "severity"
+      }
+    ],
+    "required_security_fixes_sha256": "04cf1d64b557390aa84900af8ee3935db184db29ba34efaeb0fee0daa8dcf348",
+    "required_remediations": [
+      {
+        "id": "CVE-2026-85091",
+        "package": "zlib1g",
+        "vendor_fixed_version": "Ubuntu 24.04: 1:1.3.dfsg-3.1ubuntu2.3",
+        "reference": "https://ubuntu.com/security/notices/USN-8954-1"
+      }
+    ],
+    "total_findings": 33,
+    "unfixed_findings_ignored": false,
+    "limits": "Scanner feed coverage only; compiled browsers, sandbox isolation and license compatibility need separate review.",
+    "sbom_components": 3834,
+    "pcre2_version": {
+      "status": "passed",
+      "expected": "10.49-0foxory1",
+      "observed": [
+        "10.49-0foxory1"
+      ],
+      "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+      "scope": "Actual upstream source rebuild; raw distribution scanner entries remain unchanged."
+    }
+  },
+  "resolution": {
+    "locked_pypdf": "6.21.4",
+    "package_minimum": "6.21.4",
+    "policy_changed": false,
+    "image_verification": "Requires a fresh CI image build and audit; the original failed job did not reach the model image audit."
+  }
+}
