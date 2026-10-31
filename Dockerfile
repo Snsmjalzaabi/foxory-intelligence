@@ -51,5 +51,5 @@ COPY --chmod=0444 LICENSE NOTICE THIRD_PARTY_NOTICES.txt /usr/share/doc/foxory/
 RUN groupadd --gid 10001 foxory && useradd --uid 10001 --gid 10001 --no-create-home foxory && mkdir /data && chown foxory:foxory /data
 USER 10001:10001
 EXPOSE 8000
-HEALTHCHECK --interval=20s --timeout=5s --start-period=30s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=3)"
+HEALTHCHECK --interval=20s --timeout=5s --start-period=30s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/ready',timeout=3)"
 CMD ["sh", "-c", "alembic upgrade head && exec uvicorn foxory.main:app --host 0.0.0.0 --port 8000 --workers 1 --no-access-log --limit-concurrency 32"]

@@ -1,5 +1,12 @@
 # Configuration
 
+Compose passes `FOXORY_ALLOWED_HOSTS` (comma-separated exact host names),
+`FOXORY_SECURE_COOKIES` (`0` or `1`) and `FORWARDED_ALLOW_IPS` (trusted proxy
+peers) to the application. Keep localhost/127.0.0.1 allowed for health probes.
+Use secure cookies and a narrowly trusted proxy for HTTPS deployments; see
+[deployment operations](docs/DEPLOYMENT.md). Environment changes require app
+container recreation.
+
 Optional Linux manager Unix transport is described in
 [SANDBOX_UNIX_SOCKET.md](docs/SANDBOX_UNIX_SOCKET.md). It requires explicit
 enablement/key, a private verified socket and an empty `FOXORY_SANDBOX_URL`.

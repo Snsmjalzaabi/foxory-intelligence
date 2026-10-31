@@ -1,5 +1,17 @@
 # FOXORY Intelligence — core product recovery; Phase 4 acceptance still pending
 
+## Deployment operations preparation — 2026-10-31
+
+Core deployment configuration now passes exact allowed hosts, trusted proxy peers
+and an explicit secure-cookie setting through Compose. Image health uses a
+database/migration-aware readiness endpoint, separate from API liveness. Private
+HTTPS proxy, monitoring, upgrade/backup/rollback instructions and verification
+scope are in [deployment operations](docs/DEPLOYMENT.md). Core tests: 303 passed;
+frontend production build, dependency consistency, Compose validation and a
+disposable stock PostgreSQL migration/restart/logical-restore check passed.
+No fresh final-image/security audit or public production clearance is claimed.
+The existing Issue7, security/license and host acceptance gates below remain open.
+
 ## Issue7 in progress — libXrender CVE-2026-88807
 
 Only Issue7 is active. The exact worker scan still haslibxrender1

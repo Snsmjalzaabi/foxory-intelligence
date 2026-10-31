@@ -6,6 +6,9 @@ A local-first AI workspace for conversations, web research, document intelligenc
 
 ## Start locally
 
+For private server operations, HTTPS proxy configuration, readiness monitoring
+and upgrade/rollback steps, see [deployment operations](docs/DEPLOYMENT.md).
+
 Requires Docker Engine + Compose v2 and Python 3.11+ for local secret generation.
 
 ```sh

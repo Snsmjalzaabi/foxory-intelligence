@@ -7,6 +7,9 @@ services:
       - "127.0.0.1:${FOXORY_PORT:-8000}:8000"
     environment:
       FOXORY_TOKEN: ${FOXORY_TOKEN:?Run python scripts/setup.py first}
+      FOXORY_ALLOWED_HOSTS: ${FOXORY_ALLOWED_HOSTS:-localhost,127.0.0.1,[::1]}
+      FOXORY_SECURE_COOKIES: ${FOXORY_SECURE_COOKIES:-0}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
       DATABASE_URL: postgresql+psycopg://foxory:${POSTGRES_PASSWORD:?Run setup first}@db:5432/foxory
       OLLAMA_URL: http://ollama:11434
       SEARXNG_URL: ${SEARXNG_URL:-}

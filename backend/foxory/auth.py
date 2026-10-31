@@ -9,7 +9,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, InvalidHashError
-from .config import TOKEN
+from .config import TOKEN, SECURE_COOKIES
 from .db import Session, User, Workspace, Membership, LoginSession, uid, now
 from .scope import workspace_id
 router=APIRouter(prefix='/api/auth')
@@ -60,7 +60,7 @@ def issue(user_id:str,request:Request,response:Response):
     token=secrets.token_urlsafe(40);csrf=secrets.token_urlsafe(32)
     with Session() as s:
         s.add(LoginSession(token_hash=digest(token),user_id=user_id,expires_at=(datetime.now(timezone.utc)+timedelta(hours=12)).isoformat(),csrf=csrf));s.commit()
-    response.set_cookie('foxory_session',token,httponly=True,samesite='strict',secure=request.url.scheme=='https',max_age=43200,path='/')
+    response.set_cookie('foxory_session',token,httponly=True,samesite='strict',secure=SECURE_COOKIES or request.url.scheme=='https',max_age=43200,path='/')
     return {'authenticated':True,'csrf':csrf}
 
 @router.post('/setup',status_code=201)
