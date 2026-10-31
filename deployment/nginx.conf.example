@@ -1,0 +1,32 @@
+# Install inside nginx's http context after replacing intelligence.example.com
+# and provisioning the certificate. This example uses nginx on the Docker host.
+server {
+    listen 80;
+    server_name intelligence.example.com;
+    return 308 https://intelligence.example.com$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name intelligence.example.com;
+    ssl_certificate /etc/letsencrypt/live/intelligence.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/intelligence.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 11m;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # Replace client-supplied values at this single trusted edge.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Connection "";
+        # Chat and research stream over HTTP; buffering hides progress.
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 900s;
+        proxy_send_timeout 900s;
+    }
+}

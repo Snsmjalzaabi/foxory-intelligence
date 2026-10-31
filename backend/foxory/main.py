@@ -17,7 +17,7 @@ from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.responses import StreamingResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, delete, update
+from sqlalchemy import select, func, delete, update, text
 from sqlalchemy.exc import IntegrityError
 import httpx
 from . import inference
@@ -57,7 +57,7 @@ from .computer_api import router as computer_router
 app.include_router(computer_router)
 
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=os.getenv("FOXORY_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],testserver").split(","))
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=[host.strip() for host in os.getenv("FOXORY_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1],testserver").split(",") if host.strip()])
 
 @app.middleware("http")
 async def security(request: Request, call_next):
@@ -85,7 +85,7 @@ async def security(request: Request, call_next):
 
     scope_token=None
     actor_token=None
-    public={"/api/health","/api/auth/status","/api/auth/setup","/api/auth/login"}
+    public={"/api/health","/api/ready","/api/auth/status","/api/auth/setup","/api/auth/login"}
     if path.startswith("/api/"):
         origin=request.headers.get('origin')
         if origin and origin.rstrip('/')!=str(request.base_url).rstrip('/'):
@@ -136,6 +136,28 @@ def validate_record(kind, body):
 
 @app.get("/api/health")
 def health(): return {"status":"ok", "version":"0.1.0", "edition":"Community"}
+
+@app.get("/api/ready")
+def ready():
+    # Liveness stays independent of dependencies. Readiness checks the migrated
+    # schema, including accounts, without exposing connection details or data.
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+    from .db import User
+    try:
+        root = Path(__file__).resolve().parents[1]
+        cfg = Config(str(root / "alembic.ini"))
+        cfg.set_main_option("script_location", str(root / "migrations"))
+        heads = set(ScriptDirectory.from_config(cfg).get_heads())
+        with Session() as s:
+            revisions = set(s.execute(text("SELECT version_num FROM alembic_version")).scalars())
+            if revisions != heads:
+                return Response('{"status":"not_ready"}', 503, media_type="application/json")
+            s.execute(select(Record.id).limit(1))
+            s.execute(select(User.id).limit(1))
+    except Exception:
+        return Response('{"status":"not_ready"}', 503, media_type="application/json")
+    return {"status": "ready"}
 
 @app.get("/api/overview")
 def overview():
