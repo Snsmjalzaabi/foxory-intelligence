@@ -1,0 +1,179 @@
+# Standalone Ubuntu/Linux profile; do not merge with compose.yaml.
+name: foxory-local
+services:
+  app:
+    build: .
+    init: true
+    network_mode: host
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3636/api/ready',timeout=3)"]
+    command: [sh, -c, "alembic upgrade head && exec uvicorn foxory.main:app --host 127.0.0.1 --port 3636 --workers 1 --no-access-log --limit-concurrency 32"]
+    environment:
+      FOXORY_TOKEN: ${FOXORY_TOKEN:?Run python scripts/setup.py first}
+      FOXORY_ALLOWED_HOSTS: ${FOXORY_ALLOWED_HOSTS:-localhost,127.0.0.1,[::1]}
+      FOXORY_SECURE_COOKIES: ${FOXORY_SECURE_COOKIES:-0}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
+      DATABASE_URL: postgresql+psycopg://foxory:${POSTGRES_PASSWORD:?Run setup first}@127.0.0.1:${FOXORY_LOCAL_DB_PORT:-55432}/foxory
+      OLLAMA_URL: ${FOXORY_HOST_OLLAMA_URL:-http://127.0.0.1:11434}
+      FOXORY_LLAMA_URL: ${FOXORY_LLAMA_URL:-}
+      FOXORY_LLAMA_MODEL: ${FOXORY_LLAMA_MODEL:-qwen2.5-1.5b-instruct-q4_k_m}
+      FOXORY_LLAMA_API_KEY: ${FOXORY_LLAMA_API_KEY:-}
+      FOXORY_WHISPER_URL: ${FOXORY_WHISPER_URL:-}
+      FOXORY_NTFY_URL: ${FOXORY_NTFY_URL:-}
+      FOXORY_WATCH_ENABLED: ${FOXORY_WATCH_DIR:+1}
+      FOXORY_PUBLIC_ORIGINS: ${FOXORY_PUBLIC_ORIGINS:-}
+      FOXORY_PROFILE: ${FOXORY_PROFILE:-}
+      FOXORY_LLAMA_CONTEXT: 8192
+      FOXORY_LLAMA_MODEL_BYTES: 1117320736
+      SEARXNG_URL: ${SEARXNG_URL:-http://127.0.0.1:8889}
+      FOXORY_ENABLE_SANDBOX: ${FOXORY_ENABLE_SANDBOX:-0}
+      FOXORY_SANDBOX_URL: ${FOXORY_SANDBOX_URL:-}
+      FOXORY_SANDBOX_SOCKET: ${FOXORY_SANDBOX_SOCKET:-}
+      FOXORY_SANDBOX_KEY: ${FOXORY_SANDBOX_KEY:-}
+      FOXORY_BACKGROUND_CONTEXT: ${FOXORY_BACKGROUND_CONTEXT:-2048}
+      FOXORY_BACKGROUND_OUTPUT: ${FOXORY_BACKGROUND_OUTPUT:-256}
+      FOXORY_WORKER_CONCURRENCY: ${FOXORY_WORKER_CONCURRENCY:-1}
+      FOXORY_INFERENCE_THREADS: ${FOXORY_INFERENCE_THREADS:-2}
+      FOXORY_ALLOW_PARALLEL_COUNCIL: ${FOXORY_ALLOW_PARALLEL_COUNCIL:-0}
+    volumes:
+      - app_data:/data
+      # Read-only; defaults to an empty private folder when no watched folder is configured.
+      - ${FOXORY_WATCH_DIR:-./.local-ai/watch}:/watch:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+      search:
+        condition: service_started
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 2g
+    restart: unless-stopped
+  db:
+    ports:
+      - "127.0.0.1:${FOXORY_LOCAL_DB_PORT:-55432}:5432"
+    # No implicit database-family switch for existing installations. setup.py
+    # selects modern only for NEW .env files; see docs/DATABASE_UPGRADE.md.
+    image: foxory-postgres:${FOXORY_DATABASE_LAYOUT:?Run setup.py for a new installation; existing installations must read docs/DATABASE_UPGRADE.md}-17-community
+    build:
+      context: .
+      dockerfile: deployment/postgres/Dockerfile
+      target: ${FOXORY_DATABASE_LAYOUT:?Select modern or legacy deliberately}
+    environment:
+      POSTGRES_DB: foxory
+      POSTGRES_USER: foxory
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run setup first}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h 127.0.0.1 -U foxory -d foxory -Atqc "SELECT 1" >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    restart: unless-stopped
+
+  ollama:
+    image: foxory-ollama:0.40.13-local
+    build:
+      context: .
+      target: ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+    environment:
+      OLLAMA_NO_CLOUD: "true"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_QUEUE: "8"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ollama_cache:/root/.nv
+    security_opt: [no-new-privileges:true]
+    mem_limit: 16g
+    restart: unless-stopped
+
+  llama:
+    profiles: [lite]
+    image: ${FOXORY_LLAMA_IMAGE:-foxory-llama-cpu:7.0.1}
+    build:
+      context: .
+      dockerfile: deployment/llama/Dockerfile
+      args:
+        FOXORY_APP_IMAGE: ${FOXORY_AI_APP_IMAGE:-foxory-local-app:7.0.1}
+    ports:
+      - "127.0.0.1:11436:8080"
+    environment:
+      LLAMA_API_KEY: ${FOXORY_LLAMA_API_KEY:-}
+    command: [--host, "0.0.0.0", --port, "8080", --model, /models/qwen2.5-1.5b-instruct-q4_k_m.gguf, --alias, qwen2.5-1.5b-instruct-q4_k_m, --ctx-size, "8192", --parallel, "1", --threads, "2", --threads-batch, "2", --n-gpu-layers, "0", --poll, "0", --no-ui]
+    volumes:
+      - ./.local-ai/models:/models:ro
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 3g
+    cpus: 2
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  whisper:
+    profiles: [voice]
+    image: ${FOXORY_WHISPER_IMAGE:-foxory-whisper-cpu:latest}
+    build:
+      context: .
+      dockerfile: deployment/whisper/Dockerfile
+      args:
+        FOXORY_APP_IMAGE: ${FOXORY_AI_APP_IMAGE:-foxory-local-app:latest}
+    ports:
+      - "127.0.0.1:11437:8080"
+    # One pinned model; /load is removed at build time. No ffmpeg conversion: the app sends 16 kHz WAV.
+    command: [--host, "0.0.0.0", --port, "8080", --model, /models/ggml-small-q5_1.bin, --language, auto, --threads, "2", --inference-path, /inference]
+    volumes:
+      - ./.local-ai/models:/models:ro
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 2g
+    cpus: 2
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  search:
+    image: foxory-search:2026.10.17-certifi-2026.10.19
+    build:
+      context: .
+      dockerfile: deployment/search/Dockerfile
+    ports:
+      - "127.0.0.1:8889:8080"
+    volumes:
+      - ./deployment/searxng-local.yml:/etc/searxng/settings.yml:ro
+    environment:
+      SEARXNG_BASE_URL: http://localhost:8889/
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    restart: unless-stopped
+
+volumes:
+  app_data:
+  postgres_data:
+  ollama_data:
+  ollama_cache:

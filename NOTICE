@@ -3,3 +3,5 @@ Copyright 2026 FOXORY Intelligence contributors.
 Original project source is licensed under Apache License 2.0.
 Third-party packages, container images, and user-downloaded models retain their own licenses.
 See docs/DEPENDENCIES.md. No model weights or third-party artwork are included.
+
+FOXORY V7 optionally uses the MIT-licensed llama.cpp CPU server and the Apache-2.0 licensed Qwen2.5-1.5B-Instruct GGUF model. Pinned sources and hashes are listed in deployment/llama/manifest.json. Runtime licenses ship in /usr/share/doc/foxory; model LICENSE is downloaded beside its verified weights.

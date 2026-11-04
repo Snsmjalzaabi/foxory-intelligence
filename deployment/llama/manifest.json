@@ -1,0 +1,18 @@
+{
+  "llama_cpp": {
+    "version": "v0.8.0",
+    "commit": "8642541b255bfb5dc39cd351a178be09013a55d6",
+    "source_url": "https://codeload.github.com/ggml-org/llama.cpp/tar.gz/8642541b255bfb5dc39cd351a178be09013a55d6",
+    "source_sha256": "1688a167a8edd9499cdd0c19b8bd044f0fa184b466981977bbf2222d884953a4"
+  },
+  "model": {
+    "repository": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+    "revision": "91cad51170dc346986eccefdc2dd33a9da36ead9",
+    "filename": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+    "sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+    "bytes": 1117320736,
+    "license": "Apache-2.0",
+    "context": 8192,
+    "alias": "qwen2.5-1.5b-instruct-q4_k_m"
+  }
+}

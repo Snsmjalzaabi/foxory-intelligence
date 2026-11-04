@@ -1,3 +1,29 @@
+# FOXORY Intelligence 8.0.0 — 2026-11-05
+
+First release of the local edition: a complete private AI workspace that runs on your own
+computer with free local models. Highlights since the Phase 4 development line:
+
+- **Models:** recommended catalogue of small free models with hardware fit and licenses;
+  one-click install and uninstall; task-aware automatic routing; optional CPU llama.cpp
+  companion with eco, balanced and quality modes; a local quality check whose results steer
+  routing.
+- **Chat:** conversation workspace with file and image attachments (local vision models),
+  document reader and downloads, chat-driven actions, schedules and skills, conversational
+  memory.
+- **Voice:** local speech-to-text with whisper.cpp and read-aloud replies.
+- **Work:** project spaces for writing and business, business pipeline, AI Workforce agents
+  with approval gates, project automation, tested data-only skills, owner-reviewed
+  self-improvement lab.
+- **Reach:** notification bell, desktop notifications and optional self-hosted ntfy push;
+  installable web app with private phone access through Tailscale; read-only watched folder.
+- **Control:** every add has a matching remove (models, projects, items, skills, members,
+  workspaces); profiles hold names, regional defaults, default models and starters;
+  appearance editor; signed local updates, backups and restore verification.
+- **Runs anywhere Docker runs on Linux:** an NVIDIA GPU is used automatically when available
+  and is no longer required.
+
+## Earlier upstream history
+
 # Changelog
 
 ## Phase 4 — incomplete, unreleased

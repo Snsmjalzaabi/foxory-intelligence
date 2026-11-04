@@ -91,5 +91,8 @@ async def test_expiry_role_revocation_and_installation_permissions(client):
     from foxory.auth import digest
     with Session() as s:
         session=s.get(LoginSession,digest(client.cookies.get('foxory_session')))
-        session.expires_at='2000-01-01T00:00:00+00:00';s.commit()
+        session.expires_at='2000-01-01T00:00:00+00:00';s.commit();expired=session.token_hash
     assert (await client.get('/api/overview')).status_code==401
+    # Issuing a new session purges expired rows instead of retaining them forever.
+    assert (await client.post('/api/auth/login',json={'username':'owner','password':'long-test-password-123'})).status_code==200
+    with Session() as s:assert s.get(LoginSession,expired) is None

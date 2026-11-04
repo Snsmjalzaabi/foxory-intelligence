@@ -1,0 +1,5 @@
+# Added automatically by scripts/foxory_compose.py when Docker can use an NVIDIA GPU
+# (override with FOXORY_GPU=on or off in .env). Without it, local models run on the CPU.
+services:
+  ollama:
+    gpus: all

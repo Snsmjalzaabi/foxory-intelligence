@@ -30,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ollama-url', required=True)
+    parser.add_argument('--searxng-url', default='', help='Existing local search service; otherwise use Wikipedia API')
     parser.add_argument('--model', default='qwen2.5:0.5b')
     parser.add_argument('--council-model', default='smollm2:135m')
     parser.add_argument('--embedding-model', default='nomic-embed-text:latest')
@@ -58,7 +59,7 @@ def main() -> None:
             reservation.bind(('127.0.0.1', 0)); port = reservation.getsockname()[1]
         env = {**os.environ, 'FOXORY_DATA_DIR':str(private/'data'),
                'DATABASE_URL':'sqlite:///'+str(database), 'FOXORY_TOKEN':token,
-               'OLLAMA_URL':args.ollama_url.rstrip('/'), 'SEARXNG_URL':'',
+               'OLLAMA_URL':args.ollama_url.rstrip('/'), 'SEARXNG_URL':args.searxng_url,
                'FOXORY_ENABLE_SANDBOX':'0', 'FOXORY_SANDBOX_URL':'', 'FOXORY_SANDBOX_KEY':'',
                'FOXORY_BACKGROUND_CONTEXT':'2048', 'FOXORY_BACKGROUND_OUTPUT':'256',
                'FOXORY_INFERENCE_THREADS':'2', 'FOXORY_WORKER_CONCURRENCY':'1',
@@ -104,7 +105,7 @@ def main() -> None:
                 event = next((s[7:] for s in block.splitlines() if s.startswith('event: ')), '')
                 data = next((s[6:] for s in block.splitlines() if s.startswith('data: ')), '')
                 if data: frames.append((event,json.loads(data)))
-            assert frames and not any(event=='error' for event, _ in frames), frames[-1:]
+            assert frames and not any(event=='error' for event, _ in frames), [item for item in frames if item[0] in {'error','done'}]
             answer = ''.join(data for event,data in frames if event=='delta')
             assert answer.strip()
             return answer, next(data for event,data in frames if event=='done')
@@ -147,7 +148,7 @@ def main() -> None:
             assert web['sources'] and all(s['evidence_type']=='retrieved_page' for s in web['sources'])
             assert web['citation_verification']['valid'], 'Search chat returned unsupported prose'
             evidence['web_sources'] = [{'url':s['url'],'content_hash':s['content_hash']} for s in web['sources']]
-            passed('real default internet search and public-page retrieval', citation_verification=web.get('citation_verification'))
+            passed('real configured internet search and public-page retrieval', citation_verification=web.get('citation_verification'))
 
             research_request = {'type':'research','prompt':'retrieval augmented generation',
                 'models':[args.model],'idempotency_key':secrets.token_hex(16),

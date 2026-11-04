@@ -46,7 +46,9 @@ FROM python-runtime AS application
 WORKDIR /app/backend
 COPY --from=api-build /opt/foxory-venv /opt/foxory-venv
 COPY --from=api-build --chown=10001:10001 /app/backend /app/backend
+COPY --chown=10001:10001 profiles /app/profiles
 COPY --from=ui --chown=10001:10001 /build/dist /app/frontend/dist
+COPY --from=ui --chown=10001:10001 /build/src/Operations.tsx /build/src/Performance.tsx /app/evolution-source/
 COPY --chmod=0444 LICENSE NOTICE THIRD_PARTY_NOTICES.txt /usr/share/doc/foxory/
 RUN groupadd --gid 10001 foxory && useradd --uid 10001 --gid 10001 --no-create-home foxory && mkdir /data && chown foxory:foxory /data
 USER 10001:10001

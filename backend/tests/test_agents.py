@@ -31,6 +31,8 @@ def test_math_denies_code_and_unbounded_expressions():
     assert arithmetic('(6*7)+2-2')==42
     for v in ['__import__("os").system("id")','2**100000','[1]*100','float("inf")','True','1e100','1/0']:
         with pytest.raises((ValueError,ZeroDivisionError,SyntaxError)):arithmetic(v)
+    for v in ['1/0','5%0','1/(2-2)']:
+        with pytest.raises(ValueError,match='Division by zero'):arithmetic(v)
 
 async def test_tool_permissions_schemas_and_untrusted_data():
     cfg=AgentConfig(tools=['math.calculate'],permissions=['calculate']).model_dump()
@@ -286,3 +288,16 @@ async def test_small_format_parser_retains_sandbox_without_office_preload():
     payload=json.dumps({'name':'wrong.docx','raw':base64.b64encode(b'text').decode()}).encode()
     checked=subprocess.run([sys.executable,'-I',str(WORKER),'--format=.txt'],input=payload,capture_output=True,timeout=20,check=True)
     assert 'error' in json.loads(checked.stdout)
+
+async def test_planning_schema_only_names_explicit_grants(client,monkeypatch):
+    a=await agent(client,'Writer with no tools')
+    async def structured(model,messages,schema):
+        props=schema['$defs']['Step']['properties']
+        assert props['agent_id']['anyOf'][0]['enum']==['coordinator']
+        assert props['tool']['anyOf']==[{'type':'null'}]
+        assert 'math.calculate' not in messages[-1]['content']
+        return '{"steps":[{"title":"Draft","tool":null,"agent_id":null,"instruction":"Draft a concise answer"}]}'
+    monkeypatch.setattr(inference,'structured',structured)
+    monkeypatch.setattr(inference,'complete',prose)
+    j=await task(client,a);d=await finish(j['id'])
+    assert d['status']=='completed' and all(o['tool'] is None for o in d['outputs'])

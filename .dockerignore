@@ -22,3 +22,16 @@ backend/tests
 frontend/tests
 frontend/test-results
 frontend/playwright-report
+
+releases
+maintenance-state.json
+
+update-trust/
+update-policy.json
+release-channel/
+update-cache/
+security-tools/
+
+evolution-work/
+
+.local-ai/

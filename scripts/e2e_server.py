@@ -52,6 +52,20 @@ class OllamaFixture(BaseHTTPRequestHandler):
         if self.path=='/api/embed':
             self.wfile.write(json.dumps({'embeddings':[[1.0,0.0] for _ in request['input']]}).encode());return
         if self.path=='/api/show':self.wfile.write(json.dumps({'capabilities':['completion','embedding'],'details':{'fixture':True}}).encode());return
+        if request.get('format') and 'actions' in request['format'].get('properties',{}):
+            prompt=json.loads(request['messages'][-1]['content']);text=prompt['current_request']
+            actions=[{'tool':'artifact.write','title':'Finished browser offer','goal':'Write the complete offer document'}] if 'EXECUTION_BROWSER' in text else []
+            if 'SOURCE_BROWSER' in text:actions=[{'tool':'source.package','title':'Browser source fixture','goal':'Create a complete tiny app'}]
+            self.wfile.write((json.dumps({'message':{'content':json.dumps({'actions':actions,'reply':''})},'done':True})+'\n').encode());return
+        if request.get('format') and 'files' in request['format'].get('properties',{}):
+            files=[{'path':'index.html','content':'<!doctype html><title>Fixture app</title><h1>Local source preview fixture</h1>'},{'path':'README.md','content':'# Fixture app\nOpen index.html in your browser. Test-only source.'}]
+            self.wfile.write((json.dumps({'message':{'content':json.dumps({'files':files})},'done':True})+'\n').encode());return
+        if request.get('format') and 'edits' in request['format'].get('properties',{}):
+            proposal={'title':'Fixture performance clarity improvement','rationale':'Clarify the displayed title.','expected_benefit':'Easier navigation; owner review needed.','risks':'Text change; check layout.','edits':[{'old':'your computer performance','new':'your computer performance overview'}]}
+            self.wfile.write((json.dumps({'message':{'content':json.dumps(proposal)},'done':True})+'\n').encode());return
+        if request.get('format') and 'project_kinds' in request['format'].get('properties',{}):
+            definition={'name':'Fixture learned skill','purpose':'Create a useful project checklist','instructions':'Draft only from actual supplied project facts.','project_kinds':['business'],'steps':[{'action':'context'},{'action':'draft','instruction':'Create a concise checklist with unknown facts unset.'}]}
+            self.wfile.write((json.dumps({'message':{'content':json.dumps(definition)},'done':True})+'\n').encode());return
         if request.get('format'):
             data=json.loads(request['messages'][-1]['content'])
             delegates=data.get('delegates',{})
@@ -70,5 +84,21 @@ server=ThreadingHTTPServer(('127.0.0.1',11435),OllamaFixture)
 threading.Thread(target=server.serve_forever,daemon=True).start()
 subprocess.run([sys.executable,'-m','alembic','upgrade','head'],cwd=root/'backend',check=True)
 os.chdir(root/'backend')
+# Test-only GitHub protocol fixture. Production startup never imports this script.
+from foxory import repositories
+import base64,hashlib
+_source_files={'README.md':b'# Fixture project\nA local business workspace with documented architecture.','src/main.py':b'print("source preview fixture")\n','.env':b'SECRET=test-only'}
+def _git_sha(raw):return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+async def _repository_fixture(client,path):
+    from fastapi import HTTPException
+    if not path.startswith('/repos/fixture-owner/fixture-repo'):raise HTTPException(404,'Test fixture repository not found')
+    if '/commits/' in path:return {'sha':'a'*40}
+    if '/git/trees/' in path:return {'truncated':False,'tree':[{'path':name,'type':'blob','size':len(raw),'sha':_git_sha(raw)} for name,raw in _source_files.items()]}
+    if '/git/blobs/' in path:
+        for raw in _source_files.values():
+            if path.endswith(_git_sha(raw)):return {'encoding':'base64','content':base64.b64encode(raw).decode()}
+        raise HTTPException(404,'Test blob not found')
+    return {'default_branch':'main','description':'Explicit test-only source fixture','license':{'spdx_id':'Apache-2.0'}}
+repositories.github=_repository_fixture
 import uvicorn
 uvicorn.run('foxory.main:app',host='127.0.0.1',port=8001,workers=1)

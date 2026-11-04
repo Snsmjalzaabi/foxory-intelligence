@@ -47,7 +47,23 @@ async def document_evidence(query:str,ids:list[str]|None=None,model:str|None=Non
                 text=d['text'][part['offset']:part['offset']+1400]
                 found.append({'document_id':r.id,'title':r.title,'offset':part['offset'],'text':text,'score':cosine(vector,part['vector']),'retrieval':'local_embedding'})
         found=sorted(found,key=lambda x:x['score'],reverse=True)[:limit]
-    else:found=retrieve(records,query,limit)
+    else:
+        found=retrieve(records,query,limit)
+        if ids is not None:
+            # Explicitly selected documents must not disappear merely because a
+            # repository address or high-level question has no lexical overlap.
+            by_id={r.id:r for r in records};ordered=[by_id[id] for id in ids if id in by_id]
+            candidates=retrieve(records,query,max(limit,len(ordered))*20)
+            selected=[]
+            for record in ordered[:limit]:
+                best=next((item for item in candidates if item['document_id']==record.id),None)
+                if best is None:
+                    text=json.loads(record.payload).get('text','')[:1400]
+                    if not text.strip():continue
+                    best={'document_id':record.id,'title':record.title,'offset':0,'text':text,'score':0,'retrieval':'selected_document_excerpt'}
+                selected.append(best)
+            used={(x['document_id'],x['offset']) for x in selected}
+            found=selected+[x for x in candidates if (x['document_id'],x['offset']) not in used][:max(0,limit-len(selected))]
     for i,item in enumerate(found):
         item.update(id=i+1,url='/api/documents/'+item['document_id']+'/download',evidence_type='document_excerpt',content_hash=hashlib.sha256(item['text'].encode()).hexdigest(),retrieval=item.get('retrieval','keyword'))
     return found

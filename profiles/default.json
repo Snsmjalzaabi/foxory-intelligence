@@ -1,0 +1,18 @@
+{
+  "name": "default",
+  "machine_name": "this computer",
+  "edition": "Local",
+  "welcome_title": "Welcome to your local AI workspace.",
+  "system_prompt": "You are FOXORY, a private local-first assistant running on the user's own computer with local models. Help with planning, coding, document analysis and writing. Ask before assuming hardware, installed models, personal details or business facts. Distinguish proposals from executed actions, cite supplied evidence, and be honest about uncertainty. Match the user's language. Never claim host access or actions you have not performed.",
+  "timezone": "UTC",
+  "currency": "USD",
+  "currencies": ["USD", "EUR", "GBP", "JPY", "INR", "AED", "SAR", "CAD", "AUD"],
+  "default_model": "qwen3:4b",
+  "coding_model": "qwen2.5-coder:7b",
+  "starters": [
+    {"title": "Plan my day", "summary": "Turn priorities into a practical plan.", "icon": "plan", "prompt": "Help me plan today. Use my saved priorities and projects to create a practical editable plan for today. Choose reasonable defaults and mark unknown deadlines."},
+    {"title": "Build something", "summary": "Create something useful with local AI.", "icon": "build", "prompt": "Help me with a coding task. Create a complete small useful app from my goal and provide the actual source ZIP. Use reasonable defaults."},
+    {"title": "Review my documents", "summary": "Bring your files into the conversation.", "icon": "documents", "action": "documents"},
+    {"title": "Draft a message", "summary": "Get a complete, editable draft.", "icon": "draft", "prompt": "Help me draft a clear message. Write the complete draft using saved project context and reasonable editable defaults; keep unsupported claims out."}
+  ]
+}

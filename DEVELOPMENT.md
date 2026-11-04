@@ -39,3 +39,23 @@ only its randomly named project/volumes. No owner .env, database or model weight
 are used. Real local-model acceptance remains `scripts/core_acceptance.py` with
 an explicitly supplied authorized local Ollama endpoint. Hosted CI does not
 replace the remaining Ubuntu 26.04 rootless OCI acceptance checks.
+
+## Dependency licenses
+
+After changing `backend/requirements.lock` or frontend dependencies, refresh the
+dependency inventory and bundled third-party license notices:
+
+```sh
+python3 scripts/license_snapshot.py
+```
+
+Run it in an environment where the locked backend dependencies and `frontend/node_modules`
+are installed, then review the diff of `THIRD_PARTY_NOTICES.txt` and
+`docs/dependency-inventory.json` before committing.
+
+## Releases
+
+Ship user-facing changes with the `foxory-release` project skill
+(`.claude/skills/foxory-release/`): debloat scan, version bump, release notes,
+verification, manifest and ZIP. Its helper also runs standalone:
+`python3 .claude/skills/foxory-release/scripts/release_checks.py scan|verify|package`.

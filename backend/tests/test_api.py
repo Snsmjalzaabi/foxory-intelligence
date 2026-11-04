@@ -238,3 +238,12 @@ async def test_concurrent_duplicate_submissions(client):
 async def fixture_page(url,query):
     text='Fixture evidence with a sufficiently long public source excerpt. '+('Reliable fixture material. '*8)
     return {'url':url,'title':'Fixture evidence','text':text,'evidence_type':'retrieved_page','content_hash':hashlib.sha256(text.encode()).hexdigest(),'relevance':1,'credibility':{'score':.2,'reasons':['fixture']}}
+
+
+async def test_trusted_public_origin_is_accepted_and_others_denied(client, monkeypatch):
+    from foxory import main
+    monkeypatch.setattr(main, 'PUBLIC_ORIGINS', {'https://mypc.tail1234.ts.net'})
+    ok = await client.get('/api/overview', headers={'origin': 'https://mypc.tail1234.ts.net'})
+    assert ok.status_code == 200
+    for origin in ['https://evil.example', 'http://mypc.tail1234.ts.net', 'https://mypc.tail1234.ts.net.evil.example']:
+        assert (await client.get('/api/overview', headers={'origin': origin})).status_code == 403
