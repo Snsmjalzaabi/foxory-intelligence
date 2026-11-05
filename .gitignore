@@ -15,3 +15,24 @@ playwright-report/
 test-results/
 
 sandbox-data/
+
+# Generated private local search configuration
+deployment/searxng-local.yml
+
+releases/
+maintenance-state.json
+.maintenance-inbox/
+.maintenance-controller.lock
+scripts/foxory_control_backup.py
+
+update-trust/
+update-policy.json
+release-channel/
+update-cache/
+security-tools/
+
+evolution-work/
+
+# Local model weights and private evaluation settings
+.local-ai/
+*.gguf

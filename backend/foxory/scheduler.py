@@ -7,6 +7,10 @@ from .scope import workspace_id,actor_id,system_scope
 from .agent_api import add_task,TaskBody
 
 def tick(at=None):
+    from .autonomy import tick as automation_tick
+    automation_tick(at)
+    from .evolution import tick as evolution_tick
+    evolution_tick()
     at=at or datetime.now(timezone.utc)
     with system_scope(),Session() as s:
         for memory in s.scalars(select(Record).where(Record.kind=='agent_memory')):
@@ -54,8 +58,8 @@ def tick(at=None):
                 due=datetime.fromisoformat(d['next_run_at']);interval=d.get('every_minutes')
                 missed=(at-due).total_seconds()>60
                 if not (missed and d['missed_policy']=='skip'):
-                    task=add_task(s,d['agent_id'],TaskBody(objective=d['objective'],idempotency_key='schedule:'+id+':'+due.isoformat()),creator)
-                    payload=json.loads(task.payload);payload['schedule_id']=id;task.payload=json.dumps(payload)
+                    task=add_task(s,d['agent_id'],TaskBody(objective=d['objective'],idempotency_key='schedule:'+id+':'+due.isoformat(),plan=d.get('plan')),creator)
+                    payload=json.loads(task.payload);payload['schedule_id']=id;payload.update({k:d[k] for k in ['source_conversation','space_id'] if k in d});task.payload=json.dumps(payload)
                     d['last_job_id']=task.id;d['runs']+=1;d['history']=(d['history']+[{'due_at':due.isoformat(),'job_id':task.id,'at':at.isoformat()}])[-100:]
                     audit(s,'schedule.dispatch',id,job_id=task.id)
                 if not interval or d['runs']>=d['max_runs']:d['enabled']=False
@@ -70,3 +74,4 @@ def tick(at=None):
                 if row:
                     d=json.loads(row.payload);d.update(enabled=False,error='Schedule configuration invalid; inspect agent permissions and membership');row.payload=json.dumps(d);audit(s,'schedule.failed',id);s.commit()
         finally:workspace_id.reset(wt);actor_id.reset(ut)
+

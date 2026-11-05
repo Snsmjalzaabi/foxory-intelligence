@@ -28,6 +28,8 @@ def unknown() -> dict[str, Any]:
 
 async def inspect(model: str, *, endpoint: str, digest: str | None = None,
                   refresh: bool = False) -> dict[str, Any]:
+    from . import providers
+    if model.startswith(providers.PREFIX):return providers.metadata()
     key = (endpoint, model)
     previous = _cache.get(key)
     if previous and not refresh and previous[0] > time.monotonic() and (digest is None or digest==previous[1]):
@@ -49,6 +51,9 @@ async def inspect(model: str, *, endpoint: str, digest: str | None = None,
                       'source':'Ollama /api/show; reported capability is not a quality benchmark'}
     except (httpx.HTTPError, ValueError, TypeError, TimeoutError):
         pass  # Older/unavailable inspection must not make tags or core startup fail.
+    info=data.get('model_info',{}) if 'data' in locals() and isinstance(data,dict) else {}
+    limits=[v for k,v in (info if isinstance(info,dict) else {}).items() if k.endswith('.context_length') and type(v) is int and v>=1024]
+    if limits:result['context_length']=min(limits)
     if len(_cache)>=128 and key not in _cache:
         _cache.pop(next(iter(_cache)))
     _cache[key] = (time.monotonic()+(30 if result['capability_status']=='reported' else 5),digest,result)

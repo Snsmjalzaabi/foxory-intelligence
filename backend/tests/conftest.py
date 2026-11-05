@@ -31,6 +31,9 @@ def database():
         s.query(LoginSession).delete();s.query(Membership).delete();s.query(User).delete()
         s.query(Message).delete();s.query(Record).delete();s.query(Audit).delete();s.commit()
     requests_by_client.clear();active_chats.clear()
+    from foxory import providers
+    providers.circuits.clear()
+    for name in ['ai-policy.json','ai-usage.json']:(Path(os.environ['FOXORY_DATA_DIR'])/name).unlink(missing_ok=True)
 
 @pytest.fixture
 async def client():

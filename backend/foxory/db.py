@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 from uuid import uuid4
-from sqlalchemy import create_engine, event, Column, String, Text, Integer, ForeignKey, Index, select
+from sqlalchemy import create_engine, event, Column, String, Text, ForeignKey, Index, select
 from sqlalchemy.orm import declarative_base, sessionmaker
 from .config import DATABASE_URL
 
@@ -89,13 +89,13 @@ class LoginSession(Base):
 # Apply the boundary to every ORM SELECT/UPDATE/DELETE, including Session.get,
 # exports, aggregation, messages and optimistic job state transitions.
 from sqlalchemy.orm import Session as OrmSession, with_loader_criteria
-from .scope import workspace_id, system_access
+from .scope import workspace_id, system_access, actor_id
 @event.listens_for(OrmSession,'do_orm_execute')
 def tenant_filter(state):
     if system_access.get(): return
     scope=workspace_id.get()
     state.statement=state.statement.options(
-        with_loader_criteria(Record, Record.workspace==scope, include_aliases=True),
+        with_loader_criteria(Record, (Record.workspace==scope) & ((~Record.kind.in_(['chat_learning','chat_review'])) | Record.dedupe_key.startswith(actor_id.get()+':',autoescape=True)), include_aliases=True),
         with_loader_criteria(Audit, Audit.workspace==scope, include_aliases=True),
         with_loader_criteria(Message, Message.conversation_id.in_(select(Record.id).where(Record.workspace==scope)), include_aliases=True),
     )
@@ -108,6 +108,17 @@ def tenant_writes(session, *_):
         if isinstance(row,(Record,Audit)):
             if row in session.new and row.workspace is None: row.workspace=scope
             if row.workspace!=scope or scope=='__unauthorized__': raise PermissionError('Workspace boundary violation')
+            if isinstance(row,Record) and row.kind in {'chat_learning','chat_review'} and not (row.dedupe_key or '').startswith(actor_id.get()+':'):raise PermissionError('Personal learning boundary violation')
         if isinstance(row,Message):
             parent=session.get(Record,row.conversation_id)
             if not parent or parent.workspace!=scope: raise PermissionError('Message workspace violation')
+
+# Durable job changes wake an idle worker after commit; no polling loop or prompt data.
+@event.listens_for(OrmSession,'before_flush')
+def track_job_wakeup(session,*_):
+    if any(isinstance(row,Record) and row.kind=='job' for row in session.new|session.dirty):session.info['ai_work_changed']=True
+@event.listens_for(OrmSession,'after_commit')
+def notify_job_wakeup(session):
+    if session.info.pop('ai_work_changed',False):
+        from .ai_runtime import notify_work
+        notify_work()

@@ -1,6 +1,6 @@
 # FOXORY Phase 2 of 5 — verified implementation
 
-Branch: `development`. Accepted Phase 1 baseline: `3452acd`; preserved verification history: [docs/PHASE1_STATUS.md](docs/PHASE1_STATUS.md). Phase 2 implementation milestones: `30f86b8`, `1d3a03a`, followed by the parser/resource/verification commit containing this record. The exact final hash is available with `git rev-parse HEAD`; no self-referential hash is embedded here. Target v1.0 is not complete and production readiness is not claimed. Phase 3 has not started.
+Branch: `development`. Accepted Phase 1 baseline: `3452acd`; preserved verification history: [docs/PHASE1_STATUS.md](PHASE1_STATUS.md). Phase 2 implementation milestones: `30f86b8`, `1d3a03a`, followed by the parser/resource/verification commit containing this record. The exact final hash is available with `git rev-parse HEAD`; no self-referential hash is embedded here. Target v1.0 is not complete and production readiness is not claimed. Phase 3 has not started.
 
 ## Implemented
 
@@ -30,4 +30,4 @@ Computer control, generated-code execution, live outbound communications, purcha
 
 ## Remaining work and next action
 
-Phase 2 acceptance evidence is in [docs/PHASE2_CHECKLIST.md](docs/PHASE2_CHECKLIST.md) and [docs/VERIFICATION.md](docs/VERIFICATION.md). Owner first-run account creation is deliberately left to the owner. Before proposing v1.0 release: clean-host installation matrix, live SearXNG, independent security/license review, answer-quality evaluation, performance profiling and the later authorized roadmap phases remain. Continue only with the next approved phase; preserve this working architecture and security boundaries.
+Phase 2 acceptance evidence is in [docs/PHASE2_CHECKLIST.md](PHASE2_CHECKLIST.md) and [docs/VERIFICATION.md](VERIFICATION.md). Owner first-run account creation is deliberately left to the owner. Before proposing v1.0 release: clean-host installation matrix, live SearXNG, independent security/license review, answer-quality evaluation, performance profiling and the later authorized roadmap phases remain. Continue only with the next approved phase; preserve this working architecture and security boundaries.

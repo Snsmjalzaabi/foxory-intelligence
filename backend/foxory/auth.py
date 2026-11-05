@@ -10,8 +10,8 @@ from sqlalchemy.exc import IntegrityError
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, InvalidHashError
 from .config import TOKEN, SECURE_COOKIES
-from .db import Session, User, Workspace, Membership, LoginSession, uid, now
-from .scope import workspace_id
+from .db import Session, User, Workspace, Membership, LoginSession, Record, Message, Audit, uid, now
+from .scope import workspace_id, system_scope
 router=APIRouter(prefix='/api/auth')
 hash_slots=threading.BoundedSemaphore(2)
 class BoundedHasher(PasswordHasher):
@@ -59,6 +59,8 @@ def status():
 def issue(user_id:str,request:Request,response:Response):
     token=secrets.token_urlsafe(40);csrf=secrets.token_urlsafe(32)
     with Session() as s:
+        # Expired sessions can never authenticate; remove them so the table stays bounded.
+        s.query(LoginSession).filter(LoginSession.expires_at<=now()).delete(synchronize_session=False)
         s.add(LoginSession(token_hash=digest(token),user_id=user_id,expires_at=(datetime.now(timezone.utc)+timedelta(hours=12)).isoformat(),csrf=csrf));s.commit()
     response.set_cookie('foxory_session',token,httponly=True,samesite='strict',secure=SECURE_COOKIES or request.url.scheme=='https',max_age=43200,path='/')
     return {'authenticated':True,'csrf':csrf}
@@ -142,3 +144,42 @@ def existing_member(body:ExistingMember,request:Request):
 def members(request:Request):
     if request.state.identity['role']!='admin':raise HTTPException(403,'Administrator required')
     with Session() as s:return [{'id':u.id,'username':u.username,'role':m.role} for m,u in s.execute(select(Membership,User).join(User,Membership.user_id==User.id).where(Membership.workspace_id==workspace_id.get()))]
+
+@router.delete('/members/{user_id}',status_code=204)
+def remove_member(user_id:str,request:Request):
+    actor=request.state.identity
+    if actor['role']!='admin' or actor['id']=='bootstrap':raise HTTPException(403,'Workspace administrator required')
+    if user_id==actor['id']:raise HTTPException(409,'You cannot remove yourself')
+    with Session() as s:
+        membership=s.get(Membership,(workspace_id.get(),user_id))
+        if not membership:raise HTTPException(404,'Member not found')
+        if workspace_id.get()=='local' and user_id=='initial-administrator':raise HTTPException(409,'The installation owner cannot be removed from the local workspace')
+        # The account is kept so it can be re-added; access ends on its next request.
+        s.delete(membership);s.commit()
+
+class DeleteWorkspace(BaseModel):
+    confirmation:str=Field(max_length=100)
+@router.post('/workspaces/{id}/delete')
+def delete_workspace(id:str,body:DeleteWorkspace,request:Request):
+    actor=request.state.identity
+    if id=='local':raise HTTPException(409,'The local workspace cannot be deleted')
+    with Session() as s:
+        membership=s.get(Membership,(id,actor['id']));workspace=s.get(Workspace,id)
+        if not workspace or not membership or membership.role!='admin':raise HTTPException(403,'Administrator of that workspace required')
+        if body.confirmation!=workspace.name:raise HTTPException(422,'Type the workspace name to confirm deletion')
+    import json
+    from .config import DATA
+    with system_scope(), Session() as s:
+        records=list(s.scalars(select(Record).where(Record.workspace==id)))
+        if any(r.kind=='job' and json.loads(r.payload).get('status') not in {'completed','failed','cancelled'} for r in records):
+            raise HTTPException(409,'Cancel or finish running tasks in this workspace first')
+        ids=[r.id for r in records]
+        for start in range(0,len(ids),500):s.query(Message).filter(Message.conversation_id.in_(ids[start:start+500])).delete(synchronize_session=False)
+        for r in records:
+            if r.kind in {'document','image'}:(DATA/'uploads'/r.id).unlink(missing_ok=True)
+            s.delete(r)
+        s.query(Audit).filter(Audit.workspace==id).delete(synchronize_session=False)
+        s.query(Membership).filter(Membership.workspace_id==id).delete(synchronize_session=False)
+        s.delete(s.get(Workspace,id))
+        s.add(Audit(workspace='local',action='workspace.delete',target=id,detail=json.dumps({'actor_id':actor['id'],'records':len(ids)})));s.commit()
+    return {'deleted':id,'records':len(ids)}

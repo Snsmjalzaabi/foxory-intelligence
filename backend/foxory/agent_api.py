@@ -72,7 +72,7 @@ def task_data(s,agent_id,objective,creator,plan=None):
         if not d['enabled'] or not d['model']:raise HTTPException(422,'Delegates need an active configured model')
         delegates[id]=d
     data={'type':'agent','agent_id':agent_id,'agent_snapshot':cfg,'delegates':delegates,'models':[cfg['model']],'prompt':objective,'creator_id':creator,'status':'queued','stage':'plan','step':0,'attempts':0,'agent_model_calls':0,'budget':{'max_seconds':cfg['max_seconds']},'timeline':[]}
-    if plan is not None:data.update(plan=validate_plan(data,{'steps':plan}),stage='execute',cursor=0)
+    if plan is not None:data.update(plan=validate_plan(data,{'steps':plan},check_live=False),stage='execute',cursor=0)
     return data
 
 def add_task(s,agent_id,body,creator):

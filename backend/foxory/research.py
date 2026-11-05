@@ -38,6 +38,8 @@ def validate_citations(text, sources):
         quote=match.group(1)
         return match.group(0) if any(quote in s.get('text','') for s in sources) else '[Quotation omitted: not found in retrieved evidence]'
     text=re.sub(r'“([^”]{10,1000})”',quotation,text)
+    # Models often group references as [1, 2]. Normalize before validating IDs.
+    text = re.sub(r"\[(\d+(?:\s*,\s*\d+)+)\]", lambda m:' '.join('['+n.strip()+']' for n in m.group(1).split(',')), text)
     ids = {str(s["id"]) for s in sources}
     return re.sub(r"\[(\d+)\]", lambda m:m.group(0) if m.group(1) in ids else "[unverified reference removed]", text)
 

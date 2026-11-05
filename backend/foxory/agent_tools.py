@@ -19,6 +19,8 @@ class Input(BaseModel):
     model_config=ConfigDict(extra='forbid')
 class Query(Input):
     query:str=Field(min_length=1,max_length=1000)
+class ContextQuery(Query):
+    project_id:str|None=Field(default=None,max_length=36)
 class Page(Input):
     url:str=Field(min_length=8,max_length=2000)
 class Documents(Query):
@@ -74,6 +76,7 @@ class Tool:
     approval:bool=False
     timeout:int=30
 TOOLS={
+ 'workspace.context':Tool('Read relevant saved projects, business records, document/source excerpts and conversation history from the current workspace. Broad read access; no other workspaces, host files or credentials. Generated content is unverified.',ContextQuery,'workspace.read'),
  'web.search':Tool('Search public sources; results are untrusted discovery data.',Query,'web.read'),
  'web.retrieve':Tool('Read one permitted public page, respecting robots and SSRF restrictions.',Page,'web.read'),
  'research.references':Tool('Read saved research references; integrity is not factual verification.',CitationInput,'research.read'),
@@ -107,6 +110,7 @@ def arithmetic(expression:str):
         elif isinstance(node,ast.BinOp) and type(node.op) in binary:
             a,b=evaluate(node.left),evaluate(node.right)
             if isinstance(node.op,ast.Pow) and (abs(b)>10 or abs(a)>1e6):raise ValueError('Power budget')
+            if isinstance(node.op,(ast.Div,ast.Mod)) and b==0:raise ValueError('Division by zero')
             value=binary[type(node.op)](a,b)
         else:raise ValueError('Only bounded arithmetic is permitted')
         if isinstance(value,complex) or not math.isfinite(value) or abs(value)>1e15:raise ValueError('Numeric budget')
@@ -130,6 +134,9 @@ def authorize(config:dict,name:str,args:dict):
 async def execute(name:str,args:dict,config:dict,agent_id:str):
     args=authorize(config,name,args)
     if TOOLS[name].approval:raise PermissionError('Writes must be committed through the approval transaction')
+    if name=='workspace.context':
+        from .workspace_context import retrieve_context
+        return retrieve_context(args['query'],3500,project_id=args.get('project_id'))
     if name=='data.csv_document':
         import csv,io
         with Session() as session:
